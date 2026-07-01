@@ -208,7 +208,9 @@ export async function createBooking(
     // DB 미설정: 데모 모드 — 실제 저장 대신 성공 처리 (실서비스 전 Supabase 연결 필요)
     return { ok: true, demo: true };
   }
-  const sb = getSupabase()!;
+  // 서버(API 라우트)에서 실행되므로 service_role 로 저장한다.
+  // (bookings 는 되읽기용 SELECT 정책이 없어 anon 으로는 insert+return 이 막힘)
+  const sb = getSupabaseAdmin() ?? getSupabase()!;
   const { data, error } = await sb
     .from("bookings")
     .insert({ ...input, status: "requested" })
