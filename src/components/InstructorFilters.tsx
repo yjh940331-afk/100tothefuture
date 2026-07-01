@@ -44,13 +44,16 @@ export function InstructorFilters() {
   const hasAny = params.toString().length > 0;
 
   return (
-    <div className="card space-y-5 p-5">
+    <div className="card space-y-5 p-4 sm:p-5">
       <div className="flex items-center justify-between">
-        <h2 className="font-extrabold text-fairway-900">필터</h2>
+        <div>
+          <h2 className="font-extrabold text-fairway-900">필터</h2>
+          <p className="mt-0.5 text-xs text-fairway-500">조건을 누르면 바로 적용됩니다.</p>
+        </div>
         {hasAny && (
           <button
             onClick={() => router.push("/pros", { scroll: false })}
-            className="text-xs font-semibold text-fairway-500 hover:text-fairway-700"
+            className="rounded-md border border-fairway-200 px-2.5 py-1.5 text-xs font-semibold text-fairway-600 hover:border-fairway-400 hover:text-fairway-800"
           >
             초기화
           </button>
@@ -153,7 +156,7 @@ function Chip({
   return (
     <button
       onClick={onClick}
-      className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
+      className={`min-h-9 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
         active
           ? "border-fairway-600 bg-fairway-700 text-white"
           : "border-fairway-200 text-fairway-700 hover:border-fairway-400 hover:bg-fairway-50"

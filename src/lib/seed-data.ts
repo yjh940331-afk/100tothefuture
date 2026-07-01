@@ -91,7 +91,7 @@ export const SEED_INSTRUCTORS: Instructor[] = [
     gallery: [
       img("photo-1587174486073-ae5e5cff23aa"),
       img("photo-1592919505780-303950717480"),
-      img("photo-1622396636133-ba43f812bc35"),
+      img("photo-1500932334442-8761ee4810a7"),
     ],
     intro_video_url: null,
     bio: "100타 탈출 전문 · 영상분석 기반 교정",
@@ -132,8 +132,8 @@ export const SEED_INSTRUCTORS: Instructor[] = [
     id: "park-pro",
     slug: "park-pro",
     display_name: "박서연 프로",
-    profile_image: img("photo-1594381898411-846e7d193883"),
-    gallery: [img("photo-1611374243147-44a702c2d44c"), img("photo-1500932334442-8761ee4810a7")],
+    profile_image: img("photo-1611374243147-44a702c2d44c"),
+    gallery: [img("photo-1535131749006-b7f58c99034b"), img("photo-1500932334442-8761ee4810a7")],
     intro_video_url: null,
     bio: "여성·입문자 전문 · 친절 설명형",
     about:
@@ -176,8 +176,8 @@ export const SEED_INSTRUCTORS: Instructor[] = [
     id: "lee-pro",
     slug: "lee-pro",
     display_name: "이준혁 프로",
-    profile_image: img("photo-1571019613454-1cb2f99b2d8b"),
-    gallery: [img("photo-1633158829585-23ba8f7c8caf"), img("photo-1530028828-25e8270793c5")],
+    profile_image: img("photo-1592919505780-303950717480"),
+    gallery: [img("photo-1587174486073-ae5e5cff23aa"), img("photo-1500932334442-8761ee4810a7")],
     intro_video_url: null,
     bio: "필드레슨 · 라운드 운영 전문",
     about:
@@ -211,8 +211,8 @@ export const SEED_INSTRUCTORS: Instructor[] = [
     id: "jung-pro",
     slug: "jung-pro",
     display_name: "정민아 프로",
-    profile_image: img("photo-1607962837359-5e7e89f86776"),
-    gallery: [img("photo-1622819584099-e04ccb14e8a7")],
+    profile_image: img("photo-1500932334442-8761ee4810a7"),
+    gallery: [img("photo-1587174486073-ae5e5cff23aa"), img("photo-1592919505780-303950717480")],
     intro_video_url: null,
     bio: "숏게임·퍼팅 스페셜리스트",
     about:

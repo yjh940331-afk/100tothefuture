@@ -22,6 +22,8 @@ export function BookingForm({ pro }: { pro: Instructor }) {
   const [demo, setDemo] = useState(false);
 
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
+  const today = new Date().toISOString().slice(0, 10);
+  const selectedPackage = pro.packages.find((p) => p.id === form.lesson_package_id);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -35,31 +37,42 @@ export function BookingForm({ pro }: { pro: Instructor }) {
     }
     setStatus("loading");
     setError("");
-    const res = await fetch("/api/bookings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        instructor_id: pro.id,
-        ...form,
-        privacy_agreed: privacy,
-        third_party_agreed: thirdParty,
-      }),
-    });
-    const data = await res.json();
-    if (data.ok) {
-      setDemo(!!data.demo);
-      setStatus("done");
-    } else {
+    try {
+      const res = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          instructor_id: pro.id,
+          ...form,
+          privacy_agreed: privacy,
+          third_party_agreed: thirdParty,
+        }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setDemo(!!data.demo);
+        setStatus("done");
+      } else {
+        setStatus("error");
+        setError(data.error || "요청 중 오류가 발생했어요.");
+      }
+    } catch {
       setStatus("error");
-      setError(data.error || "요청 중 오류가 발생했어요.");
+      setError("네트워크 상태를 확인한 뒤 다시 시도해주세요.");
     }
   }
 
   if (status === "done") {
     return (
       <div className="card p-8 text-center">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-fairway-100 text-2xl">
-          ✅
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-fairway-100 text-fairway-700">
+          <svg viewBox="0 0 20 20" className="h-7 w-7" fill="currentColor" aria-hidden>
+            <path
+              fillRule="evenodd"
+              d="M16.7 5.3a1 1 0 010 1.4l-7.5 7.5a1 1 0 01-1.4 0L3.3 9.7a1 1 0 011.4-1.4l3.3 3.3 6.8-6.8a1 1 0 011.4 0z"
+              clipRule="evenodd"
+            />
+          </svg>
         </div>
         <h2 className="mt-4 text-xl font-black text-fairway-900">예약 요청이 접수되었습니다!</h2>
         <p className="mt-2 text-fairway-600">
@@ -78,7 +91,14 @@ export function BookingForm({ pro }: { pro: Instructor }) {
   }
 
   return (
-    <form onSubmit={submit} className="card space-y-5 p-6">
+    <form onSubmit={submit} className="card space-y-5 p-5 sm:p-6">
+      <div className="border-b border-fairway-100 pb-5">
+        <h2 className="text-lg font-extrabold text-fairway-900">상담 요청 정보</h2>
+        <p className="mt-1 text-sm text-fairway-600">
+          프로가 바로 이해할 수 있도록 목표와 현재 고민을 간단히 적어주세요.
+        </p>
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="label">이름 *</label>
@@ -87,16 +107,20 @@ export function BookingForm({ pro }: { pro: Instructor }) {
             value={form.student_name}
             onChange={(e) => set("student_name", e.target.value)}
             placeholder="예: 홍길동"
+            autoComplete="name"
             required
           />
         </div>
         <div>
           <label className="label">연락처 *</label>
           <input
+            type="tel"
             className="input"
             value={form.student_phone}
             onChange={(e) => set("student_phone", e.target.value)}
             placeholder="010-0000-0000"
+            autoComplete="tel"
+            inputMode="tel"
             required
           />
         </div>
@@ -110,6 +134,7 @@ export function BookingForm({ pro }: { pro: Instructor }) {
             className="input"
             value={form.preferred_date}
             onChange={(e) => set("preferred_date", e.target.value)}
+            min={today}
           />
         </div>
         <div>
@@ -149,6 +174,12 @@ export function BookingForm({ pro }: { pro: Instructor }) {
                 </option>
               ))}
             </select>
+            {selectedPackage && (
+              <p className="mt-1.5 text-xs font-medium text-fairway-500">
+                {selectedPackage.session_count}회 · 회당 {selectedPackage.duration_minutes}분 ·{" "}
+                {selectedPackage.price.toLocaleString("ko-KR")}원
+              </p>
+            )}
           </div>
         )}
       </div>
@@ -159,13 +190,15 @@ export function BookingForm({ pro }: { pro: Instructor }) {
           className="input min-h-28"
           value={form.goal}
           onChange={(e) => set("goal", e.target.value)}
+          maxLength={500}
           placeholder="예: 평균 108타, 드라이버 OB가 잦아요. 3개월 안에 100타 깨고 싶습니다."
         />
+        <div className="mt-1 text-right text-xs text-fairway-400">{form.goal.length}/500</div>
       </div>
 
       {/* 동의 */}
-      <div className="space-y-2 rounded-xl bg-cream p-4">
-        <label className="flex items-start gap-2 text-sm text-fairway-700">
+      <div className="space-y-2 rounded-lg bg-cream p-4">
+        <label className="flex items-start gap-3 rounded-lg border border-fairway-100 bg-white px-3 py-3 text-sm text-fairway-700">
           <input
             type="checkbox"
             className="mt-1"
@@ -179,7 +212,7 @@ export function BookingForm({ pro }: { pro: Instructor }) {
             </Link>
           </span>
         </label>
-        <label className="flex items-start gap-2 text-sm text-fairway-700">
+        <label className="flex items-start gap-3 rounded-lg border border-fairway-100 bg-white px-3 py-3 text-sm text-fairway-700">
           <input
             type="checkbox"
             className="mt-1"
@@ -192,7 +225,11 @@ export function BookingForm({ pro }: { pro: Instructor }) {
         </label>
       </div>
 
-      {error && <p className="text-sm text-rose-600">{error}</p>}
+      {error && (
+        <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-600" aria-live="polite">
+          {error}
+        </p>
+      )}
 
       <button type="submit" disabled={status === "loading"} className="btn-primary w-full text-base">
         {status === "loading" ? "요청 중..." : "상담 · 예약 요청하기"}

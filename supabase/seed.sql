@@ -27,8 +27,8 @@ values
 ),
 (
   'park-pro', '박서연 프로',
-  'https://images.unsplash.com/photo-1594381898411-846e7d193883?auto=format&fit=crop&w=1200&q=70',
-  array['https://images.unsplash.com/photo-1611374243147-44a702c2d44c?auto=format&fit=crop&w=1200&q=70'],
+  'https://images.unsplash.com/photo-1611374243147-44a702c2d44c?auto=format&fit=crop&w=1200&q=70',
+  array['https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&w=1200&q=70'],
   '여성·입문자 전문 · 친절 설명형',
   '골프가 처음이라 막막한 분, 오래 쉬었다 다시 시작하는 분을 편안하게 이끌어 드립니다.',
   '판교', array['실내연습장','스크린골프'],
@@ -42,8 +42,8 @@ values
 ),
 (
   'lee-pro', '이준혁 프로',
-  'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1200&q=70',
-  array['https://images.unsplash.com/photo-1633158829585-23ba8f7c8caf?auto=format&fit=crop&w=1200&q=70'],
+  'https://images.unsplash.com/photo-1592919505780-303950717480?auto=format&fit=crop&w=1200&q=70',
+  array['https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?auto=format&fit=crop&w=1200&q=70'],
   '필드레슨 · 라운드 운영 전문',
   '연습장에서는 잘 맞는데 필드만 나가면 무너지는 분들을 위한 실전형 프로입니다.',
   '수원', array['야외연습장','필드레슨'],
@@ -57,8 +57,8 @@ values
 ),
 (
   'jung-pro', '정민아 프로',
-  'https://images.unsplash.com/photo-1607962837359-5e7e89f86776?auto=format&fit=crop&w=1200&q=70',
-  array['https://images.unsplash.com/photo-1622819584099-e04ccb14e8a7?auto=format&fit=crop&w=1200&q=70'],
+  'https://images.unsplash.com/photo-1500932334442-8761ee4810a7?auto=format&fit=crop&w=1200&q=70',
+  array['https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?auto=format&fit=crop&w=1200&q=70'],
   '숏게임·퍼팅 스페셜리스트',
   '스코어의 절반은 100야드 안에서 결정됩니다. 어프로치 거리감과 3퍼트 탈출에 집중합니다.',
   '분당', array['실내연습장','스크린골프'],

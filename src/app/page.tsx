@@ -4,7 +4,8 @@ import { InstructorCard } from "@/components/InstructorCard";
 import { DemoBanner } from "@/components/DemoBanner";
 import { SPECIALTIES } from "@/lib/constants";
 
-export const runtime = "edge";
+const HERO_IMAGE =
+  "https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&w=2200&q=75";
 
 export default async function HomePage() {
   const featured = await getFeaturedInstructors(3);
@@ -15,17 +16,24 @@ export default async function HomePage() {
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-fairway-950 text-white">
-        <div className="absolute inset-0 opacity-20 [background:radial-gradient(circle_at_20%_20%,#3a7f52,transparent_45%),radial-gradient(circle_at_80%_0%,#c8964a,transparent_40%)]" />
-        <div className="container-page relative py-20 sm:py-28">
-          <span className="inline-flex items-center gap-2 rounded-full border border-gold-400/40 bg-fairway-900/60 px-4 py-1.5 text-sm font-semibold text-gold-300">
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-55"
+          style={{ backgroundImage: `url(${HERO_IMAGE})` }}
+          aria-hidden
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-fairway-950 via-fairway-950/88 to-fairway-950/25" />
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-fairway-950 to-transparent" />
+
+        <div className="container-page relative flex min-h-[620px] flex-col justify-center py-16 sm:min-h-[640px] sm:py-20">
+          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-gold-400/40 bg-fairway-950/55 px-4 py-1.5 text-sm font-semibold text-gold-200 backdrop-blur">
             검증된 레슨프로 매칭 플랫폼
           </span>
-          <h1 className="mt-6 max-w-3xl text-4xl font-black leading-tight tracking-tight sm:text-5xl">
+          <h1 className="mt-6 max-w-4xl text-4xl font-black leading-tight tracking-tight sm:text-5xl">
             100타 탈출, 혼자 고민하지 말고
             <br />
             <span className="text-gold-300">검증된 프로</span>와 시작하세요.
           </h1>
-          <p className="mt-5 max-w-xl text-lg leading-relaxed text-fairway-200">
+          <p className="mt-5 max-w-2xl text-lg leading-relaxed text-fairway-100 sm:text-xl">
             내 스윙 문제에 맞는 레슨프로를 찾고, 약력·자격·후기를 확인한 뒤 가능한
             시간에 바로 상담·예약하세요.
           </p>
@@ -41,7 +49,7 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          <div className="mt-12 flex flex-wrap gap-x-8 gap-y-3 text-sm text-fairway-200">
+          <div className="mt-12 grid max-w-2xl grid-cols-1 gap-3 border-t border-white/15 pt-6 text-sm text-fairway-100 sm:grid-cols-3">
             <Stat label="자격·경력 검증" value="관리자 직접 확인" />
             <Stat label="후기" value="예약 완료자만 작성" />
             <Stat label="예약" value="가능 시간 확인 후 요청" />
@@ -50,9 +58,9 @@ export default async function HomePage() {
       </section>
 
       {/* 전문분야 빠른 진입 */}
-      <section className="container-page relative z-10 -mt-8">
-        <div className="card flex flex-wrap items-center gap-2 p-4">
-          <span className="mr-1 text-sm font-bold text-fairway-700">무엇이 고민이세요?</span>
+      <section className="container-page relative z-10 -mt-10">
+        <div className="card flex flex-wrap items-center gap-2 p-4 sm:p-5">
+          <span className="mr-1 text-sm font-bold text-fairway-800">무엇이 고민이세요?</span>
           {SPECIALTIES.map((s) => (
             <Link
               key={s}
@@ -67,7 +75,7 @@ export default async function HomePage() {
 
       {/* 추천 프로 */}
       <section className="container-page py-16">
-        <div className="mb-6 flex items-end justify-between">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 className="text-2xl font-extrabold text-fairway-900">추천 레슨프로</h2>
             <p className="mt-1 text-fairway-600">검증을 마친 인기 프로를 먼저 만나보세요.</p>
@@ -86,9 +94,14 @@ export default async function HomePage() {
       {/* 신뢰 장치 */}
       <section className="border-y border-fairway-100 bg-white">
         <div className="container-page py-16">
-          <h2 className="text-center text-2xl font-extrabold text-fairway-900">
-            왜 100 to the Future 인가요?
-          </h2>
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-2xl font-extrabold text-fairway-900">
+              처음 만나는 프로라도 판단할 근거가 있어야 하니까
+            </h2>
+            <p className="mt-2 text-fairway-600">
+              프로필 검증, 후기 관리, 예약 요청 흐름을 운영자가 직접 관리합니다.
+            </p>
+          </div>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             <Feature
               title="검증된 프로필"
@@ -129,12 +142,19 @@ export default async function HomePage() {
 
       {/* 하단 CTA */}
       <section className="container-page pb-4">
-        <div className="rounded-2xl bg-fairway-800 p-10 text-center text-white sm:p-14">
-          <h2 className="text-3xl font-black">올해는 진짜 100타, 깨봅시다.</h2>
-          <p className="mt-3 text-fairway-200">검증된 프로와 함께라면 더 빠릅니다.</p>
-          <Link href="/pros" className="btn-gold mt-6 inline-flex text-base">
-            지금 레슨프로 찾기
-          </Link>
+        <div className="relative overflow-hidden rounded-lg bg-fairway-900 p-10 text-center text-white sm:p-14">
+          <div
+            className="absolute inset-0 bg-cover bg-center opacity-20"
+            style={{ backgroundImage: `url(${HERO_IMAGE})` }}
+            aria-hidden
+          />
+          <div className="relative">
+            <h2 className="text-3xl font-black">올해는 진짜 100타, 깨봅시다.</h2>
+            <p className="mt-3 text-fairway-100">검증된 프로와 함께라면 더 빠릅니다.</p>
+            <Link href="/pros" className="btn-gold mt-6 inline-flex text-base">
+              지금 레슨프로 찾기
+            </Link>
+          </div>
         </div>
       </section>
     </>
@@ -152,8 +172,8 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 function Feature({ title, desc }: { title: string; desc: string }) {
   return (
-    <div className="rounded-2xl border border-fairway-100 bg-cream p-6">
-      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-fairway-700 text-gold-300">
+    <div className="rounded-lg border border-fairway-100 bg-cream p-6">
+      <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-fairway-700 text-gold-300">
         <svg viewBox="0 0 20 20" className="h-5 w-5" fill="currentColor" aria-hidden>
           <path
             fillRule="evenodd"

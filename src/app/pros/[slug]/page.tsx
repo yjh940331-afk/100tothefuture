@@ -9,8 +9,6 @@ import { AvailabilityTable } from "@/components/AvailabilityTable";
 import { DemoBanner } from "@/components/DemoBanner";
 import { ReviewForm } from "@/components/ReviewForm";
 
-export const runtime = "edge";
-
 const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
 
 export async function generateMetadata({
@@ -39,41 +37,70 @@ export default async function ProDetailPage({
   if (!pro) notFound();
 
   const reviews = await getReviews(pro.id);
+  const coverImage = pro.gallery[0] ?? pro.profile_image;
 
   return (
     <>
       <DemoBanner />
 
       {/* 헤더 */}
-      <div className="border-b border-fairway-100 bg-white">
-        <div className="container-page py-8">
-          <Link href="/pros" className="text-sm font-semibold text-fairway-500 hover:text-fairway-700">
+      <div className="relative overflow-hidden bg-fairway-950 text-white">
+        <Image
+          src={coverImage}
+          alt=""
+          fill
+          sizes="100vw"
+          className="object-cover opacity-40"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-fairway-950 via-fairway-950/86 to-fairway-950/35" />
+        <div className="container-page relative py-8 sm:py-12">
+          <Link href="/pros" className="text-sm font-semibold text-fairway-100 hover:text-white">
             ← 레슨프로 목록
           </Link>
-          <div className="mt-4 flex flex-col gap-6 sm:flex-row sm:items-center">
-            <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-2xl bg-fairway-100">
-              <Image src={pro.profile_image} alt={pro.display_name} fill sizes="112px" className="object-cover" />
+          <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_340px] lg:items-end">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+              <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-lg border-2 border-white/70 bg-fairway-100 shadow-card sm:h-32 sm:w-32">
+                <Image src={pro.profile_image} alt={pro.display_name} fill sizes="128px" className="object-cover" />
+              </div>
+              <div className="flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-3xl font-black sm:text-4xl">{pro.display_name}</h1>
+                  {pro.verification_status === "verified" && (
+                    <span className="rounded-full bg-gold-300 px-2.5 py-1 text-xs font-bold text-fairway-950">
+                      검증완료
+                    </span>
+                  )}
+                </div>
+                <p className="mt-2 max-w-2xl text-lg leading-relaxed text-fairway-100">{pro.bio}</p>
+                <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-fairway-100">
+                  <span>지역 {pro.region}</span>
+                  <span>경력 {pro.career_years}년</span>
+                  {pro.response_time && <span>{pro.response_time}</span>}
+                  <RatingInline value={pro.rating_avg} count={pro.review_count} />
+                </div>
+                <div className="mt-4">
+                  <BadgeList badges={pro.badges} />
+                </div>
+              </div>
             </div>
-            <div className="flex-1">
+
+            <div className="rounded-lg border border-white/15 bg-white/10 p-5 backdrop-blur">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-black text-fairway-900">{pro.display_name}</h1>
-                {pro.verification_status === "verified" && (
-                  <span className="rounded-full bg-fairway-700 px-2.5 py-1 text-xs font-bold text-gold-300">
-                    검증완료
-                  </span>
-                )}
+                <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold text-white">
+                  {pro.specialties[0] ?? "골프 레슨"}
+                </span>
+                <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold text-white">
+                  {pro.lesson_places[0] ?? "상담 후 결정"}
+                </span>
               </div>
-              <p className="mt-1 text-fairway-600">{pro.bio}</p>
-              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-fairway-500">
-                <span>📍 {pro.region}</span>
-                <span>🏌️ 경력 {pro.career_years}년</span>
-                {pro.response_time && <span>⚡ {pro.response_time}</span>}
-                <RatingInline value={pro.rating_avg} count={pro.review_count} />
-              </div>
+              <div className="mt-4 text-sm text-fairway-100">레슨 시작가</div>
+              <div className="mt-1 text-3xl font-black text-gold-200">{won(pro.price_from)}~</div>
+              <Link href={`/pros/${pro.slug}/booking`} className="btn-gold mt-5 w-full">
+                상담 · 예약 요청하기
+              </Link>
+              <p className="mt-3 text-center text-xs text-fairway-200">지금 결제되지 않습니다.</p>
             </div>
-          </div>
-          <div className="mt-4">
-            <BadgeList badges={pro.badges} />
           </div>
         </div>
       </div>
@@ -83,10 +110,15 @@ export default async function ProDetailPage({
         <div className="space-y-10">
           {/* 갤러리 */}
           {pro.gallery.length > 0 && (
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid gap-3 sm:grid-cols-3">
               {pro.gallery.map((g, i) => (
-                <div key={i} className="relative aspect-[4/3] overflow-hidden rounded-xl bg-fairway-100">
-                  <Image src={g} alt={`${pro.display_name} 레슨 ${i + 1}`} fill sizes="30vw" className="object-cover" />
+                <div
+                  key={i}
+                  className={`relative overflow-hidden rounded-lg bg-fairway-100 ${
+                    i === 0 ? "aspect-[16/10] sm:col-span-2" : "aspect-[4/3]"
+                  }`}
+                >
+                  <Image src={g} alt={`${pro.display_name} 레슨 ${i + 1}`} fill sizes="(max-width: 768px) 100vw, 45vw" className="object-cover" />
                 </div>
               ))}
             </div>
@@ -135,7 +167,7 @@ export default async function ProDetailPage({
             <Section title="자격 · 라이선스">
               <div className="space-y-2">
                 {pro.certifications.map((c) => (
-                  <div key={c.id} className="flex items-center justify-between rounded-xl border border-fairway-100 px-4 py-3">
+                  <div key={c.id} className="flex items-center justify-between rounded-lg border border-fairway-100 bg-white px-4 py-3">
                     <div>
                       <div className="font-semibold text-fairway-900">{c.title}</div>
                       <div className="text-sm text-fairway-500">
@@ -158,7 +190,7 @@ export default async function ProDetailPage({
             <Section title="100타 탈출 커리큘럼">
               <div className="grid gap-2 sm:grid-cols-2">
                 {pro.curriculum.map((c) => (
-                  <div key={c.session} className="flex items-start gap-3 rounded-xl bg-cream p-3">
+                  <div key={c.session} className="flex items-start gap-3 rounded-lg bg-cream p-3">
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-fairway-700 text-xs font-bold text-gold-300">
                       {c.session}
                     </span>
@@ -189,7 +221,7 @@ export default async function ProDetailPage({
             ) : (
               <div className="space-y-4">
                 {reviews.map((r) => (
-                  <div key={r.id} className="rounded-xl border border-fairway-100 p-4">
+                  <div key={r.id} className="rounded-lg border border-fairway-100 bg-white p-4">
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-fairway-900">{r.student_name_masked}</span>
                       <Stars value={r.rating_total} />
@@ -252,6 +284,14 @@ export default async function ProDetailPage({
             <p className="text-center text-xs text-fairway-400">
               회원가입 없이 요청할 수 있어요
             </p>
+            <div className="border-t border-fairway-100 pt-4">
+              <h3 className="text-sm font-extrabold text-fairway-900">진행 흐름</h3>
+              <ol className="mt-3 space-y-2 text-sm text-fairway-600">
+                <li>1. 희망 일정과 고민을 남깁니다.</li>
+                <li>2. 프로 또는 운영자가 연락드립니다.</li>
+                <li>3. 일정 확정 후 결제와 레슨을 진행합니다.</li>
+              </ol>
+            </div>
           </div>
         </aside>
       </div>
@@ -261,7 +301,7 @@ export default async function ProDetailPage({
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section>
+    <section className="border-b border-fairway-100 pb-10 last:border-b-0">
       <h2 className="mb-4 text-xl font-extrabold text-fairway-900">{title}</h2>
       {children}
     </section>

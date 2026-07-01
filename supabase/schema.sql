@@ -177,6 +177,14 @@ create index if not exists idx_packages_instructor  on lesson_packages (instruct
 create index if not exists idx_rules_instructor      on availability_rules (instructor_id);
 create index if not exists idx_bookings_instructor   on bookings (instructor_id);
 create index if not exists idx_reviews_instructor    on reviews (instructor_id, status);
+create unique index if not exists idx_bookings_unique_open_slot
+  on bookings (instructor_id, preferred_date, preferred_time)
+  where preferred_date is not null
+    and preferred_time is not null
+    and status in ('requested'::booking_status, 'confirmed'::booking_status);
+create unique index if not exists idx_reviews_booking_once
+  on reviews (booking_id)
+  where booking_id is not null;
 
 -- ---------------------------------------------------------------------
 -- 프로별 평점 집계 뷰 (노출된 리뷰만)
@@ -193,7 +201,8 @@ group by i.id;
 -- =====================================================================
 -- Row Level Security
 -- 공개 읽기: 활성 프로/상품/시간/노출된 리뷰
--- 공개 쓰기: 예약 요청, 리뷰 작성(대기 상태로), 신고
+-- 공개 쓰기: 예약 요청, 신고, 동의 로그
+-- 리뷰 작성은 서버 API가 완료 예약을 검증한 뒤 service_role 로만 수행
 -- 관리 작업(승인/수정/삭제)은 service_role 키로만 (RLS 우회)
 -- =====================================================================
 alter table instructors               enable row level security;
@@ -223,8 +232,7 @@ create policy "public read visible reviews" on reviews
 -- 공개 쓰기 (요청/작성만, 상태는 기본값 유지)
 create policy "public insert bookings" on bookings
   for insert with check (status = 'requested');
-create policy "public insert reviews" on reviews
-  for insert with check (status = 'pending');
+drop policy if exists "public insert reviews" on reviews;
 create policy "public insert reports" on review_reports
   for insert with check (true);
 create policy "public insert consent" on consent_logs

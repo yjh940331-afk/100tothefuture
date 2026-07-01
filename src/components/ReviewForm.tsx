@@ -7,6 +7,7 @@ export function ReviewForm({ instructorId }: { instructorId: string }) {
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [recommendFor, setRecommendFor] = useState("");
   const [content, setContent] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
@@ -18,31 +19,45 @@ export function ReviewForm({ instructorId }: { instructorId: string }) {
       setError("별점을 선택해주세요.");
       return;
     }
+    if (!content.trim()) {
+      setError("후기 내용을 입력해주세요.");
+      return;
+    }
+    if (!phone.trim()) {
+      setError("예약 시 사용한 연락처를 입력해주세요.");
+      return;
+    }
     setStatus("loading");
     setError("");
-    const res = await fetch("/api/reviews", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        instructor_id: instructorId,
-        rating_total: rating,
-        student_name: name,
-        recommend_for: recommendFor,
-        content,
-      }),
-    });
-    const data = await res.json();
-    if (data.ok) setStatus("done");
-    else {
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          instructor_id: instructorId,
+          rating_total: rating,
+          student_name: name,
+          student_phone: phone,
+          recommend_for: recommendFor,
+          content,
+        }),
+      });
+      const data = await res.json();
+      if (data.ok) setStatus("done");
+      else {
+        setStatus("error");
+        setError(data.error || "오류가 발생했어요.");
+      }
+    } catch {
       setStatus("error");
-      setError(data.error || "오류가 발생했어요.");
+      setError("네트워크 상태를 확인한 뒤 다시 시도해주세요.");
     }
   }
 
   if (status === "done") {
     return (
-      <div className="rounded-xl border border-fairway-200 bg-fairway-50 p-5 text-center">
-        <p className="font-bold text-fairway-800">후기가 접수되었습니다 🙌</p>
+      <div className="rounded-lg border border-fairway-200 bg-fairway-50 p-5 text-center">
+        <p className="font-bold text-fairway-800">후기가 접수되었습니다</p>
         <p className="mt-1 text-sm text-fairway-600">
           운영자 확인 후 노출됩니다. 소중한 후기 감사합니다.
         </p>
@@ -59,11 +74,10 @@ export function ReviewForm({ instructorId }: { instructorId: string }) {
   }
 
   return (
-    <form onSubmit={submit} className="rounded-xl border border-fairway-200 bg-white p-5">
-      <p className="mb-4 text-sm text-fairway-500">
-        * 후기는 레슨을 받은 수강생만 작성해주세요. 작성된 후기는 운영자 확인 후 노출되며,
-        이름은 자동으로 마스킹됩니다.
-      </p>
+    <form onSubmit={submit} className="rounded-lg border border-fairway-200 bg-white p-5">
+      <div className="mb-4 rounded-lg bg-fairway-50 px-3 py-2 text-sm text-fairway-600">
+        완료된 예약 연락처가 확인된 후기만 접수됩니다. 운영자 확인 후 노출되며, 이름은 자동으로 마스킹됩니다.
+      </div>
 
       <div className="mb-4">
         <div className="label">별점</div>
@@ -75,7 +89,7 @@ export function ReviewForm({ instructorId }: { instructorId: string }) {
               onClick={() => setRating(n)}
               onMouseEnter={() => setHover(n)}
               onMouseLeave={() => setHover(0)}
-              className="text-3xl leading-none text-gold-400"
+              className="rounded-md px-0.5 text-3xl leading-none text-gold-400 transition hover:bg-gold-50"
               aria-label={`${n}점`}
             >
               {n <= (hover || rating) ? "★" : "☆"}
@@ -95,6 +109,22 @@ export function ReviewForm({ instructorId }: { instructorId: string }) {
           />
         </div>
         <div>
+          <label className="label">예약 연락처 *</label>
+          <input
+            type="tel"
+            className="input"
+            placeholder="010-0000-0000"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            autoComplete="tel"
+            inputMode="tel"
+            required
+          />
+        </div>
+      </div>
+
+      <div className="mb-3">
+        <div>
           <label className="label">추천 대상 (선택)</label>
           <input
             className="input"
@@ -112,11 +142,17 @@ export function ReviewForm({ instructorId }: { instructorId: string }) {
           placeholder="설명력, 친절도, 교정 효과 등 솔직한 경험을 남겨주세요."
           value={content}
           onChange={(e) => setContent(e.target.value)}
+          maxLength={600}
           required
         />
+        <div className="mt-1 text-right text-xs text-fairway-400">{content.length}/600</div>
       </div>
 
-      {error && <p className="mb-3 text-sm text-rose-600">{error}</p>}
+      {error && (
+        <p className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-600" aria-live="polite">
+          {error}
+        </p>
+      )}
 
       <div className="flex gap-2">
         <button type="submit" disabled={status === "loading"} className="btn-primary">

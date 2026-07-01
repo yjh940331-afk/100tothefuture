@@ -7,6 +7,41 @@ import type {
   ReviewSummary,
 } from "./types";
 
+const BOOKING_BLOCKING_STATUSES = ["requested", "confirmed"] as const;
+
+function isValidDate(value?: string | null): value is string {
+  return Boolean(value && /^\d{4}-\d{2}-\d{2}$/.test(value));
+}
+
+function isValidTime(value?: string | null): value is string {
+  return Boolean(value && /^\d{2}:\d{2}$/.test(value));
+}
+
+function toMinutes(time: string): number {
+  const [hour, minute] = time.slice(0, 5).split(":").map(Number);
+  return hour * 60 + minute;
+}
+
+function koreaToday(): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const pick = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  return `${pick("year")}-${pick("month")}-${pick("day")}`;
+}
+
+function dayOfWeekInKorea(date: string): number {
+  return new Date(`${date}T12:00:00+09:00`).getUTCDay();
+}
+
+function timeWithin(start: string, end: string, time: string): boolean {
+  const value = toMinutes(time);
+  return toMinutes(start) <= value && value < toMinutes(end);
+}
+
 export interface InstructorFilters {
   region?: string;
   specialty?: string;
@@ -204,13 +239,103 @@ export interface CreateBookingInput {
 export async function createBooking(
   input: CreateBookingInput,
 ): Promise<{ ok: boolean; id?: string; demo?: boolean; error?: string }> {
+  if (!input.privacy_agreed) {
+    return { ok: false, error: "개인정보 수집·이용 동의가 필요합니다." };
+  }
+  if (input.preferred_date && !isValidDate(input.preferred_date)) {
+    return { ok: false, error: "희망 날짜 형식이 올바르지 않습니다." };
+  }
+  if (input.preferred_time && !isValidTime(input.preferred_time)) {
+    return { ok: false, error: "희망 시간 형식이 올바르지 않습니다." };
+  }
+  if (input.preferred_date && input.preferred_date < koreaToday()) {
+    return { ok: false, error: "지난 날짜로는 예약을 요청할 수 없습니다." };
+  }
   if (!isDbConfigured()) {
     // DB 미설정: 데모 모드 — 실제 저장 대신 성공 처리 (실서비스 전 Supabase 연결 필요)
     return { ok: true, demo: true };
   }
-  // 서버(API 라우트)에서 실행되므로 service_role 로 저장한다.
-  // (bookings 는 되읽기용 SELECT 정책이 없어 anon 으로는 insert+return 이 막힘)
-  const sb = getSupabaseAdmin() ?? getSupabase()!;
+  // 서버(API 라우트)에서 실행되므로 service_role 로 검증/저장한다.
+  const sb = getSupabaseAdmin();
+  if (!sb) {
+    return { ok: false, error: "예약 저장을 위한 서버 권한이 설정되지 않았습니다." };
+  }
+
+  const { data: instructor } = await sb
+    .from("instructors")
+    .select("id")
+    .eq("id", input.instructor_id)
+    .eq("is_active", true)
+    .maybeSingle();
+  if (!instructor) {
+    return { ok: false, error: "예약 가능한 프로를 찾을 수 없습니다." };
+  }
+
+  if (input.lesson_package_id) {
+    const { data: lessonPackage } = await sb
+      .from("lesson_packages")
+      .select("id")
+      .eq("id", input.lesson_package_id)
+      .eq("instructor_id", input.instructor_id)
+      .eq("is_active", true)
+      .maybeSingle();
+    if (!lessonPackage) {
+      return { ok: false, error: "선택한 레슨 상품을 확인할 수 없습니다." };
+    }
+  }
+
+  if (input.preferred_date && input.preferred_time) {
+    const [{ data: rules }, { data: exceptions }, { data: conflictingBookings }] =
+      await Promise.all([
+        sb
+          .from("availability_rules")
+          .select("*")
+          .eq("instructor_id", input.instructor_id)
+          .eq("day_of_week", dayOfWeekInKorea(input.preferred_date))
+          .eq("is_active", true),
+        sb
+          .from("availability_exceptions")
+          .select("*")
+          .eq("instructor_id", input.instructor_id)
+          .eq("date", input.preferred_date),
+        sb
+          .from("bookings")
+          .select("id")
+          .eq("instructor_id", input.instructor_id)
+          .eq("preferred_date", input.preferred_date)
+          .eq("preferred_time", input.preferred_time)
+          .in("status", BOOKING_BLOCKING_STATUSES),
+      ]);
+
+    const blocked = (exceptions ?? []).some(
+      (ex: any) =>
+        ex.type === "block" &&
+        (!ex.start_time || !ex.end_time ||
+          timeWithin(ex.start_time, ex.end_time, input.preferred_time!)),
+    );
+    if (blocked) {
+      return { ok: false, error: "해당 시간은 프로 일정상 예약할 수 없습니다." };
+    }
+
+    const exceptionOpen = (exceptions ?? []).some(
+      (ex: any) =>
+        ex.type === "open" &&
+        ex.start_time &&
+        ex.end_time &&
+        timeWithin(ex.start_time, ex.end_time, input.preferred_time!),
+    );
+    const ruleOpen = (rules ?? []).some((rule: any) =>
+      timeWithin(rule.start_time, rule.end_time, input.preferred_time!),
+    );
+    if (!exceptionOpen && !ruleOpen) {
+      return { ok: false, error: "프로의 가능 시간 안에서 희망 시간을 선택해주세요." };
+    }
+
+    if ((conflictingBookings ?? []).length > 0) {
+      return { ok: false, error: "이미 요청되었거나 확정된 시간입니다. 다른 시간을 선택해주세요." };
+    }
+  }
+
   const { data, error } = await sb
     .from("bookings")
     .insert({ ...input, status: "requested" })
@@ -228,6 +353,7 @@ export async function createBooking(
 
 export interface CreateReviewInput {
   instructor_id: string;
+  student_phone: string;
   student_name_masked: string;
   rating_total: number;
   rating_kindness?: number;
@@ -240,9 +366,53 @@ export interface CreateReviewInput {
 export async function createReview(
   input: CreateReviewInput,
 ): Promise<{ ok: boolean; demo?: boolean; error?: string }> {
+  if (!input.student_phone.trim()) {
+    return { ok: false, error: "예약 시 사용한 연락처를 입력해주세요." };
+  }
   if (!isDbConfigured()) return { ok: true, demo: true };
-  const sb = getSupabase()!;
-  const { error } = await sb.from("reviews").insert({ ...input, status: "pending" });
+  const sb = getSupabaseAdmin();
+  if (!sb) return { ok: false, error: "후기 등록을 위한 서버 권한이 설정되지 않았습니다." };
+
+  const { data: booking } = await sb
+    .from("bookings")
+    .select("id")
+    .eq("instructor_id", input.instructor_id)
+    .eq("student_phone", input.student_phone.trim())
+    .eq("status", "completed")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!booking) {
+    return {
+      ok: false,
+      error: "완료된 예약을 확인할 수 없습니다. 예약 시 사용한 연락처를 입력해주세요.",
+    };
+  }
+
+  const { data: existing } = await sb
+    .from("reviews")
+    .select("id")
+    .eq("booking_id", booking.id)
+    .maybeSingle();
+  if (existing) {
+    return { ok: false, error: "이미 해당 예약으로 후기가 등록되었습니다." };
+  }
+
+  const { error } = await sb
+    .from("reviews")
+    .insert({
+      booking_id: booking.id,
+      instructor_id: input.instructor_id,
+      student_name_masked: input.student_name_masked,
+      rating_total: input.rating_total,
+      rating_kindness: input.rating_kindness,
+      rating_explanation: input.rating_explanation,
+      rating_effect: input.rating_effect,
+      recommend_for: input.recommend_for,
+      content: input.content,
+      status: "pending",
+    });
   if (error) return { ok: false, error: error.message };
   return { ok: true };
 }

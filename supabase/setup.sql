@@ -183,6 +183,14 @@ create index if not exists idx_packages_instructor  on lesson_packages (instruct
 create index if not exists idx_rules_instructor      on availability_rules (instructor_id);
 create index if not exists idx_bookings_instructor   on bookings (instructor_id);
 create index if not exists idx_reviews_instructor    on reviews (instructor_id, status);
+create unique index if not exists idx_bookings_unique_open_slot
+  on bookings (instructor_id, preferred_date, preferred_time)
+  where preferred_date is not null
+    and preferred_time is not null
+    and status in ('requested'::booking_status, 'confirmed'::booking_status);
+create unique index if not exists idx_reviews_booking_once
+  on reviews (booking_id)
+  where booking_id is not null;
 
 -- ---------------------------------------------------------------------
 -- 프로별 평점 집계 뷰 (노출된 리뷰만)
@@ -199,7 +207,8 @@ group by i.id;
 -- =====================================================================
 -- Row Level Security
 -- 공개 읽기: 활성 프로/상품/시간/노출된 리뷰
--- 공개 쓰기: 예약 요청, 리뷰 작성(대기 상태로), 신고
+-- 공개 쓰기: 예약 요청, 신고, 동의 로그
+-- 리뷰 작성은 서버 API가 완료 예약을 검증한 뒤 service_role 로만 수행
 -- 관리 작업(승인/수정/삭제)은 service_role 키로만 (RLS 우회)
 -- =====================================================================
 alter table instructors               enable row level security;
@@ -229,8 +238,7 @@ create policy "public read visible reviews" on reviews
 -- 공개 쓰기 (요청/작성만, 상태는 기본값 유지)
 create policy "public insert bookings" on bookings
   for insert with check (status = 'requested');
-create policy "public insert reviews" on reviews
-  for insert with check (status = 'pending');
+drop policy if exists "public insert reviews" on reviews;
 create policy "public insert reports" on review_reports
   for insert with check (true);
 create policy "public insert consent" on consent_logs
@@ -268,8 +276,8 @@ values
 ),
 (
   'park-pro', '박서연 프로',
-  'https://images.unsplash.com/photo-1594381898411-846e7d193883?auto=format&fit=crop&w=1200&q=70',
-  array['https://images.unsplash.com/photo-1611374243147-44a702c2d44c?auto=format&fit=crop&w=1200&q=70'],
+  'https://images.unsplash.com/photo-1611374243147-44a702c2d44c?auto=format&fit=crop&w=1200&q=70',
+  array['https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&w=1200&q=70'],
   '여성·입문자 전문 · 친절 설명형',
   '골프가 처음이라 막막한 분, 오래 쉬었다 다시 시작하는 분을 편안하게 이끌어 드립니다.',
   '판교', array['실내연습장','스크린골프'],
@@ -283,8 +291,8 @@ values
 ),
 (
   'lee-pro', '이준혁 프로',
-  'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1200&q=70',
-  array['https://images.unsplash.com/photo-1633158829585-23ba8f7c8caf?auto=format&fit=crop&w=1200&q=70'],
+  'https://images.unsplash.com/photo-1592919505780-303950717480?auto=format&fit=crop&w=1200&q=70',
+  array['https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?auto=format&fit=crop&w=1200&q=70'],
   '필드레슨 · 라운드 운영 전문',
   '연습장에서는 잘 맞는데 필드만 나가면 무너지는 분들을 위한 실전형 프로입니다.',
   '수원', array['야외연습장','필드레슨'],
@@ -298,8 +306,8 @@ values
 ),
 (
   'jung-pro', '정민아 프로',
-  'https://images.unsplash.com/photo-1607962837359-5e7e89f86776?auto=format&fit=crop&w=1200&q=70',
-  array['https://images.unsplash.com/photo-1622819584099-e04ccb14e8a7?auto=format&fit=crop&w=1200&q=70'],
+  'https://images.unsplash.com/photo-1500932334442-8761ee4810a7?auto=format&fit=crop&w=1200&q=70',
+  array['https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?auto=format&fit=crop&w=1200&q=70'],
   '숏게임·퍼팅 스페셜리스트',
   '스코어의 절반은 100야드 안에서 결정됩니다. 어프로치 거리감과 3퍼트 탈출에 집중합니다.',
   '분당', array['실내연습장','스크린골프'],

@@ -6,8 +6,6 @@ import { getInstructorBySlug } from "@/lib/data";
 import { BookingForm } from "@/components/BookingForm";
 import { DemoBanner } from "@/components/DemoBanner";
 
-export const runtime = "edge";
-
 export async function generateMetadata({
   params,
 }: {
@@ -30,34 +28,63 @@ export default async function BookingPage({
   return (
     <>
       <DemoBanner />
-      <div className="container-page max-w-3xl py-10">
-        <Link
-          href={`/pros/${pro.slug}`}
-          className="text-sm font-semibold text-fairway-500 hover:text-fairway-700"
-        >
-          ← {pro.display_name} 프로필
-        </Link>
+      <div className="border-b border-fairway-100 bg-white">
+        <div className="container-page py-8">
+          <Link
+            href={`/pros/${pro.slug}`}
+            className="text-sm font-semibold text-fairway-500 hover:text-fairway-700"
+          >
+            ← {pro.display_name} 프로필
+          </Link>
 
-        <div className="mt-4 flex items-center gap-4">
-          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-fairway-100">
-            <Image src={pro.profile_image} alt={pro.display_name} fill sizes="64px" className="object-cover" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-fairway-900">상담 · 예약 요청</h1>
-            <p className="text-fairway-600">
-              {pro.display_name} · {pro.region} · {pro.bio}
-            </p>
+          <div className="mt-4 flex items-center gap-4">
+            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-fairway-100">
+              <Image src={pro.profile_image} alt={pro.display_name} fill sizes="64px" className="object-cover" />
+            </div>
+            <div>
+              <span className="text-sm font-bold text-gold-700">상담 · 예약 요청</span>
+              <h1 className="mt-1 text-2xl font-black text-fairway-900 sm:text-3xl">
+                원하는 일정과 고민을 남겨주세요
+              </h1>
+              <p className="mt-1 text-fairway-600">
+                {pro.display_name} · {pro.region} · {pro.bio}
+              </p>
+            </div>
           </div>
         </div>
+      </div>
 
-        <p className="mt-4 rounded-xl bg-fairway-50 p-4 text-sm text-fairway-600">
-          아래 내용을 남겨주시면 프로 또는 운영자가 확인 후 연락처로 일정을 확정해드립니다.
-          결제는 확정 이후 별도로 진행되며, 지금 결제되지 않습니다.
-        </p>
-
-        <div className="mt-6">
+      <div className="container-page grid gap-8 py-10 lg:grid-cols-[1fr_360px]">
+        <div>
           <BookingForm pro={pro} />
         </div>
+
+        <aside className="space-y-4 lg:sticky lg:top-20 lg:h-fit">
+          <div className="card p-5">
+            <h2 className="text-lg font-extrabold text-fairway-900">요청 전 확인</h2>
+            <ul className="mt-4 space-y-3 text-sm leading-relaxed text-fairway-600">
+              <li>결제는 일정 확정 이후 별도로 진행됩니다.</li>
+              <li>희망 시간은 프로 일정에 따라 조정될 수 있습니다.</li>
+              <li>연락처는 상담과 일정 확정을 위해서만 사용됩니다.</li>
+            </ul>
+          </div>
+
+          <div className="card overflow-hidden">
+            <div className="relative aspect-[16/10] bg-fairway-100">
+              <Image src={pro.profile_image} alt={pro.display_name} fill sizes="360px" className="object-cover" />
+            </div>
+            <div className="p-5">
+              <h2 className="font-extrabold text-fairway-900">{pro.display_name}</h2>
+              <p className="mt-1 text-sm text-fairway-600">{pro.region} · 경력 {pro.career_years}년</p>
+              <div className="mt-4 border-t border-fairway-100 pt-4">
+                <div className="text-sm text-fairway-500">레슨 시작가</div>
+                <div className="mt-1 text-2xl font-black text-fairway-900">
+                  {pro.price_from.toLocaleString("ko-KR")}원~
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
       </div>
     </>
   );

@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { createBooking } from "@/lib/data";
 
-export const runtime = "edge";
-
 export async function POST(req: Request) {
   let body: any;
   try {
@@ -21,6 +19,18 @@ export async function POST(req: Request) {
   if (!body.privacy_agreed) {
     return NextResponse.json(
       { ok: false, error: "개인정보 수집·이용 동의가 필요합니다." },
+      { status: 400 },
+    );
+  }
+  if (!/^[0-9+\-\s()]{8,20}$/.test(body.student_phone.trim())) {
+    return NextResponse.json(
+      { ok: false, error: "연락처 형식을 확인해주세요." },
+      { status: 400 },
+    );
+  }
+  if (body.goal && body.goal.length > 500) {
+    return NextResponse.json(
+      { ok: false, error: "희망 내용은 500자 이내로 입력해주세요." },
       { status: 400 },
     );
   }

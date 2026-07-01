@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 :root {
-  --background: #faf8f3;
+  --background: #f7f4ec;
   --foreground: #183526;
 }
 
@@ -25,13 +25,13 @@ body {
     text-wrap: balance;
   }
   .container-page {
-    @apply mx-auto w-full max-w-6xl px-5 sm:px-6 lg:px-8;
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8;
   }
 }
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-fairway-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-5 py-3 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-fairway-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
   }
   .btn-primary {
     @apply btn bg-fairway-700 text-white hover:bg-fairway-800;
@@ -43,10 +43,10 @@ body {
     @apply btn border border-fairway-300 bg-white text-fairway-800 hover:border-fairway-500 hover:bg-fairway-50;
   }
   .card {
-    @apply rounded-2xl border border-fairway-100 bg-white shadow-card;
+    @apply rounded-lg border border-fairway-100 bg-white shadow-card;
   }
   .input {
-    @apply w-full rounded-xl border border-fairway-200 bg-white px-4 py-3 text-sm text-fairway-900 placeholder:text-fairway-400 focus:border-fairway-500 focus:outline-none focus:ring-2 focus:ring-fairway-500/30;
+    @apply w-full rounded-lg border border-fairway-200 bg-white px-4 py-3 text-sm text-fairway-900 placeholder:text-fairway-400 focus:border-fairway-500 focus:outline-none focus:ring-2 focus:ring-fairway-500/30;
   }
   .label {
     @apply mb-1.5 block text-sm font-semibold text-fairway-800;

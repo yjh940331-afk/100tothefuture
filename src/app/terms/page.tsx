@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { LegalLayout } from "@/components/LegalLayout";
 
-export const runtime = "edge";
 export const metadata: Metadata = { title: "이용약관" };
 
 export default function TermsPage() {

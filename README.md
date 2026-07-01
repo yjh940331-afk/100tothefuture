@@ -6,7 +6,7 @@
 
 - 프론트/백엔드: **Next.js 15 (App Router, TypeScript)**
 - 데이터베이스/인증/스토리지: **Supabase (PostgreSQL)**
-- 배포: **Cloudflare Pages** (`@cloudflare/next-on-pages`, Edge Runtime)
+- 배포: **Cloudflare Workers** (`@opennextjs/cloudflare`, Wrangler)
 - 도메인: `www.100tothefuture.com`
 
 ---
@@ -57,6 +57,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...        # anon public
 SUPABASE_SERVICE_ROLE_KEY=eyJ...            # service_role (관리자 작업용, 비공개)
 ADMIN_PASSWORD=강력한_비밀번호
+ADMIN_SESSION_SECRET=긴_랜덤_세션_서명_문자열
 ```
 
 4. (프로필/자격증 이미지 업로드용) Storage에 공개 버킷을 만들고 `next.config.mjs` 의
@@ -76,30 +77,32 @@ ADMIN_PASSWORD=강력한_비밀번호
 - 접속: `/admin`
 - 로그인: `ADMIN_PASSWORD` 환경변수 값
 - 기능: 예약 상태 변경(확정/완료/취소/거절/노쇼), 리뷰 승인·숨김, 프로 목록 확인
-- ⚠️ MVP용 단순 비밀번호 게이트입니다. 운영 강화 시 Supabase Auth + role 기반으로 교체 권장.
+- 로그인 쿠키는 `ADMIN_SESSION_SECRET`으로 서명된 세션 토큰이며, 반복 실패 시 일시 제한됩니다.
+- 운영 규모가 커지면 Supabase Auth + role 기반으로 교체 권장.
 - 프로 등록/수정, 자격증 증빙 확인, 배지 부여는 현재 **Supabase 대시보드**에서 진행합니다. (전용 편집 UI는 다음 단계)
 
 ---
 
-## ☁️ 배포 — Cloudflare Pages
+## ☁️ 배포 — Cloudflare Workers
 
 ```bash
-npm run pages:build     # @cloudflare/next-on-pages 로 빌드
-npm run pages:deploy    # 빌드 + wrangler 배포 (wrangler 로그인 필요)
+npm run cf:build      # OpenNext로 Cloudflare Worker 빌드
+npm run cf:preview    # 로컬 Worker preview
+npm run cf:deploy     # 빌드 + Cloudflare 배포 (wrangler 로그인 필요)
 ```
 
-**대시보드 연동 방식(권장):**
-1. Cloudflare 대시보드 → **Workers & Pages → Create → Pages → Git 연결**
-2. 이 저장소 선택 후 빌드 설정:
-   - Build command: `npx @cloudflare/next-on-pages`
-   - Build output directory: `.vercel/output/static`
-   - Node 버전: `20` (환경변수 `NODE_VERSION=20`)
-   - Compatibility flags: **`nodejs_compat`** (Settings → Functions, Production/Preview 모두)
-3. **환경변수** 등록: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
-   `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PASSWORD`
+**배포 전 준비:**
+1. `wrangler login`
+2. Cloudflare Workers 환경변수/secret 등록:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `ADMIN_PASSWORD`
+   - `ADMIN_SESSION_SECRET`
+3. `wrangler.jsonc` 의 `name`, `compatibility_date` 확인
 
 ### 도메인 연결 (가비아에서 구매한 `100tothefuture.com`)
-1. Cloudflare Pages → **Custom domains** 에 `www.100tothefuture.com` 추가
+1. Cloudflare Workers → **Custom domains** 에 `www.100tothefuture.com` 추가
 2. 가비아 DNS 또는 네임서버를 Cloudflare로 이전 후:
    - `www` → Pages (CNAME)
    - `100tothefuture.com`(루트) → `www` 로 **301 리다이렉트** (Cloudflare Redirect Rule)

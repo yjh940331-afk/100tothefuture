@@ -11,11 +11,11 @@ export function AvailabilityTable({ rules }: { rules: AvailabilityRule[] }) {
   });
 
   return (
-    <div className="grid grid-cols-7 gap-1.5 text-center">
+    <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-4 lg:grid-cols-7">
       {DAYS_KO.map((d, i) => {
         const dayRules = byDay.get(i);
         return (
-          <div key={i} className="rounded-xl border border-fairway-100 p-2">
+          <div key={i} className="rounded-lg border border-fairway-100 bg-white p-2">
             <div
               className={`text-sm font-bold ${
                 i === 0 ? "text-rose-500" : i === 6 ? "text-sky-500" : "text-fairway-700"

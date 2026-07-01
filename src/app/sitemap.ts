@@ -1,8 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getAllSlugs } from "@/lib/data";
 
-export const runtime = "edge";
-
 const base = "https://www.100tothefuture.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
