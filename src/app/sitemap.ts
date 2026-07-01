@@ -4,7 +4,7 @@ import { SITE_URL } from "@/lib/site";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const slugs = await getAllSlugs();
-  const staticPages = ["", "/live", "/pros", "/terms", "/privacy", "/policy/reviews"].map(
+  const staticPages = ["", "/bookings", "/pros", "/terms", "/privacy", "/policy/reviews"].map(
     (p) => ({ url: `${SITE_URL}${p}`, changeFrequency: "weekly" as const, priority: p === "" ? 1 : 0.7 }),
   );
   const proPages = slugs.map((s) => ({

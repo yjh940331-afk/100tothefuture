@@ -20,13 +20,14 @@ export function BookingForm({ pro }: { pro: Instructor }) {
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [error, setError] = useState("");
   const [demo, setDemo] = useState(false);
+  const [bookingId, setBookingId] = useState("");
 
-  const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
+  const set = (key: string, value: string) => setForm((current) => ({ ...current, [key]: value }));
   const today = new Date().toISOString().slice(0, 10);
-  const selectedPackage = pro.packages.find((p) => p.id === form.lesson_package_id);
+  const selectedPackage = pro.packages.find((item) => item.id === form.lesson_package_id);
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
     if (!form.student_name.trim() || !form.student_phone.trim()) {
       setError("이름과 연락처를 입력해주세요.");
       return;
@@ -35,6 +36,7 @@ export function BookingForm({ pro }: { pro: Instructor }) {
       setError("개인정보 수집·이용 동의가 필요합니다.");
       return;
     }
+
     setStatus("loading");
     setError("");
     try {
@@ -50,11 +52,12 @@ export function BookingForm({ pro }: { pro: Instructor }) {
       });
       const data = await res.json();
       if (data.ok) {
-        setDemo(!!data.demo);
+        setDemo(Boolean(data.demo));
+        setBookingId(data.id ?? "");
         setStatus("done");
       } else {
         setStatus("error");
-        setError(data.error || "요청 중 오류가 발생했어요.");
+        setError(data.error || "예약 요청 중 오류가 발생했습니다.");
       }
     } catch {
       setStatus("error");
@@ -74,18 +77,32 @@ export function BookingForm({ pro }: { pro: Instructor }) {
             />
           </svg>
         </div>
-        <h2 className="mt-4 text-xl font-black text-fairway-900">예약 요청이 접수되었습니다!</h2>
+        <h2 className="mt-4 text-xl font-black text-fairway-900">예약 요청이 접수되었습니다.</h2>
         <p className="mt-2 text-fairway-600">
-          {pro.display_name}님 또는 운영자가 확인 후 입력하신 연락처로 일정을 확정해드립니다.
+          운영자가 확인한 뒤 입력하신 연락처로 일정 확정을 안내드립니다.
         </p>
+        {bookingId && (
+          <div className="mt-5 rounded-lg border border-fairway-100 bg-white p-4 text-left">
+            <p className="text-sm font-bold text-fairway-500">예약번호</p>
+            <p className="mt-1 break-all font-mono text-sm font-black text-fairway-900">{bookingId}</p>
+            <p className="mt-2 text-xs leading-5 text-fairway-500">
+              내 예약 조회와 취소에 필요합니다. 예약번호를 안전한 곳에 보관해주세요.
+            </p>
+          </div>
+        )}
         {demo && (
           <p className="mt-3 rounded-lg bg-gold-100 px-3 py-2 text-sm text-gold-900">
-            (데모 모드: 실제로는 저장되지 않았습니다. Supabase 연결 후 정상 저장됩니다.)
+            데모 모드입니다. Supabase 연결 후 실제 예약이 저장됩니다.
           </p>
         )}
-        <Link href={`/pros/${pro.slug}`} className="btn-outline mt-6 inline-flex">
-          프로필로 돌아가기
-        </Link>
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          <Link href="/bookings" className="btn-primary inline-flex">
+            내 예약 조회
+          </Link>
+          <Link href={`/pros/${pro.slug}`} className="btn-outline inline-flex">
+            프로필로 돌아가기
+          </Link>
+        </div>
       </div>
     );
   }
@@ -105,8 +122,8 @@ export function BookingForm({ pro }: { pro: Instructor }) {
           <input
             className="input"
             value={form.student_name}
-            onChange={(e) => set("student_name", e.target.value)}
-            placeholder="예: 홍길동"
+            onChange={(event) => set("student_name", event.target.value)}
+            placeholder="홍길동"
             autoComplete="name"
             required
           />
@@ -117,7 +134,7 @@ export function BookingForm({ pro }: { pro: Instructor }) {
             type="tel"
             className="input"
             value={form.student_phone}
-            onChange={(e) => set("student_phone", e.target.value)}
+            onChange={(event) => set("student_phone", event.target.value)}
             placeholder="010-0000-0000"
             autoComplete="tel"
             inputMode="tel"
@@ -133,7 +150,7 @@ export function BookingForm({ pro }: { pro: Instructor }) {
             type="date"
             className="input"
             value={form.preferred_date}
-            onChange={(e) => set("preferred_date", e.target.value)}
+            onChange={(event) => set("preferred_date", event.target.value)}
             min={today}
           />
         </div>
@@ -143,7 +160,7 @@ export function BookingForm({ pro }: { pro: Instructor }) {
             type="time"
             className="input"
             value={form.preferred_time}
-            onChange={(e) => set("preferred_time", e.target.value)}
+            onChange={(event) => set("preferred_time", event.target.value)}
           />
         </div>
       </div>
@@ -151,10 +168,10 @@ export function BookingForm({ pro }: { pro: Instructor }) {
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="label">지역</label>
-          <select className="input" value={form.region} onChange={(e) => set("region", e.target.value)}>
-            {REGIONS.map((r) => (
-              <option key={r} value={r}>
-                {r}
+          <select className="input" value={form.region} onChange={(event) => set("region", event.target.value)}>
+            {REGIONS.map((region) => (
+              <option key={region} value={region}>
+                {region}
               </option>
             ))}
           </select>
@@ -165,12 +182,12 @@ export function BookingForm({ pro }: { pro: Instructor }) {
             <select
               className="input"
               value={form.lesson_package_id}
-              onChange={(e) => set("lesson_package_id", e.target.value)}
+              onChange={(event) => set("lesson_package_id", event.target.value)}
             >
               <option value="">선택 안 함 / 상담 후 결정</option>
-              {pro.packages.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.title} ({p.price.toLocaleString("ko-KR")}원)
+              {pro.packages.map((lessonPackage) => (
+                <option key={lessonPackage.id} value={lessonPackage.id}>
+                  {lessonPackage.title} ({lessonPackage.price.toLocaleString("ko-KR")}원)
                 </option>
               ))}
             </select>
@@ -189,24 +206,23 @@ export function BookingForm({ pro }: { pro: Instructor }) {
         <textarea
           className="input min-h-28"
           value={form.goal}
-          onChange={(e) => set("goal", e.target.value)}
+          onChange={(event) => set("goal", event.target.value)}
           maxLength={500}
-          placeholder="예: 평균 108타, 드라이버 OB가 잦아요. 3개월 안에 100타 깨고 싶습니다."
+          placeholder="예: 평균 108타, 드라이버 OB가 많아서 3개월 안에 100타를 깨고 싶습니다."
         />
         <div className="mt-1 text-right text-xs text-fairway-400">{form.goal.length}/500</div>
       </div>
 
-      {/* 동의 */}
       <div className="space-y-2 rounded-lg bg-cream p-4">
         <label className="flex items-start gap-3 rounded-lg border border-fairway-100 bg-white px-3 py-3 text-sm text-fairway-700">
           <input
             type="checkbox"
             className="mt-1"
             checked={privacy}
-            onChange={(e) => setPrivacy(e.target.checked)}
+            onChange={(event) => setPrivacy(event.target.checked)}
           />
           <span>
-            <b>[필수]</b> 개인정보(이름·연락처) 수집·이용에 동의합니다.{" "}
+            <b>[필수]</b> 개인정보 수집·이용에 동의합니다.{" "}
             <Link href="/privacy" className="underline" target="_blank">
               내용 보기
             </Link>
@@ -217,10 +233,10 @@ export function BookingForm({ pro }: { pro: Instructor }) {
             type="checkbox"
             className="mt-1"
             checked={thirdParty}
-            onChange={(e) => setThirdParty(e.target.checked)}
+            onChange={(event) => setThirdParty(event.target.checked)}
           />
           <span>
-            <b>[선택]</b> 상담을 위해 연락처를 해당 레슨프로에게 제공하는 것에 동의합니다.
+            <b>[선택]</b> 상담을 위해 연락처를 해당 레슨 프로에게 제공하는 것에 동의합니다.
           </span>
         </label>
       </div>
@@ -237,3 +253,4 @@ export function BookingForm({ pro }: { pro: Instructor }) {
     </form>
   );
 }
+

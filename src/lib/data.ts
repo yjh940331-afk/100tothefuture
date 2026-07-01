@@ -44,6 +44,10 @@ function timeWithin(start: string, end: string, time: string): boolean {
   return toMinutes(start) <= value && value < toMinutes(end);
 }
 
+function normalizePhone(value: string): string {
+  return value.replace(/\D/g, "");
+}
+
 export interface InstructorFilters {
   region?: string;
   specialty?: string;
@@ -362,6 +366,62 @@ export async function createBooking(
     goal: input.goal,
   });
   return { ok: true, id: data.id };
+}
+
+export async function customerLookupBooking(input: {
+  booking_id: string;
+  student_phone: string;
+}): Promise<{ ok: boolean; booking?: Booking; error?: string }> {
+  const sb = getSupabaseAdmin();
+  if (!sb) return { ok: false, error: "예약 조회를 위한 서버 설정이 필요합니다." };
+
+  const bookingId = input.booking_id.trim();
+  const phone = normalizePhone(input.student_phone);
+  if (!bookingId || !phone) {
+    return { ok: false, error: "예약번호와 연락처를 입력해주세요." };
+  }
+
+  const { data, error } = await sb
+    .from("bookings")
+    .select("*, instructors(display_name, slug), lesson_packages(title)")
+    .eq("id", bookingId)
+    .maybeSingle();
+  if (error) return { ok: false, error: error.message };
+  if (!data || normalizePhone(data.student_phone ?? "") !== phone) {
+    return { ok: false, error: "예약 정보를 찾을 수 없습니다." };
+  }
+
+  return {
+    ok: true,
+    booking: {
+      ...data,
+      instructor_name: data.instructors?.display_name,
+      package_title: data.lesson_packages?.title,
+    } as Booking,
+  };
+}
+
+export async function customerCancelBooking(input: {
+  booking_id: string;
+  student_phone: string;
+}): Promise<{ ok: boolean; booking?: Booking; error?: string }> {
+  const found = await customerLookupBooking(input);
+  if (!found.ok || !found.booking) return found;
+
+  if (!["requested", "confirmed"].includes(found.booking.status)) {
+    return { ok: false, error: "이미 완료되었거나 취소할 수 없는 예약입니다." };
+  }
+
+  const sb = getSupabaseAdmin();
+  if (!sb) return { ok: false, error: "예약 취소를 위한 서버 설정이 필요합니다." };
+  const { error } = await sb
+    .from("bookings")
+    .update({ status: "canceled" })
+    .eq("id", found.booking.id);
+  if (error) return { ok: false, error: error.message };
+  await notifyBookingStatusChanged({ id: found.booking.id, status: "canceled" });
+
+  return customerLookupBooking(input);
 }
 
 export interface CreateReviewInput {

@@ -15,16 +15,16 @@ export function Header() {
 
         <nav className="flex items-center gap-1.5 sm:gap-3" aria-label="주요 메뉴">
           <Link
-            href="/live"
-            className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-fairway-700 hover:bg-fairway-50 sm:inline-flex"
-          >
-            중계 허브
-          </Link>
-          <Link
             href="/pros"
             className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-fairway-700 hover:bg-fairway-50 sm:inline-flex"
           >
             레슨 프로 찾기
+          </Link>
+          <Link
+            href="/bookings"
+            className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-fairway-700 hover:bg-fairway-50 sm:inline-flex"
+          >
+            내 예약
           </Link>
           <a
             href="mailto:contact@100tothefuture.com?subject=레슨 프로 등록 문의"
@@ -40,4 +40,3 @@ export function Header() {
     </header>
   );
 }
-
