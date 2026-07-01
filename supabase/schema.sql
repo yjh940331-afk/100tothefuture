@@ -170,6 +170,34 @@ create table if not exists consent_logs (
   agreed_at    timestamptz not null default now()
 );
 
+create table if not exists notification_logs (
+  id                  uuid primary key default gen_random_uuid(),
+  event_type          text not null,
+  channel             text not null check (channel in ('webhook','sms','push')),
+  recipient_type      text not null check (recipient_type in ('admin','customer','pro')),
+  recipient_user_id   uuid,
+  recipient_phone     text,
+  title               text not null default '',
+  content             text not null default '',
+  status              text not null check (status in ('skipped','sent','failed')),
+  provider            text,
+  provider_message_id text,
+  error_message       text,
+  payload             jsonb not null default '{}',
+  created_at          timestamptz not null default now()
+);
+
+create table if not exists app_push_tokens (
+  id           uuid primary key default gen_random_uuid(),
+  user_id      uuid,
+  phone        text,
+  platform     text not null check (platform in ('ios','android','web')),
+  token        text not null unique,
+  is_active    boolean not null default true,
+  last_seen_at timestamptz not null default now(),
+  created_at   timestamptz not null default now()
+);
+
 -- 인덱스
 create index if not exists idx_instructors_active   on instructors (is_active);
 create index if not exists idx_instructors_region   on instructors (region);
@@ -177,6 +205,10 @@ create index if not exists idx_packages_instructor  on lesson_packages (instruct
 create index if not exists idx_rules_instructor      on availability_rules (instructor_id);
 create index if not exists idx_bookings_instructor   on bookings (instructor_id);
 create index if not exists idx_reviews_instructor    on reviews (instructor_id, status);
+create index if not exists idx_notification_logs_booking
+  on notification_logs ((payload->>'id'), event_type, created_at desc);
+create index if not exists idx_app_push_tokens_phone
+  on app_push_tokens (phone, is_active);
 create unique index if not exists idx_bookings_unique_open_slot
   on bookings (instructor_id, preferred_date, preferred_time)
   where preferred_date is not null
@@ -214,6 +246,8 @@ alter table bookings                  enable row level security;
 alter table reviews                   enable row level security;
 alter table review_reports            enable row level security;
 alter table consent_logs              enable row level security;
+alter table notification_logs         enable row level security;
+alter table app_push_tokens           enable row level security;
 
 -- 공개 읽기
 create policy "public read active instructors" on instructors

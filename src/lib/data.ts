@@ -269,7 +269,7 @@ export async function createBooking(
 
   const { data: instructor } = await sb
     .from("instructors")
-    .select("id")
+    .select("id, display_name")
     .eq("id", input.instructor_id)
     .eq("is_active", true)
     .maybeSingle();
@@ -358,6 +358,7 @@ export async function createBooking(
   await notifyBookingCreated({
     id: data.id,
     instructor_id: input.instructor_id,
+    instructor_name: instructor.display_name,
     student_name: input.student_name,
     student_phone: input.student_phone,
     preferred_date: input.preferred_date,
@@ -419,7 +420,15 @@ export async function customerCancelBooking(input: {
     .update({ status: "canceled" })
     .eq("id", found.booking.id);
   if (error) return { ok: false, error: error.message };
-  await notifyBookingStatusChanged({ id: found.booking.id, status: "canceled" });
+  await notifyBookingStatusChanged({
+    id: found.booking.id,
+    status: "canceled",
+    student_name: found.booking.student_name,
+    student_phone: found.booking.student_phone,
+    instructor_name: found.booking.instructor_name,
+    preferred_date: found.booking.preferred_date,
+    preferred_time: found.booking.preferred_time,
+  });
 
   return customerLookupBooking(input);
 }
@@ -505,10 +514,38 @@ export async function adminListBookings(): Promise<Booking[]> {
   })) as Booking[];
 }
 
+async function bookingNotificationSnapshot(id: string) {
+  const sb = getSupabaseAdmin();
+  if (!sb) return null;
+  const { data } = await sb
+    .from("bookings")
+    .select("id, status, student_name, student_phone, preferred_date, preferred_time, instructors(display_name)")
+    .eq("id", id)
+    .maybeSingle();
+  if (!data) return null;
+  const instructors = data.instructors as any;
+  const instructorName = Array.isArray(instructors)
+    ? instructors[0]?.display_name
+    : instructors?.display_name;
+  return {
+    id: data.id,
+    status: data.status,
+    student_name: data.student_name,
+    student_phone: data.student_phone,
+    preferred_date: data.preferred_date,
+    preferred_time: data.preferred_time,
+    instructor_name: instructorName,
+  };
+}
+
 export async function adminUpdateBookingStatus(id: string, status: string) {
   const sb = getSupabaseAdmin();
   if (!sb) return { ok: false, error: "DB 미설정" };
   const { error } = await sb.from("bookings").update({ status }).eq("id", id);
+  if (!error) {
+    const snapshot = await bookingNotificationSnapshot(id);
+    await notifyBookingStatusChanged(snapshot ?? { id, status });
+  }
   return { ok: !error, error: error?.message };
 }
 
@@ -525,7 +562,10 @@ export async function adminUpdateBookingDetails(
     return { ok: false, error: "변경할 내용이 없습니다." };
   }
   const { error } = await sb.from("bookings").update(patch).eq("id", id);
-  if (!error && input.status) await notifyBookingStatusChanged({ id, status: input.status });
+  if (!error && input.status) {
+    const snapshot = await bookingNotificationSnapshot(id);
+    await notifyBookingStatusChanged(snapshot ?? { id, status: input.status });
+  }
   return { ok: !error, error: error?.message };
 }
 
