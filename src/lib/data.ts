@@ -1,6 +1,8 @@
 import { getSupabase, getSupabaseAdmin, isDbConfigured } from "./supabase";
+import { notifyBookingCreated, notifyBookingStatusChanged } from "./notifications";
 import { SEED_INSTRUCTORS, SEED_REVIEWS, seedBySlug, seedReviewsFor } from "./seed-data";
 import type {
+  BookingStatus,
   AvailabilityRule,
   Booking,
   Instructor,
@@ -348,6 +350,17 @@ export async function createBooking(
     { booking_id: data.id, consent_type: "privacy", agreed: input.privacy_agreed },
     { booking_id: data.id, consent_type: "third_party", agreed: input.third_party_agreed },
   ]);
+
+  await notifyBookingCreated({
+    id: data.id,
+    instructor_id: input.instructor_id,
+    student_name: input.student_name,
+    student_phone: input.student_phone,
+    preferred_date: input.preferred_date,
+    preferred_time: input.preferred_time,
+    region: input.region,
+    goal: input.goal,
+  });
   return { ok: true, id: data.id };
 }
 
@@ -423,11 +436,12 @@ export async function adminListBookings(): Promise<Booking[]> {
   if (!sb) return [];
   const { data } = await sb
     .from("bookings")
-    .select("*, instructors(display_name)")
+    .select("*, instructors(display_name), lesson_packages(title)")
     .order("created_at", { ascending: false });
   return (data ?? []).map((b: any) => ({
     ...b,
     instructor_name: b.instructors?.display_name,
+    package_title: b.lesson_packages?.title,
   })) as Booking[];
 }
 
@@ -435,6 +449,23 @@ export async function adminUpdateBookingStatus(id: string, status: string) {
   const sb = getSupabaseAdmin();
   if (!sb) return { ok: false, error: "DB 미설정" };
   const { error } = await sb.from("bookings").update({ status }).eq("id", id);
+  return { ok: !error, error: error?.message };
+}
+
+export async function adminUpdateBookingDetails(
+  id: string,
+  input: { status?: BookingStatus; admin_memo?: string },
+) {
+  const sb = getSupabaseAdmin();
+  if (!sb) return { ok: false, error: "DB 미설정" };
+  const patch: Record<string, unknown> = {};
+  if (input.status) patch.status = input.status;
+  if (typeof input.admin_memo === "string") patch.admin_memo = input.admin_memo;
+  if (Object.keys(patch).length === 0) {
+    return { ok: false, error: "변경할 내용이 없습니다." };
+  }
+  const { error } = await sb.from("bookings").update(patch).eq("id", id);
+  if (!error && input.status) await notifyBookingStatusChanged({ id, status: input.status });
   return { ok: !error, error: error?.message };
 }
 
@@ -456,6 +487,88 @@ export async function adminUpdateReviewStatus(id: string, status: string) {
   if (!sb) return { ok: false, error: "DB 미설정" };
   const { error } = await sb.from("reviews").update({ status }).eq("id", id);
   return { ok: !error, error: error?.message };
+}
+
+export async function adminUpdateReviewReply(id: string, instructor_reply: string) {
+  const sb = getSupabaseAdmin();
+  if (!sb) return { ok: false, error: "DB 미설정" };
+  const { error } = await sb
+    .from("reviews")
+    .update({ instructor_reply: instructor_reply.trim() || null })
+    .eq("id", id);
+  return { ok: !error, error: error?.message };
+}
+
+export interface AdminInstructorInput {
+  id?: string;
+  slug: string;
+  display_name: string;
+  profile_image?: string;
+  gallery?: string[];
+  intro_video_url?: string | null;
+  bio?: string;
+  about?: string;
+  region: string;
+  lesson_places?: string[];
+  specialties?: string[];
+  career_years?: number;
+  career_history?: string[];
+  lesson_style?: string[];
+  gender?: "male" | "female";
+  price_from?: number;
+  response_time?: string | null;
+  badges?: string[];
+  is_featured?: boolean;
+  is_active?: boolean;
+  verification_status?: "pending" | "verified" | "rejected";
+  curriculum?: { session: number; title: string }[];
+}
+
+function cleanList(values?: string[]) {
+  return (values ?? []).map((value) => value.trim()).filter(Boolean);
+}
+
+export async function adminSaveInstructor(input: AdminInstructorInput) {
+  const sb = getSupabaseAdmin();
+  if (!sb) return { ok: false, error: "DB 미설정" };
+
+  const slug = input.slug.trim().toLowerCase();
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+    return { ok: false, error: "슬러그는 영문 소문자, 숫자, 하이픈만 사용할 수 있습니다." };
+  }
+  if (!input.display_name.trim() || !input.region.trim()) {
+    return { ok: false, error: "프로명과 지역은 필수입니다." };
+  }
+
+  const payload = {
+    slug,
+    display_name: input.display_name.trim(),
+    profile_image: input.profile_image?.trim() ?? "",
+    gallery: cleanList(input.gallery),
+    intro_video_url: input.intro_video_url?.trim() || null,
+    bio: input.bio?.trim() ?? "",
+    about: input.about?.trim() ?? "",
+    region: input.region.trim(),
+    lesson_places: cleanList(input.lesson_places),
+    specialties: cleanList(input.specialties),
+    career_years: Math.max(0, Number(input.career_years ?? 0)),
+    career_history: cleanList(input.career_history),
+    lesson_style: cleanList(input.lesson_style),
+    gender: input.gender === "female" ? "female" : "male",
+    price_from: Math.max(0, Number(input.price_from ?? 0)),
+    response_time: input.response_time?.trim() || null,
+    badges: cleanList(input.badges),
+    is_featured: Boolean(input.is_featured),
+    is_active: input.is_active !== false,
+    verification_status: input.verification_status ?? "pending",
+    curriculum: input.curriculum ?? [],
+  };
+
+  const query = input.id
+    ? sb.from("instructors").update(payload).eq("id", input.id).select("id").single()
+    : sb.from("instructors").insert(payload).select("id").single();
+  const { data, error } = await query;
+  return { ok: !error, id: data?.id, error: error?.message };
 }
 
 export async function adminListInstructors(): Promise<Instructor[]> {

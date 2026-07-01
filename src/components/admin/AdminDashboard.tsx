@@ -1,15 +1,82 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import type { Booking, Instructor, ReviewSummary } from "@/lib/types";
-import {
-  BOOKING_STATUS_LABELS,
-  REVIEW_STATUS_LABELS,
-} from "@/lib/constants";
+import type { Booking, BookingStatus, Instructor, ReviewSummary } from "@/lib/types";
 import { Stars } from "@/components/Stars";
 
 type Tab = "bookings" | "reviews" | "instructors";
+type BookingFilter = "all" | BookingStatus;
+
+const bookingStatusLabels: Record<string, string> = {
+  requested: "요청됨",
+  confirmed: "확정",
+  completed: "완료",
+  canceled: "취소",
+  rejected: "거절",
+  no_show: "노쇼",
+};
+
+const reviewStatusLabels: Record<string, string> = {
+  pending: "승인 대기",
+  visible: "노출 중",
+  hidden: "숨김",
+  reported: "신고됨",
+};
+
+const bookingStatuses: BookingStatus[] = [
+  "requested",
+  "confirmed",
+  "completed",
+  "canceled",
+  "rejected",
+  "no_show",
+];
+
+type InstructorFormState = {
+  id?: string;
+  slug: string;
+  display_name: string;
+  profile_image: string;
+  gallery: string;
+  bio: string;
+  about: string;
+  region: string;
+  lesson_places: string;
+  specialties: string;
+  career_years: string;
+  career_history: string;
+  lesson_style: string;
+  gender: "male" | "female";
+  price_from: string;
+  response_time: string;
+  badges: string;
+  is_featured: boolean;
+  is_active: boolean;
+  verification_status: "pending" | "verified" | "rejected";
+};
+
+const emptyInstructorForm: InstructorFormState = {
+  slug: "",
+  display_name: "",
+  profile_image: "",
+  gallery: "",
+  bio: "",
+  about: "",
+  region: "",
+  lesson_places: "",
+  specialties: "",
+  career_years: "0",
+  career_history: "",
+  lesson_style: "",
+  gender: "male",
+  price_from: "0",
+  response_time: "",
+  badges: "",
+  is_featured: false,
+  is_active: true,
+  verification_status: "pending",
+};
 
 export function AdminDashboard({
   bookings,
@@ -24,16 +91,40 @@ export function AdminDashboard({
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("bookings");
+  const [bookingFilter, setBookingFilter] = useState<BookingFilter>("all");
   const [busy, setBusy] = useState<string | null>(null);
+  const [message, setMessage] = useState("");
+  const [bookingMemos, setBookingMemos] = useState<Record<string, string>>(() =>
+    Object.fromEntries(bookings.map((booking) => [booking.id, booking.admin_memo ?? ""])),
+  );
+  const [reviewReplies, setReviewReplies] = useState<Record<string, string>>(() =>
+    Object.fromEntries(reviews.map((review) => [review.id, review.instructor_reply ?? ""])),
+  );
+  const [instructorForm, setInstructorForm] = useState<InstructorFormState | null>(null);
 
-  async function act(type: string, id: string, status: string) {
-    setBusy(id + status);
-    await fetch("/api/admin/action", {
+  const filteredBookings = useMemo(
+    () =>
+      bookingFilter === "all"
+        ? bookings
+        : bookings.filter((booking) => booking.status === bookingFilter),
+    [bookingFilter, bookings],
+  );
+
+  async function postAdminAction(payload: Record<string, unknown>, busyKey: string) {
+    setBusy(busyKey);
+    setMessage("");
+    const res = await fetch("/api/admin/action", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type, id, status }),
+      body: JSON.stringify(payload),
     });
+    const data = await res.json().catch(() => ({ ok: false, error: "응답을 확인할 수 없습니다." }));
     setBusy(null);
+    if (!data.ok) {
+      setMessage(data.error || "처리하지 못했습니다.");
+      return;
+    }
+    setMessage("저장되었습니다.");
     router.refresh();
   }
 
@@ -42,13 +133,48 @@ export function AdminDashboard({
     router.refresh();
   }
 
-  const pendingReviews = reviews.filter((r) => r.status === "pending").length;
-  const newBookings = bookings.filter((b) => b.status === "requested").length;
+  async function submitInstructor(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!instructorForm) return;
+    setBusy("instructor-save");
+    setMessage("");
+    const res = await fetch("/api/admin/instructors", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...instructorForm,
+        career_years: Number(instructorForm.career_years || 0),
+        price_from: Number(instructorForm.price_from || 0),
+      }),
+    });
+    const data = await res.json().catch(() => ({ ok: false, error: "응답을 확인할 수 없습니다." }));
+    setBusy(null);
+    if (!data.ok) {
+      setMessage(data.error || "프로 정보를 저장하지 못했습니다.");
+      return;
+    }
+    setInstructorForm(null);
+    setMessage("프로 정보가 저장되었습니다.");
+    router.refresh();
+  }
+
+  function updateInstructorForm<K extends keyof InstructorFormState>(
+    key: K,
+    value: InstructorFormState[K],
+  ) {
+    setInstructorForm((current) => (current ? { ...current, [key]: value } : current));
+  }
+
+  const pendingReviews = reviews.filter((review) => review.status === "pending").length;
+  const newBookings = bookings.filter((booking) => booking.status === "requested").length;
 
   return (
     <div className="container-page py-10">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-black text-fairway-900">관리자</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-bold text-gold-600">Operations</p>
+          <h1 className="text-3xl font-black text-fairway-900">관리자</h1>
+        </div>
         <button onClick={logout} className="text-sm font-semibold text-fairway-500 hover:text-fairway-700">
           로그아웃
         </button>
@@ -56,83 +182,185 @@ export function AdminDashboard({
 
       {demo && (
         <p className="mt-4 rounded-lg bg-gold-100 p-3 text-sm text-gold-900">
-          데모 모드입니다. Supabase(서비스 롤 키 포함)를 연결하면 실제 예약·리뷰가 표시되고
-          상태 변경이 저장됩니다.
+          데모 모드입니다. Supabase 서비스 롤 키를 연결하면 실제 예약, 후기, 프로 정보가 저장됩니다.
+        </p>
+      )}
+      {message && (
+        <p className="mt-4 rounded-lg bg-fairway-50 p-3 text-sm font-semibold text-fairway-700" aria-live="polite">
+          {message}
         </p>
       )}
 
-      {/* 탭 */}
-      <div className="mt-6 flex gap-1 border-b border-fairway-100">
+      <div className="mt-6 flex gap-1 overflow-x-auto border-b border-fairway-100">
         <TabBtn active={tab === "bookings"} onClick={() => setTab("bookings")}>
           예약 관리 {newBookings > 0 && <Count n={newBookings} />}
         </TabBtn>
         <TabBtn active={tab === "reviews"} onClick={() => setTab("reviews")}>
-          리뷰 승인 {pendingReviews > 0 && <Count n={pendingReviews} />}
+          후기 승인 {pendingReviews > 0 && <Count n={pendingReviews} />}
         </TabBtn>
         <TabBtn active={tab === "instructors"} onClick={() => setTab("instructors")}>
-          프로 목록
+          프로 관리
         </TabBtn>
       </div>
 
       <div className="mt-6">
         {tab === "bookings" && (
-          <Panel empty={bookings.length === 0} emptyText="아직 예약 요청이 없습니다.">
-            {bookings.map((b) => (
-              <div key={b.id} className="card p-4">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <span className="font-bold text-fairway-900">{b.student_name}</span>
-                    <span className="ml-2 text-sm text-fairway-500">{b.student_phone}</span>
+          <section>
+            <div className="mb-4 flex flex-wrap gap-2">
+              <FilterBtn active={bookingFilter === "all"} onClick={() => setBookingFilter("all")}>
+                전체 {bookings.length}
+              </FilterBtn>
+              {bookingStatuses.map((status) => (
+                <FilterBtn
+                  key={status}
+                  active={bookingFilter === status}
+                  onClick={() => setBookingFilter(status)}
+                >
+                  {bookingStatusLabels[status]} {bookings.filter((booking) => booking.status === status).length}
+                </FilterBtn>
+              ))}
+            </div>
+            <Panel empty={filteredBookings.length === 0} emptyText="조건에 맞는 예약이 없습니다.">
+              {filteredBookings.map((booking) => (
+                <div key={booking.id} className="card p-5">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-lg font-black text-fairway-900">{booking.student_name}</span>
+                        <StatusPill label={bookingStatusLabels[booking.status] ?? booking.status} status={booking.status} />
+                      </div>
+                      <p className="mt-1 text-sm font-semibold text-fairway-600">{booking.student_phone}</p>
+                    </div>
+                    <div className="text-right text-xs text-fairway-400">
+                      {new Date(booking.created_at).toLocaleString("ko-KR")}
+                    </div>
                   </div>
-                  <StatusPill label={BOOKING_STATUS_LABELS[b.status] ?? b.status} status={b.status} />
-                </div>
-                <div className="mt-2 text-sm text-fairway-600">
-                  프로: <b>{b.instructor_name ?? b.instructor_id}</b>
-                  {b.preferred_date && <> · 희망: {b.preferred_date} {b.preferred_time}</>}
-                  {b.region && <> · {b.region}</>}
-                </div>
-                {b.goal && <p className="mt-1 text-sm text-fairway-500">“{b.goal}”</p>}
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {(["confirmed", "completed", "canceled", "rejected", "no_show"] as const).map((s) => (
+
+                  <dl className="mt-4 grid gap-3 text-sm md:grid-cols-3">
+                    <Info label="프로" value={booking.instructor_name ?? booking.instructor_id} />
+                    <Info label="희망 일정" value={[booking.preferred_date, booking.preferred_time].filter(Boolean).join(" ") || "-"} />
+                    <Info label="상품" value={booking.package_title ?? "-"} />
+                    <Info label="지역" value={booking.region ?? "-"} />
+                    <Info label="결제 상태" value={booking.payment_status ?? "none"} />
+                    <Info label="예상 금액" value={booking.price ? `${booking.price.toLocaleString()}원` : "-"} />
+                  </dl>
+
+                  {booking.goal && (
+                    <div className="mt-4 rounded-lg bg-fairway-50 p-3 text-sm text-fairway-700">
+                      <b>고민/목표</b>
+                      <p className="mt-1 leading-6">{booking.goal}</p>
+                    </div>
+                  )}
+                  {booking.student_memo && (
+                    <div className="mt-3 rounded-lg bg-white p-3 text-sm text-fairway-600 ring-1 ring-fairway-100">
+                      <b>수강생 메모</b>
+                      <p className="mt-1 leading-6">{booking.student_memo}</p>
+                    </div>
+                  )}
+
+                  <label className="mt-4 block">
+                    <span className="label">운영 메모</span>
+                    <textarea
+                      className="input min-h-[88px]"
+                      value={bookingMemos[booking.id] ?? ""}
+                      onChange={(event) =>
+                        setBookingMemos((current) => ({ ...current, [booking.id]: event.target.value }))
+                      }
+                      placeholder="통화 결과, 확정 안내, 특이사항을 남겨두세요."
+                    />
+                  </label>
+
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {(["confirmed", "completed", "canceled", "rejected", "no_show"] as const).map((status) => (
+                      <ActionBtn
+                        key={status}
+                        onClick={() =>
+                          postAdminAction({ type: "booking", id: booking.id, status }, booking.id + status)
+                        }
+                        busy={busy === booking.id + status}
+                        active={booking.status === status}
+                      >
+                        {bookingStatusLabels[status]}
+                      </ActionBtn>
+                    ))}
                     <ActionBtn
-                      key={s}
-                      onClick={() => act("booking", b.id, s)}
-                      busy={busy === b.id + s}
-                      active={b.status === s}
+                      onClick={() =>
+                        postAdminAction(
+                          { type: "booking_details", id: booking.id, admin_memo: bookingMemos[booking.id] ?? "" },
+                          booking.id + "memo",
+                        )
+                      }
+                      busy={busy === booking.id + "memo"}
+                      active={false}
                     >
-                      {BOOKING_STATUS_LABELS[s]}
+                      메모 저장
                     </ActionBtn>
-                  ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </Panel>
+              ))}
+            </Panel>
+          </section>
         )}
 
         {tab === "reviews" && (
-          <Panel empty={reviews.length === 0} emptyText="아직 등록된 리뷰가 없습니다.">
-            {reviews.map((r) => (
-              <div key={r.id} className="card p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-fairway-900">{r.student_name_masked}</span>
-                    <Stars value={r.rating_total} size={14} />
-                    {r.instructor_name && (
-                      <span className="text-sm text-fairway-500">→ {r.instructor_name}</span>
+          <Panel empty={reviews.length === 0} emptyText="아직 등록된 후기가 없습니다.">
+            {reviews.map((review) => (
+              <div key={review.id} className="card p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-bold text-fairway-900">{review.student_name_masked}</span>
+                    <Stars value={review.rating_total} size={14} />
+                    {review.instructor_name && (
+                      <span className="text-sm text-fairway-500">→ {review.instructor_name}</span>
                     )}
                   </div>
-                  <StatusPill label={REVIEW_STATUS_LABELS[r.status] ?? r.status} status={r.status} />
+                  <StatusPill label={reviewStatusLabels[review.status] ?? review.status} status={review.status} />
                 </div>
-                <p className="mt-2 text-sm text-fairway-700">{r.content}</p>
+                <p className="mt-3 text-sm leading-6 text-fairway-700">{review.content}</p>
+                <label className="mt-4 block">
+                  <span className="label">프로 답변</span>
+                  <textarea
+                    className="input min-h-[80px]"
+                    value={reviewReplies[review.id] ?? ""}
+                    onChange={(event) =>
+                      setReviewReplies((current) => ({ ...current, [review.id]: event.target.value }))
+                    }
+                    placeholder="후기 하단에 노출할 답변을 입력하세요."
+                  />
+                </label>
                 <div className="mt-3 flex flex-wrap gap-1.5">
-                  <ActionBtn onClick={() => act("review", r.id, "visible")} busy={busy === r.id + "visible"} active={r.status === "visible"}>
-                    승인(노출)
+                  <ActionBtn
+                    onClick={() => postAdminAction({ type: "review", id: review.id, status: "visible" }, review.id + "visible")}
+                    busy={busy === review.id + "visible"}
+                    active={review.status === "visible"}
+                  >
+                    승인
                   </ActionBtn>
-                  <ActionBtn onClick={() => act("review", r.id, "hidden")} busy={busy === r.id + "hidden"} active={r.status === "hidden"}>
+                  <ActionBtn
+                    onClick={() => postAdminAction({ type: "review", id: review.id, status: "hidden" }, review.id + "hidden")}
+                    busy={busy === review.id + "hidden"}
+                    active={review.status === "hidden"}
+                  >
                     숨김
                   </ActionBtn>
-                  <ActionBtn onClick={() => act("review", r.id, "pending")} busy={busy === r.id + "pending"} active={r.status === "pending"}>
-                    대기로
+                  <ActionBtn
+                    onClick={() => postAdminAction({ type: "review", id: review.id, status: "pending" }, review.id + "pending")}
+                    busy={busy === review.id + "pending"}
+                    active={review.status === "pending"}
+                  >
+                    대기
+                  </ActionBtn>
+                  <ActionBtn
+                    onClick={() =>
+                      postAdminAction(
+                        { type: "review_reply", id: review.id, instructor_reply: reviewReplies[review.id] ?? "" },
+                        review.id + "reply",
+                      )
+                    }
+                    busy={busy === review.id + "reply"}
+                    active={false}
+                  >
+                    답변 저장
                   </ActionBtn>
                 </div>
               </div>
@@ -141,38 +369,155 @@ export function AdminDashboard({
         )}
 
         {tab === "instructors" && (
-          <Panel empty={instructors.length === 0} emptyText="등록된 프로가 없습니다.">
-            {instructors.map((i) => (
-              <div key={i.id} className="card flex items-center justify-between p-4">
-                <div>
-                  <span className="font-bold text-fairway-900">{i.display_name}</span>
-                  <span className="ml-2 text-sm text-fairway-500">
-                    {i.region} · {i.specialties.join(", ")}
-                  </span>
+          <section>
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-fairway-500">
+                프로 등록, 기본 정보 수정, 노출/추천/검증 상태를 이 화면에서 관리합니다.
+              </p>
+              <button onClick={() => setInstructorForm(emptyInstructorForm)} className="btn-primary">
+                프로 추가
+              </button>
+            </div>
+
+            {instructorForm && (
+              <form onSubmit={submitInstructor} className="mb-5 rounded-lg border border-fairway-100 bg-white p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h2 className="text-xl font-black text-fairway-900">
+                    {instructorForm.id ? "프로 수정" : "프로 추가"}
+                  </h2>
+                  <button type="button" onClick={() => setInstructorForm(null)} className="text-sm font-semibold text-fairway-500">
+                    닫기
+                  </button>
                 </div>
-                <StatusPill
-                  label={i.verification_status === "verified" ? "검증완료" : "미검증"}
-                  status={i.verification_status}
-                />
-              </div>
-            ))}
-            <p className="px-1 pt-2 text-xs text-fairway-400">
-              * 프로 등록/수정, 자격증 증빙 확인, 배지 부여는 현재 Supabase 대시보드에서 진행합니다.
-              (프로 편집 UI는 다음 단계 개발 예정)
-            </p>
-          </Panel>
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <TextInput label="프로명 *" value={instructorForm.display_name} onChange={(value) => updateInstructorForm("display_name", value)} />
+                  <TextInput label="슬러그 *" value={instructorForm.slug} onChange={(value) => updateInstructorForm("slug", value)} placeholder="kim-pro" />
+                  <TextInput label="지역 *" value={instructorForm.region} onChange={(value) => updateInstructorForm("region", value)} />
+                  <TextInput label="최저가" type="number" value={instructorForm.price_from} onChange={(value) => updateInstructorForm("price_from", value)} />
+                  <TextInput label="경력 연차" type="number" value={instructorForm.career_years} onChange={(value) => updateInstructorForm("career_years", value)} />
+                  <TextInput label="응답 시간" value={instructorForm.response_time} onChange={(value) => updateInstructorForm("response_time", value)} placeholder="평균 1시간 이내" />
+                  <TextInput label="프로필 이미지 URL" value={instructorForm.profile_image} onChange={(value) => updateInstructorForm("profile_image", value)} />
+                  <TextInput label="갤러리 URL" value={instructorForm.gallery} onChange={(value) => updateInstructorForm("gallery", value)} placeholder="쉼표 또는 줄바꿈으로 구분" />
+                  <TextInput label="전문 분야" value={instructorForm.specialties} onChange={(value) => updateInstructorForm("specialties", value)} placeholder="입문, 드라이버, 숏게임" />
+                  <TextInput label="레슨 장소" value={instructorForm.lesson_places} onChange={(value) => updateInstructorForm("lesson_places", value)} placeholder="실내연습장, 스크린골프" />
+                  <TextInput label="배지" value={instructorForm.badges} onChange={(value) => updateInstructorForm("badges", value)} placeholder="profile_verified, beginner_friendly" />
+                  <label>
+                    <span className="label">성별</span>
+                    <select className="input" value={instructorForm.gender} onChange={(event) => updateInstructorForm("gender", event.target.value as "male" | "female")}>
+                      <option value="male">남성</option>
+                      <option value="female">여성</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span className="label">검증 상태</span>
+                    <select
+                      className="input"
+                      value={instructorForm.verification_status}
+                      onChange={(event) =>
+                        updateInstructorForm("verification_status", event.target.value as "pending" | "verified" | "rejected")
+                      }
+                    >
+                      <option value="pending">대기</option>
+                      <option value="verified">검증 완료</option>
+                      <option value="rejected">반려</option>
+                    </select>
+                  </label>
+                </div>
+                <div className="mt-3 grid gap-3 md:grid-cols-2">
+                  <TextArea label="목록 소개" value={instructorForm.bio} onChange={(value) => updateInstructorForm("bio", value)} />
+                  <TextArea label="상세 소개" value={instructorForm.about} onChange={(value) => updateInstructorForm("about", value)} />
+                  <TextArea label="경력" value={instructorForm.career_history} onChange={(value) => updateInstructorForm("career_history", value)} placeholder="줄바꿈으로 구분" />
+                  <TextArea label="레슨 스타일" value={instructorForm.lesson_style} onChange={(value) => updateInstructorForm("lesson_style", value)} placeholder="줄바꿈으로 구분" />
+                </div>
+                <div className="mt-4 flex flex-wrap gap-4">
+                  <Check label="추천 프로" checked={instructorForm.is_featured} onChange={(checked) => updateInstructorForm("is_featured", checked)} />
+                  <Check label="노출 활성" checked={instructorForm.is_active} onChange={(checked) => updateInstructorForm("is_active", checked)} />
+                </div>
+                <div className="mt-5 flex justify-end">
+                  <button type="submit" disabled={busy === "instructor-save"} className="btn-primary">
+                    {busy === "instructor-save" ? "저장 중..." : "프로 저장"}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            <Panel empty={instructors.length === 0} emptyText="등록된 프로가 없습니다.">
+              {instructors.map((instructor) => (
+                <div key={instructor.id} className="card flex flex-wrap items-center justify-between gap-3 p-4">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-bold text-fairway-900">{instructor.display_name}</span>
+                      <StatusPill
+                        label={instructor.verification_status === "verified" ? "검증 완료" : "검증 대기"}
+                        status={instructor.verification_status}
+                      />
+                      {!instructor.is_active && <StatusPill label="비활성" status="hidden" />}
+                      {instructor.is_featured && <StatusPill label="추천" status="visible" />}
+                    </div>
+                    <p className="mt-1 text-sm text-fairway-500">
+                      {instructor.region} · {instructor.specialties.join(", ") || "전문 분야 미입력"}
+                    </p>
+                  </div>
+                  <button onClick={() => setInstructorForm(formFromInstructor(instructor))} className="rounded-lg border border-fairway-200 px-3 py-2 text-sm font-bold text-fairway-700 hover:bg-fairway-50">
+                    수정
+                  </button>
+                </div>
+              ))}
+            </Panel>
+          </section>
         )}
       </div>
     </div>
   );
+
+}
+
+function formFromInstructor(instructor: Instructor): InstructorFormState {
+  return {
+    id: instructor.id,
+    slug: instructor.slug,
+    display_name: instructor.display_name,
+    profile_image: instructor.profile_image ?? "",
+    gallery: instructor.gallery.join("\n"),
+    bio: instructor.bio ?? "",
+    about: instructor.about ?? "",
+    region: instructor.region,
+    lesson_places: instructor.lesson_places.join(", "),
+    specialties: instructor.specialties.join(", "),
+    career_years: String(instructor.career_years ?? 0),
+    career_history: instructor.career_history.join("\n"),
+    lesson_style: instructor.lesson_style.join("\n"),
+    gender: instructor.gender,
+    price_from: String(instructor.price_from ?? 0),
+    response_time: instructor.response_time ?? "",
+    badges: instructor.badges.join(", "),
+    is_featured: instructor.is_featured,
+    is_active: instructor.is_active,
+    verification_status: instructor.verification_status,
+  };
 }
 
 function TabBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-bold transition-colors ${
+      className={`flex shrink-0 items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-bold transition-colors ${
         active ? "border-fairway-700 text-fairway-900" : "border-transparent text-fairway-400 hover:text-fairway-600"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function FilterBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`rounded-lg border px-3 py-2 text-xs font-bold transition-colors ${
+        active
+          ? "border-fairway-700 bg-fairway-700 text-white"
+          : "border-fairway-200 bg-white text-fairway-600 hover:bg-fairway-50"
       }`}
     >
       {children}
@@ -225,4 +570,86 @@ function StatusPill({ label, status }: { label: string; status: string }) {
         ? "bg-gold-100 text-gold-800"
         : "bg-rose-50 text-rose-600";
   return <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${tone}`}>{label}</span>;
+}
+
+function Info({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg bg-white p-3 ring-1 ring-fairway-100">
+      <dt className="text-xs font-bold text-fairway-400">{label}</dt>
+      <dd className="mt-1 font-semibold text-fairway-800">{value}</dd>
+    </div>
+  );
+}
+
+function TextInput({
+  label,
+  value,
+  onChange,
+  type = "text",
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  type?: string;
+  placeholder?: string;
+}) {
+  return (
+    <label>
+      <span className="label">{label}</span>
+      <input
+        className="input"
+        type={type}
+        value={value}
+        placeholder={placeholder}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </label>
+  );
+}
+
+function TextArea({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <label>
+      <span className="label">{label}</span>
+      <textarea
+        className="input min-h-[100px]"
+        value={value}
+        placeholder={placeholder}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </label>
+  );
+}
+
+function Check({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <label className="inline-flex items-center gap-2 text-sm font-bold text-fairway-700">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+        className="h-4 w-4 rounded border-fairway-300 text-fairway-700"
+      />
+      {label}
+    </label>
+  );
 }

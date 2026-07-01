@@ -2,11 +2,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-
-const siteUrl = "https://www.100tothefuture.com";
+import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "100 to the Future | 100타 탈출 골프레슨 중개 플랫폼",
     template: "%s | 100 to the Future",
@@ -24,7 +23,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "ko_KR",
-    url: siteUrl,
+    url: SITE_URL,
     siteName: "100 to the Future",
     title: "100타 탈출, 혼자 고민하지 말고 검증된 프로와 시작하세요.",
     description:

@@ -98,6 +98,7 @@ export interface Booking {
   id: string;
   instructor_id: string;
   instructor_name?: string;
+  package_title?: string;
   lesson_package_id?: string | null;
   student_name: string;
   student_phone: string;
@@ -106,6 +107,9 @@ export interface Booking {
   region?: string | null;
   goal?: string | null; // 현재 평균타수/약점 등 희망 내용
   student_memo?: string | null;
+  admin_memo?: string | null;
+  price?: number | null;
+  payment_status?: string | null;
   status: BookingStatus;
   privacy_agreed: boolean;
   third_party_agreed: boolean; // 연락처를 프로에게 전달 동의

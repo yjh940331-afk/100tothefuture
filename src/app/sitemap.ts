@@ -1,15 +1,14 @@
 import type { MetadataRoute } from "next";
 import { getAllSlugs } from "@/lib/data";
-
-const base = "https://www.100tothefuture.com";
+import { SITE_URL } from "@/lib/site";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const slugs = await getAllSlugs();
-  const staticPages = ["", "/pros", "/terms", "/privacy", "/policy/reviews"].map(
-    (p) => ({ url: `${base}${p}`, changeFrequency: "weekly" as const, priority: p === "" ? 1 : 0.7 }),
+  const staticPages = ["", "/live", "/pros", "/terms", "/privacy", "/policy/reviews"].map(
+    (p) => ({ url: `${SITE_URL}${p}`, changeFrequency: "weekly" as const, priority: p === "" ? 1 : 0.7 }),
   );
   const proPages = slugs.map((s) => ({
-    url: `${base}/pros/${s}`,
+    url: `${SITE_URL}/pros/${s}`,
     changeFrequency: "weekly" as const,
     priority: 0.8,
   }));
