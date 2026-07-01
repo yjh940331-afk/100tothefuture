@@ -334,9 +334,9 @@ union all select id, '숏게임 집중 4회권', '어프로치+퍼팅', 50, 4, 2
 
 -- 가능 시간 (화/목 저녁, 토 오전 공통)
 insert into availability_rules (instructor_id, day_of_week, start_time, end_time, slot_minutes)
-select id, 2, '19:00', '22:00', 50 from instructors
-union all select id, 4, '19:00', '22:00', 50 from instructors
-union all select id, 6, '09:00', '13:00', 50 from instructors;
+select id, 2, '19:00'::time, '22:00'::time, 50 from instructors
+union all select id, 4, '19:00'::time, '22:00'::time, 50 from instructors
+union all select id, 6, '09:00'::time, '13:00'::time, 50 from instructors;
 
 -- 노출 리뷰 (예약 완료 가정)
 insert into reviews (instructor_id, student_name_masked, rating_total, rating_kindness, rating_explanation, rating_effect, recommend_for, content, instructor_reply, status)
