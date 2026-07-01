@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { isAdminAuthed, adminPassword } from "@/lib/admin-auth";
 import {
+  adminListLessonRequests,
   adminListBookings,
   adminListReviews,
   adminListInstructors,
@@ -23,7 +24,8 @@ export default async function AdminPage() {
     return <AdminLogin configured={Boolean(adminPassword())} />;
   }
 
-  const [bookings, reviews, instructors] = await Promise.all([
+  const [lessonRequests, bookings, reviews, instructors] = await Promise.all([
+    adminListLessonRequests(),
     adminListBookings(),
     adminListReviews(),
     adminListInstructors(),
@@ -31,6 +33,7 @@ export default async function AdminPage() {
 
   return (
     <AdminDashboard
+      lessonRequests={lessonRequests}
       bookings={bookings}
       reviews={reviews as any}
       instructors={instructors}

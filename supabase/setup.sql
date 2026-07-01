@@ -136,6 +136,48 @@ create table if not exists bookings (
 );
 
 -- ---------------------------------------------------------------------
+-- 레슨 견적 요청/제안 (숨고형 브로커 플로우)
+-- 고객은 프로를 고르지 않고 조건만 남기고, 운영자/프로가 후보와 견적을 제안한다.
+-- ---------------------------------------------------------------------
+create table if not exists lesson_requests (
+  id                           uuid primary key default gen_random_uuid(),
+  customer_name                text not null,
+  customer_phone               text not null,
+  region                       text not null,
+  lesson_places                text[] not null default '{}',
+  goals                        text[] not null default '{}',
+  skill_level                  text,
+  score_range                  text,
+  preferred_days               text[] not null default '{}',
+  preferred_time_slot          text,
+  budget_min                   int,
+  budget_max                   int,
+  instructor_gender_preference text check (instructor_gender_preference in ('male','female') or instructor_gender_preference is null),
+  package_preference           text,
+  memo                         text,
+  status                       text not null default 'open' check (status in ('open','contacted','quoted','closed','canceled')),
+  admin_memo                   text,
+  matched_instructor_ids       uuid[] not null default '{}',
+  privacy_agreed               boolean not null default false,
+  marketing_agreed             boolean not null default false,
+  created_at                   timestamptz not null default now()
+);
+
+create table if not exists lesson_quotes (
+  id                  uuid primary key default gen_random_uuid(),
+  lesson_request_id   uuid not null references lesson_requests(id) on delete cascade,
+  instructor_id        uuid references instructors(id) on delete set null,
+  title               text not null default '',
+  message             text,
+  price               int,
+  duration_minutes    int,
+  session_count       int,
+  status              text not null default 'draft' check (status in ('draft','sent','accepted','declined','expired')),
+  sent_at             timestamptz,
+  created_at          timestamptz not null default now()
+);
+
+-- ---------------------------------------------------------------------
 -- 리뷰 (예약 완료 건에 대해서만 작성 → 관리자 승인 후 노출)
 -- ---------------------------------------------------------------------
 create table if not exists reviews (
@@ -210,6 +252,12 @@ create index if not exists idx_instructors_region   on instructors (region);
 create index if not exists idx_packages_instructor  on lesson_packages (instructor_id);
 create index if not exists idx_rules_instructor      on availability_rules (instructor_id);
 create index if not exists idx_bookings_instructor   on bookings (instructor_id);
+create index if not exists idx_lesson_requests_status_created
+  on lesson_requests (status, created_at desc);
+create index if not exists idx_lesson_requests_region
+  on lesson_requests (region);
+create index if not exists idx_lesson_quotes_request
+  on lesson_quotes (lesson_request_id, status);
 create index if not exists idx_reviews_instructor    on reviews (instructor_id, status);
 create index if not exists idx_notification_logs_booking
   on notification_logs ((payload->>'id'), event_type, created_at desc);
@@ -249,6 +297,8 @@ alter table lesson_packages           enable row level security;
 alter table availability_rules        enable row level security;
 alter table availability_exceptions   enable row level security;
 alter table bookings                  enable row level security;
+alter table lesson_requests           enable row level security;
+alter table lesson_quotes             enable row level security;
 alter table reviews                   enable row level security;
 alter table review_reports            enable row level security;
 alter table consent_logs              enable row level security;

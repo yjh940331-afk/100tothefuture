@@ -1,11 +1,17 @@
 import { getSupabase, getSupabaseAdmin, isDbConfigured } from "./supabase";
-import { notifyBookingCreated, notifyBookingStatusChanged } from "./notifications";
+import {
+  notifyBookingCreated,
+  notifyBookingStatusChanged,
+  notifyLessonRequestCreated,
+} from "./notifications";
 import { SEED_INSTRUCTORS, SEED_REVIEWS, seedBySlug, seedReviewsFor } from "./seed-data";
 import type {
   BookingStatus,
   AvailabilityRule,
   Booking,
   Instructor,
+  LessonRequest,
+  LessonRequestStatus,
   ReviewSummary,
 } from "./types";
 
@@ -226,6 +232,123 @@ export async function getReviews(instructorId: string): Promise<ReviewSummary[]>
     .eq("status", "visible")
     .order("created_at", { ascending: false });
   return (data ?? []) as ReviewSummary[];
+}
+
+export interface CreateLessonRequestInput {
+  customer_name: string;
+  customer_phone: string;
+  region: string;
+  lesson_places?: string[];
+  goals?: string[];
+  skill_level?: string | null;
+  score_range?: string | null;
+  preferred_days?: string[];
+  preferred_time_slot?: string | null;
+  budget_min?: number | null;
+  budget_max?: number | null;
+  instructor_gender_preference?: string | null;
+  package_preference?: string | null;
+  memo?: string | null;
+  privacy_agreed: boolean;
+  marketing_agreed?: boolean;
+}
+
+function marketplaceTableError(error?: string) {
+  if (!error) return false;
+  return (
+    error.includes("lesson_requests") ||
+    error.includes("lesson_quotes") ||
+    error.includes("Could not find the table") ||
+    error.includes("does not exist") ||
+    error.includes("schema cache")
+  );
+}
+
+function normalizeBudget(value?: number | null) {
+  const amount = Number(value ?? 0);
+  return Number.isFinite(amount) && amount > 0 ? Math.round(amount) : null;
+}
+
+export async function createLessonRequest(
+  input: CreateLessonRequestInput,
+): Promise<{ ok: boolean; id?: string; demo?: boolean; error?: string }> {
+  const name = input.customer_name.trim();
+  const phone = input.customer_phone.trim();
+  const region = input.region.trim();
+  const lessonPlaces = cleanList(input.lesson_places);
+  const goals = cleanList(input.goals);
+  const preferredDays = cleanList(input.preferred_days);
+
+  if (!name || !phone || !region) {
+    return { ok: false, error: "이름, 연락처, 지역을 입력해주세요." };
+  }
+  if (!input.privacy_agreed) {
+    return { ok: false, error: "개인정보 수집 및 이용 동의가 필요합니다." };
+  }
+  if (goals.length === 0) {
+    return { ok: false, error: "레슨 목표를 하나 이상 선택해주세요." };
+  }
+  if (!isDbConfigured()) {
+    return { ok: true, demo: true, id: `demo-request-${Date.now()}` };
+  }
+
+  const sb = getSupabaseAdmin();
+  if (!sb) {
+    return { ok: false, error: "견적 요청 저장을 위한 서버 권한이 설정되지 않았습니다." };
+  }
+
+  const budgetMin = normalizeBudget(input.budget_min);
+  const budgetMax = normalizeBudget(input.budget_max);
+  if (budgetMin && budgetMax && budgetMin > budgetMax) {
+    return { ok: false, error: "예산 범위를 다시 확인해주세요." };
+  }
+
+  const payload = {
+    customer_name: name,
+    customer_phone: phone,
+    region,
+    lesson_places: lessonPlaces,
+    goals,
+    skill_level: input.skill_level?.trim() || null,
+    score_range: input.score_range?.trim() || null,
+    preferred_days: preferredDays,
+    preferred_time_slot: input.preferred_time_slot?.trim() || null,
+    budget_min: budgetMin,
+    budget_max: budgetMax,
+    instructor_gender_preference: input.instructor_gender_preference?.trim() || null,
+    package_preference: input.package_preference?.trim() || null,
+    memo: input.memo?.trim() || null,
+    privacy_agreed: Boolean(input.privacy_agreed),
+    marketing_agreed: Boolean(input.marketing_agreed),
+    status: "open" as LessonRequestStatus,
+  };
+
+  const { data, error } = await sb
+    .from("lesson_requests")
+    .insert(payload)
+    .select("id")
+    .single();
+
+  if (error) {
+    const hint = marketplaceTableError(error.message)
+      ? " Supabase SQL Editor에서 supabase/marketplace.sql을 먼저 실행해주세요."
+      : "";
+    return { ok: false, error: `${error.message}${hint}` };
+  }
+
+  await notifyLessonRequestCreated({
+    id: data.id,
+    customer_name: name,
+    customer_phone: phone,
+    region,
+    goals,
+    preferred_days: preferredDays,
+    preferred_time_slot: payload.preferred_time_slot,
+    budget_min: budgetMin,
+    budget_max: budgetMax,
+  });
+
+  return { ok: true, id: data.id };
 }
 
 // ---------- 쓰기 ----------
@@ -500,6 +623,56 @@ export async function createReview(
 }
 
 // ---------- 관리자 ----------
+export async function adminListLessonRequests(): Promise<LessonRequest[]> {
+  const sb = getSupabaseAdmin();
+  if (!sb) return [];
+  const { data, error } = await sb
+    .from("lesson_requests")
+    .select("*, lesson_quotes(id)")
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (error) {
+    console.error("Failed to list lesson requests", error.message);
+    return [];
+  }
+  return (data ?? []).map((row: any) => {
+    const quotes = Array.isArray(row.lesson_quotes) ? row.lesson_quotes : [];
+    const request = { ...row };
+    delete request.lesson_quotes;
+    return {
+      ...request,
+      lesson_places: request.lesson_places ?? [],
+      goals: request.goals ?? [],
+      preferred_days: request.preferred_days ?? [],
+      matched_instructor_ids: request.matched_instructor_ids ?? [],
+      quote_count: quotes.length,
+    };
+  }) as LessonRequest[];
+}
+
+export async function adminUpdateLessonRequest(
+  id: string,
+  input: { status?: LessonRequestStatus; admin_memo?: string; matched_instructor_ids?: string[] },
+) {
+  const sb = getSupabaseAdmin();
+  if (!sb) return { ok: false, error: "DB 미설정" };
+  const patch: Record<string, unknown> = {};
+  if (input.status) patch.status = input.status;
+  if (typeof input.admin_memo === "string") patch.admin_memo = input.admin_memo;
+  if (input.matched_instructor_ids) patch.matched_instructor_ids = cleanList(input.matched_instructor_ids);
+  if (Object.keys(patch).length === 0) {
+    return { ok: false, error: "변경할 내용이 없습니다." };
+  }
+  const { error } = await sb.from("lesson_requests").update(patch).eq("id", id);
+  if (error) {
+    const hint = marketplaceTableError(error.message)
+      ? " Supabase SQL Editor에서 supabase/marketplace.sql을 먼저 실행해주세요."
+      : "";
+    return { ok: false, error: `${error.message}${hint}` };
+  }
+  return { ok: true };
+}
+
 export async function adminListBookings(): Promise<Booking[]> {
   const sb = getSupabaseAdmin();
   if (!sb) return [];

@@ -11,6 +11,46 @@ export type BookingStatus =
 
 export type ReviewStatus = "pending" | "visible" | "hidden" | "reported";
 export type VerificationStatus = "pending" | "verified" | "rejected";
+export type LessonRequestStatus = "open" | "contacted" | "quoted" | "closed" | "canceled";
+
+export interface LessonRequest {
+  id: string;
+  customer_name: string;
+  customer_phone: string;
+  region: string;
+  lesson_places: string[];
+  goals: string[];
+  skill_level?: string | null;
+  score_range?: string | null;
+  preferred_days: string[];
+  preferred_time_slot?: string | null;
+  budget_min?: number | null;
+  budget_max?: number | null;
+  instructor_gender_preference?: string | null;
+  package_preference?: string | null;
+  memo?: string | null;
+  status: LessonRequestStatus;
+  admin_memo?: string | null;
+  matched_instructor_ids: string[];
+  quote_count?: number;
+  privacy_agreed: boolean;
+  marketing_agreed: boolean;
+  created_at: string;
+}
+
+export interface LessonQuote {
+  id: string;
+  lesson_request_id: string;
+  instructor_id?: string | null;
+  instructor_name?: string | null;
+  title: string;
+  message?: string | null;
+  price?: number | null;
+  duration_minutes?: number | null;
+  session_count?: number | null;
+  status: "draft" | "sent" | "accepted" | "declined" | "expired";
+  created_at: string;
+}
 
 export interface Certification {
   id: string;

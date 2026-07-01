@@ -169,6 +169,69 @@ function bookingScheduleText(input: { preferred_date?: string | null; preferred_
   return [input.preferred_date, input.preferred_time].filter(Boolean).join(" ");
 }
 
+function budgetText(input: { budget_min?: number | null; budget_max?: number | null }) {
+  if (input.budget_min && input.budget_max) {
+    return `${input.budget_min.toLocaleString("ko-KR")}~${input.budget_max.toLocaleString("ko-KR")}원`;
+  }
+  if (input.budget_min) return `${input.budget_min.toLocaleString("ko-KR")}원 이상`;
+  if (input.budget_max) return `${input.budget_max.toLocaleString("ko-KR")}원 이하`;
+  return "";
+}
+
+export async function notifyLessonRequestCreated(input: {
+  id: string;
+  customer_name: string;
+  customer_phone: string;
+  region: string;
+  goals: string[];
+  preferred_days?: string[];
+  preferred_time_slot?: string | null;
+  budget_min?: number | null;
+  budget_max?: number | null;
+}) {
+  const requestUrl = `${SITE_URL}/admin`;
+  const goals = input.goals.join(", ");
+  const preferred = [...(input.preferred_days ?? []), input.preferred_time_slot ?? ""]
+    .filter(Boolean)
+    .join(" ");
+  const budget = budgetText(input);
+  const customerText = `[100 to the Future] 레슨 견적 요청이 접수되었습니다. 요청번호: ${input.id}. 조건에 맞는 프로를 확인해 안내드릴게요.`;
+  const adminText = `[레슨 견적 요청] ${input.customer_name} ${input.customer_phone} / ${input.region}${
+    goals ? ` / 목표: ${goals}` : ""
+  }${preferred ? ` / 선호: ${preferred}` : ""}${budget ? ` / 예산: ${budget}` : ""}`;
+
+  await Promise.all([
+    sendNotification({
+      eventType: "lesson_request.created",
+      channel: "sms",
+      recipientType: "customer",
+      recipientPhone: input.customer_phone,
+      title: "견적 요청 접수",
+      content: customerText,
+      data: input,
+    }),
+    sendNotification({
+      eventType: "lesson_request.created",
+      channel: "webhook",
+      recipientType: "admin",
+      title: "새 레슨 견적 요청",
+      content: `${adminText} / 관리자: ${requestUrl}`,
+      data: input,
+    }),
+    process.env.ADMIN_NOTIFICATION_PHONE
+      ? sendNotification({
+          eventType: "lesson_request.created",
+          channel: "sms",
+          recipientType: "admin",
+          recipientPhone: process.env.ADMIN_NOTIFICATION_PHONE,
+          title: "새 레슨 견적 요청",
+          content: adminText,
+          data: input,
+        })
+      : Promise.resolve(),
+  ]);
+}
+
 export async function notifyBookingCreated(input: {
   id: string;
   instructor_id: string;
@@ -270,4 +333,3 @@ export async function notifyBookingStatusChanged(input: {
     }),
   ]);
 }
-

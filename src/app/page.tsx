@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { getFeaturedInstructors } from "@/lib/data";
-import { InstructorCard } from "@/components/InstructorCard";
-import { DemoBanner } from "@/components/DemoBanner";
 import { SPECIALTIES } from "@/lib/constants";
+import { DemoBanner } from "@/components/DemoBanner";
+import { InstructorCard } from "@/components/InstructorCard";
 
 const HERO_IMAGE =
   "https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&w=2200&q=75";
@@ -14,7 +14,6 @@ export default async function HomePage() {
     <>
       <DemoBanner />
 
-      {/* Hero */}
       <section className="relative overflow-hidden bg-fairway-950 text-white">
         <div
           className="absolute inset-0 bg-cover bg-center opacity-55"
@@ -26,62 +25,65 @@ export default async function HomePage() {
 
         <div className="container-page relative flex min-h-[620px] flex-col justify-center py-16 sm:min-h-[640px] sm:py-20">
           <span className="inline-flex w-fit items-center gap-2 rounded-full border border-gold-400/40 bg-fairway-950/55 px-4 py-1.5 text-sm font-semibold text-gold-200 backdrop-blur">
-            검증된 레슨프로 매칭 플랫폼
+            골프 레슨 전용 매칭 플랫폼
           </span>
-          <h1 className="mt-6 max-w-4xl text-4xl font-black leading-tight tracking-tight sm:text-5xl">
-            100타 탈출, 혼자 고민하지 말고
+          <h1 className="mt-6 max-w-4xl text-4xl font-black leading-tight sm:text-5xl">
+            내 조건에 맞는 골프 프로,
             <br />
-            <span className="text-gold-300">검증된 프로</span>와 시작하세요.
+            <span className="text-gold-300">요청서 한 번</span>으로 비교하세요
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-relaxed text-fairway-100 sm:text-xl">
-            내 스윙 문제에 맞는 레슨프로를 찾고, 약력·자격·후기를 확인한 뒤 가능한
-            시간에 바로 상담·예약하세요.
+            지역, 목표, 시간, 예산을 남기면 검증된 레슨 프로 후보를 추려 상담 가능한 제안으로 연결합니다.
+            원하는 프로를 직접 골라 바로 예약할 수도 있어요.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/pros" className="btn-gold text-base">
-              레슨프로 찾기
+            <Link href="/request" className="btn-gold text-base">
+              맞춤 견적 요청
             </Link>
-            <Link
-              href="/pros?specialty=100타 탈출"
-              className="btn border border-white/30 text-white hover:bg-white/10"
-            >
-              100타 탈출 전문 프로 보기
+            <Link href="/pros" className="btn border border-white/30 text-white hover:bg-white/10">
+              프로 직접 찾기
             </Link>
           </div>
 
           <div className="mt-12 grid max-w-2xl grid-cols-1 gap-3 border-t border-white/15 pt-6 text-sm text-fairway-100 sm:grid-cols-3">
-            <Stat label="자격·경력 검증" value="관리자 직접 확인" />
-            <Stat label="후기" value="예약 완료자만 작성" />
-            <Stat label="예약" value="가능 시간 확인 후 요청" />
+            <Stat label="요청서" value="48시간 안에 후보 정리" />
+            <Stat label="프로 검증" value="경력·후기·뱃지 확인" />
+            <Stat label="예약" value="상담 후 직접 예약" />
           </div>
         </div>
       </section>
 
-      {/* 전문분야 빠른 진입 */}
       <section className="container-page relative z-10 -mt-10">
-        <div className="card flex flex-wrap items-center gap-2 p-4 sm:p-5">
-          <span className="mr-1 text-sm font-bold text-fairway-800">무엇이 고민이세요?</span>
-          {SPECIALTIES.map((s) => (
-            <Link
-              key={s}
-              href={`/pros?specialty=${encodeURIComponent(s)}`}
-              className="rounded-full border border-fairway-200 px-3 py-1.5 text-sm font-medium text-fairway-700 transition-colors hover:border-fairway-500 hover:bg-fairway-50"
-            >
-              {s}
-            </Link>
-          ))}
+        <div className="rounded-lg border border-fairway-100 bg-white p-4 shadow-sm sm:p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-sm font-bold text-fairway-800">무엇부터 해결하고 싶으세요?</p>
+              <p className="mt-1 text-sm text-fairway-500">목표를 고르면 맞춤 견적 요청서로 바로 이어집니다.</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {SPECIALTIES.slice(0, 6).map((specialty) => (
+                <Link
+                  key={specialty}
+                  href={`/request?goal=${encodeURIComponent(specialty)}`}
+                  className="rounded-full border border-fairway-200 px-3 py-1.5 text-sm font-medium text-fairway-700 transition-colors hover:border-fairway-500 hover:bg-fairway-50"
+                >
+                  {specialty}
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* 추천 프로 */}
       <section className="container-page py-16">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="text-2xl font-extrabold text-fairway-900">추천 레슨프로</h2>
-            <p className="mt-1 text-fairway-600">검증을 마친 인기 프로를 먼저 만나보세요.</p>
+            <p className="text-sm font-bold text-gold-700">추천 프로</p>
+            <h2 className="mt-1 text-2xl font-extrabold text-fairway-900">바로 상담 가능한 골프 프로</h2>
+            <p className="mt-1 text-fairway-600">후기, 경력, 시작 가격을 확인하고 직접 예약할 수 있습니다.</p>
           </div>
           <Link href="/pros" className="text-sm font-bold text-fairway-700 hover:underline">
-            전체 보기 →
+            전체 보기
           </Link>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -91,56 +93,52 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 신뢰 장치 */}
       <section className="border-y border-fairway-100 bg-white">
         <div className="container-page py-16">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-2xl font-extrabold text-fairway-900">
-              처음 만나는 프로라도 판단할 근거가 있어야 하니까
+            <p className="text-sm font-bold text-gold-700">브로커형 레슨 매칭</p>
+            <h2 className="mt-2 text-2xl font-extrabold text-fairway-900">
+              골프 레슨은 프로보다 조건이 먼저인 경우가 많습니다
             </h2>
             <p className="mt-2 text-fairway-600">
-              프로필 검증, 후기 관리, 예약 요청 흐름을 운영자가 직접 관리합니다.
+              숨고식 요청서 흐름을 골프에 맞춰 바꾸고, 운영자가 검증과 매칭 품질을 관리합니다.
             </p>
           </div>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             <Feature
-              title="검증된 프로필"
-              desc="자격증·경력 증빙을 관리자가 직접 확인한 뒤 '검증완료' 배지를 부여합니다. 검증하지 않은 내용은 표시하지 않습니다."
+              title="요청서 기반 매칭"
+              desc="지역, 목표, 가능 시간, 예산을 기준으로 후보 프로를 좁혀 고객의 선택 피로를 줄입니다."
             />
             <Feature
-              title="진짜 후기만"
-              desc="예약을 완료한 수강생만 후기를 작성할 수 있습니다. 나쁜 후기라고 지우지 않고, 욕설·개인정보 노출만 관리합니다."
+              title="검증 프로 운영"
+              desc="프로필, 경력, 자격, 후기, 응답 속도를 관리해 레슨 품질을 비교할 수 있게 합니다."
             />
             <Feature
-              title="가능 시간 확인 후 예약"
-              desc="프로별 요일·시간을 확인하고, 희망 일정으로 상담·예약을 요청하세요. 회원가입 없이도 요청할 수 있습니다."
+              title="예약·알림 확장"
+              desc="직접 예약, 알림톡, 앱 푸시, 예약금 결제까지 같은 데이터 흐름에서 확장할 수 있습니다."
             />
           </div>
         </div>
       </section>
 
-      {/* 진행 흐름 */}
       <section className="container-page py-16">
-        <h2 className="text-center text-2xl font-extrabold text-fairway-900">
-          이렇게 진행돼요
-        </h2>
+        <h2 className="text-center text-2xl font-extrabold text-fairway-900">이렇게 진행돼요</h2>
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            ["01", "프로 찾기", "지역·전문분야·가격·시간으로 나에게 맞는 프로를 검색"],
-            ["02", "프로필 확인", "약력·자격·검증배지·커리큘럼·후기 확인"],
-            ["03", "상담·예약 요청", "가능한 시간에 희망 내용과 함께 요청"],
-            ["04", "레슨 & 후기", "레슨 후 검증된 후기 작성으로 다음 골퍼에게 도움"],
-          ].map(([n, t, d]) => (
-            <div key={n} className="card p-6">
-              <span className="text-3xl font-black text-gold-400">{n}</span>
-              <h3 className="mt-3 font-bold text-fairway-900">{t}</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-fairway-600">{d}</p>
+            ["01", "요청서 작성", "목표, 지역, 시간, 예산을 1분 안에 남깁니다."],
+            ["02", "후보 확인", "운영자가 조건이 맞는 검증 프로를 추립니다."],
+            ["03", "제안 비교", "가격, 경력, 후기, 가능 시간을 보고 상담합니다."],
+            ["04", "예약 진행", "직접 예약하거나 패키지 상담 후 확정합니다."],
+          ].map(([step, title, desc]) => (
+            <div key={step} className="rounded-lg border border-fairway-100 bg-white p-6 shadow-sm">
+              <span className="text-3xl font-black text-gold-400">{step}</span>
+              <h3 className="mt-3 font-bold text-fairway-900">{title}</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-fairway-600">{desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* 하단 CTA */}
       <section className="container-page pb-4">
         <div className="relative overflow-hidden rounded-lg bg-fairway-900 p-10 text-center text-white sm:p-14">
           <div
@@ -149,11 +147,16 @@ export default async function HomePage() {
             aria-hidden
           />
           <div className="relative">
-            <h2 className="text-3xl font-black">올해는 진짜 100타, 깨봅시다.</h2>
-            <p className="mt-3 text-fairway-100">검증된 프로와 함께라면 더 빠릅니다.</p>
-            <Link href="/pros" className="btn-gold mt-6 inline-flex text-base">
-              지금 레슨프로 찾기
-            </Link>
+            <h2 className="text-3xl font-black">이번 주 가능한 골프 레슨을 찾아볼까요?</h2>
+            <p className="mt-3 text-fairway-100">시간이 먼저라면 견적 요청, 프로가 먼저라면 직접 검색이 빠릅니다.</p>
+            <div className="mt-6 flex flex-wrap justify-center gap-2">
+              <Link href="/request" className="btn-gold inline-flex text-base">
+                맞춤 견적 요청
+              </Link>
+              <Link href="/pros" className="btn border border-white/30 text-white hover:bg-white/10">
+                프로 목록 보기
+              </Link>
+            </div>
           </div>
         </div>
       </section>

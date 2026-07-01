@@ -15,25 +15,31 @@ export function Header() {
 
         <nav className="flex items-center gap-1.5 sm:gap-3" aria-label="주요 메뉴">
           <Link
+            href="/request"
+            className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-fairway-700 hover:bg-fairway-50 sm:inline-flex"
+          >
+            견적 요청
+          </Link>
+          <Link
             href="/pros"
             className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-fairway-700 hover:bg-fairway-50 sm:inline-flex"
           >
-            레슨 프로 찾기
+            프로 찾기
           </Link>
           <Link
             href="/bookings"
-            className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-fairway-700 hover:bg-fairway-50 sm:inline-flex"
+            className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-fairway-700 hover:bg-fairway-50 md:inline-flex"
           >
             내 예약
           </Link>
           <a
-            href="mailto:contact@100tothefuture.com?subject=레슨 프로 등록 문의"
-            className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-fairway-700 hover:bg-fairway-50 md:inline-flex"
+            href="mailto:contact@100tothefuture.com?subject=골프 레슨 프로 등록 문의"
+            className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-fairway-700 hover:bg-fairway-50 lg:inline-flex"
           >
             프로 등록
           </a>
-          <Link href="/pros" className="btn-primary !min-h-10 !px-4 !py-2">
-            프로 찾기
+          <Link href="/request" className="btn-primary !min-h-10 !px-4 !py-2">
+            맞춤 견적
           </Link>
         </nav>
       </div>
