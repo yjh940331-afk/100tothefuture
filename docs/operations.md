@@ -2,6 +2,11 @@
 
 서비스 방향은 **검증 프로 골프 레슨 예약 플랫폼**입니다.
 
+## 관련 문서
+
+- `docs/scaling.md`: MAU 10만까지 커질 때의 기술 판단, 유지할 것과 나중에 바꿀 것.
+- `docs/supabase-company-checklist.md`: 회사에서 Supabase SQL Editor로 실행할 작업 순서.
+
 ## 이번에 추가된 기능
 
 - `/bookings`: 사용자가 예약번호와 연락처로 본인 예약을 조회하고 취소하는 화면.
