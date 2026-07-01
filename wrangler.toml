@@ -1,0 +1,9 @@
+# Cloudflare Pages 설정 (100 to the Future)
+# 배포: npm run pages:deploy
+name = "100tothefuture"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".vercel/output/static"
+
+# 환경변수는 Cloudflare 대시보드 > Pages > Settings > Environment variables 에서 설정하세요.
+# (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, ADMIN_PASSWORD)

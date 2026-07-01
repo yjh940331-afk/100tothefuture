@@ -1,0 +1,254 @@
+import type { Instructor, ReviewSummary } from "./types";
+
+// Supabase 환경변수가 없을 때 사용하는 시드(예시) 데이터.
+// DB 연결 전에도 사이트가 꽉 차 보이도록 하는 용도이며,
+// supabase/seed.sql 과 내용이 대응됩니다. (실서비스 전 실제 데이터로 교체)
+
+const img = (id: string) =>
+  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=1200&q=70`;
+
+export const SEED_REVIEWS: ReviewSummary[] = [
+  {
+    id: "r1",
+    instructor_id: "kim-pro",
+    student_name_masked: "김**",
+    rating_total: 5,
+    rating_kindness: 5,
+    rating_explanation: 5,
+    rating_effect: 5,
+    content:
+      "평균 108타에서 3개월 만에 96타 쳤어요. 드라이버 슬라이스 원인을 딱 짚어주시고, 매 회차 영상으로 비교해주셔서 뭐가 바뀌는지 눈으로 보였습니다.",
+    recommend_for: "100타 탈출",
+    instructor_reply: "회원님 연습량이 정말 좋으셨어요! 다음 목표 90타도 금방입니다 :)",
+    status: "visible",
+    created_at: "2026-05-12T10:00:00Z",
+  },
+  {
+    id: "r2",
+    instructor_id: "kim-pro",
+    student_name_masked: "이**",
+    rating_total: 5,
+    rating_kindness: 5,
+    rating_explanation: 4,
+    rating_effect: 5,
+    content: "설명이 군더더기 없고, 과제를 명확하게 주셔서 혼자 연습할 때도 헤매지 않았어요.",
+    recommend_for: "직장인",
+    status: "visible",
+    created_at: "2026-04-28T10:00:00Z",
+  },
+  {
+    id: "r3",
+    instructor_id: "park-pro",
+    student_name_masked: "최**",
+    rating_total: 5,
+    rating_kindness: 5,
+    rating_explanation: 5,
+    rating_effect: 4,
+    content:
+      "골프 완전 처음이었는데 그립부터 차근차근 알려주셔서 무섭지 않았어요. 여성 입문자에게 진심 추천합니다.",
+    recommend_for: "여성/입문자",
+    status: "visible",
+    created_at: "2026-05-20T10:00:00Z",
+  },
+  {
+    id: "r4",
+    instructor_id: "lee-pro",
+    student_name_masked: "정**",
+    rating_total: 4,
+    rating_kindness: 4,
+    rating_explanation: 5,
+    rating_effect: 4,
+    content: "필드레슨이 정말 도움됐습니다. 연습장에서 잘 치는 것과 필드는 다르다는 걸 배웠어요.",
+    recommend_for: "필드 준비",
+    status: "visible",
+    created_at: "2026-06-01T10:00:00Z",
+  },
+];
+
+const commonAvailability = (id: string) => [
+  { id: `${id}-a1`, day_of_week: 2, start_time: "19:00", end_time: "22:00", slot_minutes: 50, is_active: true },
+  { id: `${id}-a2`, day_of_week: 4, start_time: "19:00", end_time: "22:00", slot_minutes: 50, is_active: true },
+  { id: `${id}-a3`, day_of_week: 6, start_time: "09:00", end_time: "13:00", slot_minutes: 50, is_active: true },
+];
+
+const breakoutCurriculum = [
+  { session: 1, title: "스윙 진단, 그립/어드레스 교정" },
+  { session: 2, title: "아이언 컨택 안정화" },
+  { session: 3, title: "드라이버 OB 줄이기" },
+  { session: 4, title: "어프로치 거리감" },
+  { session: 5, title: "퍼팅 루틴 만들기" },
+  { session: 6, title: "필드 상황별 공략" },
+  { session: 7, title: "스코어 관리 전략" },
+  { session: 8, title: "라운드 전 최종 점검" },
+];
+
+export const SEED_INSTRUCTORS: Instructor[] = [
+  {
+    id: "kim-pro",
+    slug: "kim-pro",
+    display_name: "김도현 프로",
+    profile_image: img("photo-1535131749006-b7f58c99034b"),
+    gallery: [
+      img("photo-1587174486073-ae5e5cff23aa"),
+      img("photo-1592919505780-303950717480"),
+      img("photo-1622396636133-ba43f812bc35"),
+    ],
+    intro_video_url: null,
+    bio: "100타 탈출 전문 · 영상분석 기반 교정",
+    about:
+      "10년간 3,000명 이상을 지도한 100타 탈출 전문 프로입니다. 매 회차 스윙 영상을 촬영·비교해 '무엇이 바뀌었는지'를 눈으로 확인시켜 드립니다. 드라이버 슬라이스와 아이언 컨택 교정이 특기입니다.",
+    region: "강남",
+    lesson_places: ["실내연습장", "스크린골프", "필드레슨"],
+    specialties: ["100타 탈출", "드라이버", "아이언"],
+    career_years: 10,
+    career_history: [
+      "KPGA 프로 2014년 입회",
+      "前 OO컨트리클럽 소속 프로",
+      "누적 지도 수강생 3,000명+",
+    ],
+    lesson_style: ["영상분석형", "빡세게 교정형"],
+    gender: "male",
+    price_from: 60000,
+    response_time: "평균 1시간 이내",
+    badges: ["profile_verified", "cert_verified", "career_verified", "breakout_expert", "many_reviews", "fast_response"],
+    is_featured: true,
+    is_active: true,
+    verification_status: "verified",
+    certifications: [
+      { id: "c1", title: "KPGA 정회원", issuer: "한국프로골프협회", issued_year: 2014, verification_status: "verified" },
+      { id: "c2", title: "생활스포츠지도사 2급(골프)", issuer: "국민체육진흥공단", issued_year: 2015, verification_status: "verified" },
+    ],
+    packages: [
+      { id: "kp1", title: "원포인트 1회 레슨", description: "가장 급한 문제 하나를 집중 교정", duration_minutes: 50, session_count: 1, price: 60000, is_active: true },
+      { id: "kp2", title: "100타 탈출 4회권", description: "핵심 문제 2~3개 집중", duration_minutes: 50, session_count: 4, price: 220000, is_active: true },
+      { id: "kp3", title: "100타 탈출 8주 패키지", description: "진단부터 필드 적용까지 완주", duration_minutes: 50, session_count: 8, price: 400000, is_active: true },
+    ],
+    availability: commonAvailability("kim-pro"),
+    curriculum: breakoutCurriculum,
+    rating_avg: 5,
+    review_count: 2,
+  },
+  {
+    id: "park-pro",
+    slug: "park-pro",
+    display_name: "박서연 프로",
+    profile_image: img("photo-1594381898411-846e7d193883"),
+    gallery: [img("photo-1611374243147-44a702c2d44c"), img("photo-1500932334442-8761ee4810a7")],
+    intro_video_url: null,
+    bio: "여성·입문자 전문 · 친절 설명형",
+    about:
+      "골프가 처음이라 막막한 분, 오래 쉬었다 다시 시작하는 분을 편안하게 이끌어 드립니다. 겁먹지 않도록 그립·어드레스 기본부터 천천히, 그러나 정확하게 잡아드립니다.",
+    region: "판교",
+    lesson_places: ["실내연습장", "스크린골프"],
+    specialties: ["입문", "여성/주니어", "숏게임"],
+    career_years: 7,
+    career_history: ["KLPGA 프로", "여성 입문 클래스 다수 운영", "주니어 골프 지도 경력"],
+    lesson_style: ["친절 설명형", "기초 탄탄형"],
+    gender: "female",
+    price_from: 55000,
+    response_time: "평균 2시간 이내",
+    badges: ["profile_verified", "cert_verified", "beginner_friendly", "women_popular"],
+    is_featured: true,
+    is_active: true,
+    verification_status: "verified",
+    certifications: [
+      { id: "c3", title: "KLPGA 정회원", issuer: "한국여자프로골프협회", issued_year: 2018, verification_status: "verified" },
+    ],
+    packages: [
+      { id: "pp1", title: "왕초보 첫걸음 1회", description: "그립·자세·스윙 기초", duration_minutes: 50, session_count: 1, price: 55000, is_active: true },
+      { id: "pp2", title: "입문 완성 8회권", description: "필드 나갈 수 있는 몸 만들기", duration_minutes: 50, session_count: 8, price: 380000, is_active: true },
+    ],
+    availability: commonAvailability("park-pro"),
+    curriculum: [
+      { session: 1, title: "그립·어드레스·기본자세" },
+      { session: 2, title: "하프스윙 컨택 연습" },
+      { session: 3, title: "풀스윙 리듬 만들기" },
+      { session: 4, title: "아이언 방향성" },
+      { session: 5, title: "드라이버 입문" },
+      { session: 6, title: "숏게임 기초" },
+      { session: 7, title: "퍼팅 기초" },
+      { session: 8, title: "스크린 라운드 실전" },
+    ],
+    rating_avg: 5,
+    review_count: 1,
+  },
+  {
+    id: "lee-pro",
+    slug: "lee-pro",
+    display_name: "이준혁 프로",
+    profile_image: img("photo-1571019613454-1cb2f99b2d8b"),
+    gallery: [img("photo-1633158829585-23ba8f7c8caf"), img("photo-1530028828-25e8270793c5")],
+    intro_video_url: null,
+    bio: "필드레슨 · 라운드 운영 전문",
+    about:
+      "연습장에서는 잘 맞는데 필드만 나가면 무너지는 분들을 위한 실전형 프로입니다. 코스 매니지먼트와 멘탈, 상황별 클럽 선택까지 라운드에서 바로 쓰는 법을 가르칩니다.",
+    region: "수원",
+    lesson_places: ["야외연습장", "필드레슨"],
+    specialties: ["필드레슨", "100타 탈출", "드라이버"],
+    career_years: 12,
+    career_history: ["KPGA 프로", "투어 프로암 다수 출전", "필드 레슨 전문 12년"],
+    lesson_style: ["필드 중심형", "실전형"],
+    gender: "male",
+    price_from: 70000,
+    response_time: "평균 3시간 이내",
+    badges: ["profile_verified", "cert_verified", "career_verified", "breakout_expert"],
+    is_featured: false,
+    is_active: true,
+    verification_status: "verified",
+    certifications: [
+      { id: "c4", title: "KPGA 정회원", issuer: "한국프로골프협회", issued_year: 2012, verification_status: "verified" },
+    ],
+    packages: [
+      { id: "lp1", title: "야외 원포인트 1회", description: "스윙 실전 점검", duration_minutes: 60, session_count: 1, price: 70000, is_active: true },
+      { id: "lp2", title: "필드 동반 레슨(9홀)", description: "라운드하며 실전 코칭", duration_minutes: 180, session_count: 1, price: 250000, is_active: true },
+    ],
+    availability: commonAvailability("lee-pro"),
+    curriculum: breakoutCurriculum,
+    rating_avg: 4,
+    review_count: 1,
+  },
+  {
+    id: "jung-pro",
+    slug: "jung-pro",
+    display_name: "정민아 프로",
+    profile_image: img("photo-1607962837359-5e7e89f86776"),
+    gallery: [img("photo-1622819584099-e04ccb14e8a7")],
+    intro_video_url: null,
+    bio: "숏게임·퍼팅 스페셜리스트",
+    about:
+      "스코어의 절반은 100야드 안에서 결정됩니다. 어프로치 거리감과 3퍼트 탈출에 집중해 '치는 재미'가 아니라 '줄이는 재미'를 만들어 드립니다.",
+    region: "분당",
+    lesson_places: ["실내연습장", "스크린골프"],
+    specialties: ["숏게임", "퍼팅", "100타 탈출"],
+    career_years: 8,
+    career_history: ["KLPGA 프로", "숏게임 클리닉 운영"],
+    lesson_style: ["데이터 기반형", "친절 설명형"],
+    gender: "female",
+    price_from: 58000,
+    response_time: "평균 1시간 이내",
+    badges: ["profile_verified", "cert_verified", "fast_response", "women_popular"],
+    is_featured: false,
+    is_active: true,
+    verification_status: "verified",
+    certifications: [
+      { id: "c5", title: "KLPGA 정회원", issuer: "한국여자프로골프협회", issued_year: 2017, verification_status: "verified" },
+    ],
+    packages: [
+      { id: "jp1", title: "숏게임 집중 4회권", description: "어프로치+퍼팅", duration_minutes: 50, session_count: 4, price: 210000, is_active: true },
+    ],
+    availability: commonAvailability("jung-pro"),
+    curriculum: breakoutCurriculum,
+    rating_avg: 0,
+    review_count: 0,
+  },
+];
+
+export function seedBySlug(slug: string): Instructor | undefined {
+  return SEED_INSTRUCTORS.find((i) => i.slug === slug);
+}
+
+export function seedReviewsFor(instructorId: string): ReviewSummary[] {
+  return SEED_REVIEWS.filter(
+    (r) => r.instructor_id === instructorId && r.status === "visible",
+  );
+}
