@@ -74,11 +74,11 @@ on conflict (slug) do nothing;
 
 -- 자격증
 insert into instructor_certifications (instructor_id, title, issuer, issued_year, verification_status)
-select id, 'KPGA 정회원', '한국프로골프협회', 2014, 'verified' from instructors where slug='kim-pro'
-union all select id, '생활스포츠지도사 2급(골프)', '국민체육진흥공단', 2015, 'verified' from instructors where slug='kim-pro'
-union all select id, 'KLPGA 정회원', '한국여자프로골프협회', 2018, 'verified' from instructors where slug='park-pro'
-union all select id, 'KPGA 정회원', '한국프로골프협회', 2012, 'verified' from instructors where slug='lee-pro'
-union all select id, 'KLPGA 정회원', '한국여자프로골프협회', 2017, 'verified' from instructors where slug='jung-pro';
+select id, 'KPGA 정회원', '한국프로골프협회', 2014, 'verified'::verification_status from instructors where slug='kim-pro'
+union all select id, '생활스포츠지도사 2급(골프)', '국민체육진흥공단', 2015, 'verified'::verification_status from instructors where slug='kim-pro'
+union all select id, 'KLPGA 정회원', '한국여자프로골프협회', 2018, 'verified'::verification_status from instructors where slug='park-pro'
+union all select id, 'KPGA 정회원', '한국프로골프협회', 2012, 'verified'::verification_status from instructors where slug='lee-pro'
+union all select id, 'KLPGA 정회원', '한국여자프로골프협회', 2017, 'verified'::verification_status from instructors where slug='jung-pro';
 
 -- 레슨 상품
 insert into lesson_packages (instructor_id, title, description, duration_minutes, session_count, price, sort_order)
@@ -99,7 +99,7 @@ union all select id, 6, '09:00', '13:00', 50 from instructors;
 
 -- 노출 리뷰 (예약 완료 가정)
 insert into reviews (instructor_id, student_name_masked, rating_total, rating_kindness, rating_explanation, rating_effect, recommend_for, content, instructor_reply, status)
-select id, '김**', 5,5,5,5, '100타 탈출', '평균 108타에서 3개월 만에 96타 쳤어요. 드라이버 슬라이스 원인을 딱 짚어주시고 매 회차 영상으로 비교해주셨습니다.', '회원님 연습량이 정말 좋으셨어요! 다음 목표 90타도 금방입니다 :)', 'visible' from instructors where slug='kim-pro'
-union all select id, '이**', 5,5,4,5, '직장인', '설명이 군더더기 없고 과제를 명확히 주셔서 혼자 연습할 때도 헤매지 않았어요.', null, 'visible' from instructors where slug='kim-pro'
-union all select id, '최**', 5,5,5,4, '여성/입문자', '골프 완전 처음이었는데 그립부터 차근차근 알려주셔서 무섭지 않았어요.', null, 'visible' from instructors where slug='park-pro'
-union all select id, '정**', 4,4,5,4, '필드 준비', '필드레슨이 정말 도움됐습니다. 연습장과 필드는 다르다는 걸 배웠어요.', null, 'visible' from instructors where slug='lee-pro';
+select id, '김**', 5,5,5,5, '100타 탈출', '평균 108타에서 3개월 만에 96타 쳤어요. 드라이버 슬라이스 원인을 딱 짚어주시고 매 회차 영상으로 비교해주셨습니다.', '회원님 연습량이 정말 좋으셨어요! 다음 목표 90타도 금방입니다 :)', 'visible'::review_status from instructors where slug='kim-pro'
+union all select id, '이**', 5,5,4,5, '직장인', '설명이 군더더기 없고 과제를 명확히 주셔서 혼자 연습할 때도 헤매지 않았어요.', null, 'visible'::review_status from instructors where slug='kim-pro'
+union all select id, '최**', 5,5,5,4, '여성/입문자', '골프 완전 처음이었는데 그립부터 차근차근 알려주셔서 무섭지 않았어요.', null, 'visible'::review_status from instructors where slug='park-pro'
+union all select id, '정**', 4,4,5,4, '필드 준비', '필드레슨이 정말 도움됐습니다. 연습장과 필드는 다르다는 걸 배웠어요.', null, 'visible'::review_status from instructors where slug='lee-pro';
