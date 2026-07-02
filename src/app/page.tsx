@@ -98,37 +98,39 @@ export default async function HomePage() {
       </section>
 
       <section className="border-y border-fairway-100 bg-white">
-        <div className="container-page py-8 sm:py-10">
-          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-[13px] font-bold text-gold-700">골프정보</p>
-              <h2 className="mt-1 text-xl font-extrabold text-fairway-900">레슨 밖의 골프 고민도 함께 봅니다</h2>
-              <p className="mt-1 text-sm text-fairway-600">웨어, 장비, 이야기, 위키까지 초보 골퍼가 자주 찾는 정보를 모읍니다.</p>
+        <div className="container-page py-5 sm:py-6">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-[12px] font-bold text-gold-700">골프정보</p>
+              <h2 className="mt-0.5 text-base font-extrabold text-fairway-900">프로 선택 전 필요한 정보만 짧게</h2>
+              <p className="mt-0.5 text-[13px] text-fairway-600">
+                레슨프로를 고를 때 참고할 기본 정보만 가볍게 모았습니다.
+              </p>
             </div>
             <Link href="/info" className="text-sm font-bold text-fairway-700 hover:underline">
               정보 전체 보기
             </Link>
           </div>
-          <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
             {GOLF_INFO_CATEGORIES.map((category) => (
               <Link
                 key={category.slug}
                 href={`/info/${category.slug}`}
-                className="group overflow-hidden rounded-lg border border-fairway-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-fairway-200 hover:shadow-card"
+                className="group flex items-center gap-3 rounded-lg border border-fairway-100 bg-white p-2.5 transition hover:border-fairway-200 hover:bg-fairway-50"
               >
-                <div className="relative aspect-[16/10] overflow-hidden bg-fairway-100">
+                <div className="relative h-14 w-16 shrink-0 overflow-hidden rounded-md bg-fairway-100">
                   <Image
                     src={category.image}
                     alt={category.title}
                     fill
-                    sizes="(max-width: 768px) 50vw, 25vw"
+                    sizes="64px"
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                 </div>
-                <div className="p-3">
-                  <p className="text-[11px] font-black uppercase text-gold-700">{category.eyebrow}</p>
-                  <h3 className="mt-1 text-base font-black text-fairway-900">{category.title}</h3>
-                  <p className="mt-1 line-clamp-2 text-[13px] leading-5 text-fairway-600">{category.description}</p>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-black uppercase text-gold-700">{category.eyebrow}</p>
+                  <h3 className="mt-0.5 truncate text-sm font-black text-fairway-900">{category.title}</h3>
+                  <p className="mt-0.5 line-clamp-1 text-[12px] leading-4 text-fairway-600">{category.description}</p>
                 </div>
               </Link>
             ))}
