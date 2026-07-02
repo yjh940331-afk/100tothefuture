@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { BrandLogo } from "@/components/BrandLogo";
 
 const NAV = [
   { href: "/pros", label: "프로 찾기" },
@@ -26,13 +27,8 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-fairway-100 bg-white/90 backdrop-blur-xl">
       <div className="container-page flex h-14 items-center justify-between gap-4 sm:h-16">
-        <Link href="/" className="flex items-center gap-2.5" aria-label="100 to the Future 홈">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-fairway-950 text-[13px] font-black text-white">
-            100
-          </span>
-          <span className="text-base font-black tracking-tight text-fairway-950">
-            to the Future
-          </span>
+        <Link href="/" className="min-w-0" aria-label="100 to the Future 홈">
+          <BrandLogo />
         </Link>
 
         {/* 데스크톱 네비 */}
@@ -86,7 +82,7 @@ export function Header() {
           />
           <div className="absolute right-0 top-0 flex h-full w-72 max-w-[80%] flex-col bg-white shadow-2xl">
             <div className="flex h-14 items-center justify-between border-b border-fairway-100 px-5 sm:h-16">
-              <span className="font-black text-fairway-950">메뉴</span>
+              <BrandLogo compact />
               <button
                 type="button"
                 onClick={() => setOpen(false)}

@@ -1,16 +1,12 @@
 import Link from "next/link";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export function Footer() {
   return (
     <footer className="mt-20 border-t border-fairway-100 bg-[#101712] text-fairway-100">
       <div className="container-page grid gap-8 py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-xs font-black text-fairway-950">
-              100
-            </span>
-            <span className="font-extrabold text-white">to the Future</span>
-          </div>
+          <BrandLogo tone="light" />
           <p className="mt-3 max-w-xs text-sm leading-relaxed text-fairway-300">
             골퍼의 목표와 검증된 레슨 프로를 연결하는 골프 레슨 매칭 플랫폼.
           </p>
