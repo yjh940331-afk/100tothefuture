@@ -17,7 +17,10 @@ function asStringList(value: unknown): string[] {
 
 export async function POST(req: Request) {
   if (!(await isAdminAuthed())) {
-    return NextResponse.json({ ok: false, error: "권한이 없습니다." }, { status: 401 });
+    return NextResponse.json(
+      { ok: false, error: "권한이 없습니다." },
+      { status: 401 },
+    );
   }
 
   const body = await req.json().catch(() => ({}));
@@ -43,11 +46,11 @@ export async function POST(req: Request) {
     is_featured: Boolean(body.is_featured),
     is_active: body.is_active !== false,
     verification_status:
-      body.verification_status === "verified" || body.verification_status === "rejected"
+      body.verification_status === "verified" ||
+      body.verification_status === "rejected"
         ? body.verification_status
         : "pending",
   });
 
   return NextResponse.json(result, { status: result.ok ? 200 : 400 });
 }
-

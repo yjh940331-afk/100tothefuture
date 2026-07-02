@@ -11,7 +11,10 @@ import type {
   ReviewSummary,
 } from "@/lib/types";
 import { Stars } from "@/components/Stars";
-import { ProfileImageCropper, type ImageCropPresetId } from "@/components/admin/ProfileImageCropper";
+import {
+  ProfileImageCropper,
+  type ImageCropPresetId,
+} from "@/components/admin/ProfileImageCropper";
 
 type Tab = "requests" | "bookings" | "reviews" | "instructors";
 type BookingFilter = "all" | BookingStatus;
@@ -127,16 +130,25 @@ export function AdminDashboard({
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [requestMemos, setRequestMemos] = useState<Record<string, string>>(() =>
-    Object.fromEntries(lessonRequests.map((request) => [request.id, request.admin_memo ?? ""])),
+    Object.fromEntries(
+      lessonRequests.map((request) => [request.id, request.admin_memo ?? ""]),
+    ),
   );
   const [bookingMemos, setBookingMemos] = useState<Record<string, string>>(() =>
-    Object.fromEntries(bookings.map((booking) => [booking.id, booking.admin_memo ?? ""])),
+    Object.fromEntries(
+      bookings.map((booking) => [booking.id, booking.admin_memo ?? ""]),
+    ),
   );
-  const [reviewReplies, setReviewReplies] = useState<Record<string, string>>(() =>
-    Object.fromEntries(reviews.map((review) => [review.id, review.instructor_reply ?? ""])),
+  const [reviewReplies, setReviewReplies] = useState<Record<string, string>>(
+    () =>
+      Object.fromEntries(
+        reviews.map((review) => [review.id, review.instructor_reply ?? ""]),
+      ),
   );
-  const [instructorForm, setInstructorForm] = useState<InstructorFormState | null>(null);
-  const [imageCropRequest, setImageCropRequest] = useState<ImageCropRequest | null>(null);
+  const [instructorForm, setInstructorForm] =
+    useState<InstructorFormState | null>(null);
+  const [imageCropRequest, setImageCropRequest] =
+    useState<ImageCropRequest | null>(null);
 
   const filteredBookings = useMemo(
     () =>
@@ -146,7 +158,10 @@ export function AdminDashboard({
     [bookingFilter, bookings],
   );
 
-  async function postAdminAction(payload: Record<string, unknown>, busyKey: string) {
+  async function postAdminAction(
+    payload: Record<string, unknown>,
+    busyKey: string,
+  ) {
     setBusy(busyKey);
     setMessage("");
     try {
@@ -155,7 +170,9 @@ export function AdminDashboard({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const data = await res.json().catch(() => ({ ok: false, error: "응답을 확인하지 못했습니다." }));
+      const data = await res
+        .json()
+        .catch(() => ({ ok: false, error: "응답을 확인하지 못했습니다." }));
       if (!data.ok) {
         setMessage(data.error || "처리하지 못했습니다.");
         return;
@@ -186,7 +203,9 @@ export function AdminDashboard({
         price_from: Number(instructorForm.price_from || 0),
       }),
     });
-    const data = await res.json().catch(() => ({ ok: false, error: "응답을 확인하지 못했습니다." }));
+    const data = await res
+      .json()
+      .catch(() => ({ ok: false, error: "응답을 확인하지 못했습니다." }));
     setBusy(null);
     if (!data.ok) {
       setMessage(data.error || "프로 정보를 저장하지 못했습니다.");
@@ -201,7 +220,9 @@ export function AdminDashboard({
     key: K,
     value: InstructorFormState[K],
   ) {
-    setInstructorForm((current) => (current ? { ...current, [key]: value } : current));
+    setInstructorForm((current) =>
+      current ? { ...current, [key]: value } : current,
+    );
   }
 
   function getUploadSlug() {
@@ -221,7 +242,10 @@ export function AdminDashboard({
     const slug = getUploadSlug();
     if (!slug) return false;
 
-    const busyKey = target === "profile_image" ? "instructor-profile-upload" : "instructor-gallery-upload";
+    const busyKey =
+      target === "profile_image"
+        ? "instructor-profile-upload"
+        : "instructor-gallery-upload";
     setBusy(busyKey);
     setMessage("");
 
@@ -236,7 +260,9 @@ export function AdminDashboard({
         method: "POST",
         body,
       });
-      const data = await res.json().catch(() => ({ ok: false, error: "응답을 확인하지 못했습니다." }));
+      const data = await res
+        .json()
+        .catch(() => ({ ok: false, error: "응답을 확인하지 못했습니다." }));
 
       if (!data.ok || !data.url) {
         setMessage(data.error || "사진을 업로드하지 못했습니다.");
@@ -248,9 +274,14 @@ export function AdminDashboard({
         if (target === "profile_image") {
           return { ...current, profile_image: data.url };
         }
-        return { ...current, gallery: appendImageUrl(current.gallery, data.url) };
+        return {
+          ...current,
+          gallery: appendImageUrl(current.gallery, data.url),
+        };
       });
-      setMessage("사진을 업로드했습니다. 프로 저장을 누르면 사이트에 반영됩니다.");
+      setMessage(
+        "사진을 업로드했습니다. 프로 저장을 누르면 사이트에 반영됩니다.",
+      );
       return true;
     } catch {
       setMessage("사진을 업로드하지 못했습니다. 네트워크 상태를 확인해주세요.");
@@ -277,29 +308,49 @@ export function AdminDashboard({
     setImageCropRequest({
       file,
       target,
-      initialPreset: imageUrlList(instructorForm.gallery).length === 0 ? "galleryCover" : "galleryPhoto",
+      initialPreset:
+        imageUrlList(instructorForm.gallery).length === 0
+          ? "galleryCover"
+          : "galleryPhoto",
     });
     setMessage("갤러리 사진의 표시 영역을 맞춘 뒤 업로드해주세요.");
   }
 
   async function confirmImageCrop(file: File) {
     if (!imageCropRequest) return false;
-    const uploaded = await uploadInstructorImageFile(file, imageCropRequest.target, { cropped: true });
+    const uploaded = await uploadInstructorImageFile(
+      file,
+      imageCropRequest.target,
+      { cropped: true },
+    );
     if (uploaded) setImageCropRequest(null);
     return uploaded;
   }
 
-  const openRequests = lessonRequests.filter((request) => request.status === "open").length;
-  const pendingReviews = reviews.filter((review) => review.status === "pending").length;
-  const newBookings = bookings.filter((booking) => booking.status === "requested").length;
+  const openRequests = lessonRequests.filter(
+    (request) => request.status === "open",
+  ).length;
+  const pendingReviews = reviews.filter(
+    (review) => review.status === "pending",
+  ).length;
+  const newBookings = bookings.filter(
+    (booking) => booking.status === "requested",
+  ).length;
 
   return (
     <div className="container-page py-10">
       {imageCropRequest && (
         <ProfileImageCropper
           file={imageCropRequest.file}
-          uploading={busy === (imageCropRequest.target === "profile_image" ? "instructor-profile-upload" : "instructor-gallery-upload")}
-          mode={imageCropRequest.target === "profile_image" ? "profile" : "gallery"}
+          uploading={
+            busy ===
+            (imageCropRequest.target === "profile_image"
+              ? "instructor-profile-upload"
+              : "instructor-gallery-upload")
+          }
+          mode={
+            imageCropRequest.target === "profile_image" ? "profile" : "gallery"
+          }
           initialPreset={imageCropRequest.initialPreset}
           onCancel={() => setImageCropRequest(null)}
           onConfirm={confirmImageCrop}
@@ -310,18 +361,25 @@ export function AdminDashboard({
           <p className="text-sm font-bold text-gold-600">Operations</p>
           <h1 className="text-3xl font-black text-fairway-900">관리자</h1>
         </div>
-        <button onClick={logout} className="text-sm font-semibold text-fairway-500 hover:text-fairway-700">
+        <button
+          onClick={logout}
+          className="text-sm font-semibold text-fairway-500 hover:text-fairway-700"
+        >
           로그아웃
         </button>
       </div>
 
       {demo && (
         <p className="mt-4 rounded-lg bg-gold-100 p-3 text-sm text-gold-900">
-          데모 모드입니다. Supabase를 연결하면 실제 예약, 견적 요청, 후기, 프로 정보가 저장됩니다.
+          데모 모드입니다. Supabase를 연결하면 실제 예약, 견적 요청, 후기, 프로
+          정보가 저장됩니다.
         </p>
       )}
       {message && (
-        <p className="mt-4 rounded-lg bg-fairway-50 p-3 text-sm font-semibold text-fairway-700" aria-live="polite">
+        <p
+          className="mt-4 rounded-lg bg-fairway-50 p-3 text-sm font-semibold text-fairway-700"
+          aria-live="polite"
+        >
           {message}
         </p>
       )}
@@ -336,7 +394,10 @@ export function AdminDashboard({
         <TabBtn active={tab === "reviews"} onClick={() => setTab("reviews")}>
           후기 승인 {pendingReviews > 0 && <Count n={pendingReviews} />}
         </TabBtn>
-        <TabBtn active={tab === "instructors"} onClick={() => setTab("instructors")}>
+        <TabBtn
+          active={tab === "instructors"}
+          onClick={() => setTab("instructors")}
+        >
           프로 관리
         </TabBtn>
       </div>
@@ -346,21 +407,48 @@ export function AdminDashboard({
           <section>
             <div className="mb-4 grid gap-3 rounded-lg border border-fairway-100 bg-white p-4 sm:grid-cols-4">
               <MiniMetric label="신규 요청" value={String(openRequests)} />
-              <MiniMetric label="진행 중" value={String(lessonRequests.filter((r) => ["contacted", "quoted"].includes(r.status)).length)} />
-              <MiniMetric label="종료" value={String(lessonRequests.filter((r) => r.status === "closed").length)} />
+              <MiniMetric
+                label="진행 중"
+                value={String(
+                  lessonRequests.filter((r) =>
+                    ["contacted", "quoted"].includes(r.status),
+                  ).length,
+                )}
+              />
+              <MiniMetric
+                label="종료"
+                value={String(
+                  lessonRequests.filter((r) => r.status === "closed").length,
+                )}
+              />
               <MiniMetric label="전체" value={String(lessonRequests.length)} />
             </div>
-            <Panel empty={lessonRequests.length === 0} emptyText="아직 접수된 견적 요청이 없습니다.">
+            <Panel
+              empty={lessonRequests.length === 0}
+              emptyText="아직 접수된 견적 요청이 없습니다."
+            >
               {lessonRequests.map((request) => (
                 <div key={request.id} className="card p-5">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-lg font-black text-fairway-900">{request.customer_name}</span>
-                        <StatusPill label={lessonRequestStatusLabels[request.status]} status={request.status} />
-                        {request.quote_count ? <StatusPill label={`견적 ${request.quote_count}개`} status="visible" /> : null}
+                        <span className="text-lg font-black text-fairway-900">
+                          {request.customer_name}
+                        </span>
+                        <StatusPill
+                          label={lessonRequestStatusLabels[request.status]}
+                          status={request.status}
+                        />
+                        {request.quote_count ? (
+                          <StatusPill
+                            label={`견적 ${request.quote_count}개`}
+                            status="visible"
+                          />
+                        ) : null}
                       </div>
-                      <p className="mt-1 text-sm font-semibold text-fairway-600">{request.customer_phone}</p>
+                      <p className="mt-1 text-sm font-semibold text-fairway-600">
+                        {request.customer_phone}
+                      </p>
                     </div>
                     <div className="text-right text-xs text-fairway-400">
                       {new Date(request.created_at).toLocaleString("ko-KR")}
@@ -370,13 +458,43 @@ export function AdminDashboard({
                   <dl className="mt-4 grid gap-3 text-sm md:grid-cols-3">
                     <Info label="지역" value={request.region} />
                     <Info label="목표" value={listText(request.goals)} />
-                    <Info label="장소" value={listText(request.lesson_places)} />
-                    <Info label="현재 실력" value={request.skill_level || "-"} />
-                    <Info label="평균 스코어" value={request.score_range || "-"} />
-                    <Info label="가능 요일/시간" value={[listText(request.preferred_days), request.preferred_time_slot].filter(Boolean).join(" · ") || "-"} />
-                    <Info label="예산" value={moneyRange(request.budget_min, request.budget_max)} />
-                    <Info label="희망 상품" value={request.package_preference || "-"} />
-                    <Info label="프로 성별" value={genderPreferenceLabel(request.instructor_gender_preference)} />
+                    <Info
+                      label="장소"
+                      value={listText(request.lesson_places)}
+                    />
+                    <Info
+                      label="현재 실력"
+                      value={request.skill_level || "-"}
+                    />
+                    <Info
+                      label="평균 스코어"
+                      value={request.score_range || "-"}
+                    />
+                    <Info
+                      label="가능 요일/시간"
+                      value={
+                        [
+                          listText(request.preferred_days),
+                          request.preferred_time_slot,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ") || "-"
+                      }
+                    />
+                    <Info
+                      label="예산"
+                      value={moneyRange(request.budget_min, request.budget_max)}
+                    />
+                    <Info
+                      label="희망 상품"
+                      value={request.package_preference || "-"}
+                    />
+                    <Info
+                      label="프로 성별"
+                      value={genderPreferenceLabel(
+                        request.instructor_gender_preference,
+                      )}
+                    />
                   </dl>
 
                   {request.memo && (
@@ -392,7 +510,10 @@ export function AdminDashboard({
                       className="input min-h-[88px]"
                       value={requestMemos[request.id] ?? ""}
                       onChange={(event) =>
-                        setRequestMemos((current) => ({ ...current, [request.id]: event.target.value }))
+                        setRequestMemos((current) => ({
+                          ...current,
+                          [request.id]: event.target.value,
+                        }))
                       }
                       placeholder="통화 결과, 후보 프로, 견적 안내 내용을 적어두세요."
                     />
@@ -403,7 +524,10 @@ export function AdminDashboard({
                       <ActionBtn
                         key={status}
                         onClick={() =>
-                          postAdminAction({ type: "lesson_request", id: request.id, status }, request.id + status)
+                          postAdminAction(
+                            { type: "lesson_request", id: request.id, status },
+                            request.id + status,
+                          )
                         }
                         busy={busy === request.id + status}
                         active={request.status === status}
@@ -414,7 +538,11 @@ export function AdminDashboard({
                     <ActionBtn
                       onClick={() =>
                         postAdminAction(
-                          { type: "lesson_request", id: request.id, admin_memo: requestMemos[request.id] ?? "" },
+                          {
+                            type: "lesson_request",
+                            id: request.id,
+                            admin_memo: requestMemos[request.id] ?? "",
+                          },
                           request.id + "memo",
                         )
                       }
@@ -433,7 +561,10 @@ export function AdminDashboard({
         {tab === "bookings" && (
           <section>
             <div className="mb-4 flex flex-wrap gap-2">
-              <FilterBtn active={bookingFilter === "all"} onClick={() => setBookingFilter("all")}>
+              <FilterBtn
+                active={bookingFilter === "all"}
+                onClick={() => setBookingFilter("all")}
+              >
                 전체 {bookings.length}
               </FilterBtn>
               {bookingStatuses.map((status) => (
@@ -442,20 +573,37 @@ export function AdminDashboard({
                   active={bookingFilter === status}
                   onClick={() => setBookingFilter(status)}
                 >
-                  {bookingStatusLabels[status]} {bookings.filter((booking) => booking.status === status).length}
+                  {bookingStatusLabels[status]}{" "}
+                  {
+                    bookings.filter((booking) => booking.status === status)
+                      .length
+                  }
                 </FilterBtn>
               ))}
             </div>
-            <Panel empty={filteredBookings.length === 0} emptyText="조건에 맞는 예약이 없습니다.">
+            <Panel
+              empty={filteredBookings.length === 0}
+              emptyText="조건에 맞는 예약이 없습니다."
+            >
               {filteredBookings.map((booking) => (
                 <div key={booking.id} className="card p-5">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-lg font-black text-fairway-900">{booking.student_name}</span>
-                        <StatusPill label={bookingStatusLabels[booking.status] ?? booking.status} status={booking.status} />
+                        <span className="text-lg font-black text-fairway-900">
+                          {booking.student_name}
+                        </span>
+                        <StatusPill
+                          label={
+                            bookingStatusLabels[booking.status] ??
+                            booking.status
+                          }
+                          status={booking.status}
+                        />
                       </div>
-                      <p className="mt-1 text-sm font-semibold text-fairway-600">{booking.student_phone}</p>
+                      <p className="mt-1 text-sm font-semibold text-fairway-600">
+                        {booking.student_phone}
+                      </p>
                     </div>
                     <div className="text-right text-xs text-fairway-400">
                       {new Date(booking.created_at).toLocaleString("ko-KR")}
@@ -463,12 +611,32 @@ export function AdminDashboard({
                   </div>
 
                   <dl className="mt-4 grid gap-3 text-sm md:grid-cols-3">
-                    <Info label="프로" value={booking.instructor_name ?? booking.instructor_id} />
-                    <Info label="희망 일정" value={[booking.preferred_date, booking.preferred_time].filter(Boolean).join(" ") || "-"} />
+                    <Info
+                      label="프로"
+                      value={booking.instructor_name ?? booking.instructor_id}
+                    />
+                    <Info
+                      label="희망 일정"
+                      value={
+                        [booking.preferred_date, booking.preferred_time]
+                          .filter(Boolean)
+                          .join(" ") || "-"
+                      }
+                    />
                     <Info label="상품" value={booking.package_title ?? "-"} />
                     <Info label="지역" value={booking.region ?? "-"} />
-                    <Info label="결제 상태" value={booking.payment_status ?? "none"} />
-                    <Info label="예상 금액" value={booking.price ? `${booking.price.toLocaleString("ko-KR")}원` : "-"} />
+                    <Info
+                      label="결제 상태"
+                      value={booking.payment_status ?? "none"}
+                    />
+                    <Info
+                      label="예상 금액"
+                      value={
+                        booking.price
+                          ? `${booking.price.toLocaleString("ko-KR")}원`
+                          : "-"
+                      }
+                    />
                   </dl>
 
                   {booking.goal && (
@@ -490,18 +658,32 @@ export function AdminDashboard({
                       className="input min-h-[88px]"
                       value={bookingMemos[booking.id] ?? ""}
                       onChange={(event) =>
-                        setBookingMemos((current) => ({ ...current, [booking.id]: event.target.value }))
+                        setBookingMemos((current) => ({
+                          ...current,
+                          [booking.id]: event.target.value,
+                        }))
                       }
                       placeholder="통화 결과, 확정 안내, 특이사항을 남겨두세요."
                     />
                   </label>
 
                   <div className="mt-4 flex flex-wrap gap-1.5">
-                    {(["confirmed", "completed", "canceled", "rejected", "no_show"] as const).map((status) => (
+                    {(
+                      [
+                        "confirmed",
+                        "completed",
+                        "canceled",
+                        "rejected",
+                        "no_show",
+                      ] as const
+                    ).map((status) => (
                       <ActionBtn
                         key={status}
                         onClick={() =>
-                          postAdminAction({ type: "booking", id: booking.id, status }, booking.id + status)
+                          postAdminAction(
+                            { type: "booking", id: booking.id, status },
+                            booking.id + status,
+                          )
                         }
                         busy={busy === booking.id + status}
                         active={booking.status === status}
@@ -512,7 +694,11 @@ export function AdminDashboard({
                     <ActionBtn
                       onClick={() =>
                         postAdminAction(
-                          { type: "booking_details", id: booking.id, admin_memo: bookingMemos[booking.id] ?? "" },
+                          {
+                            type: "booking_details",
+                            id: booking.id,
+                            admin_memo: bookingMemos[booking.id] ?? "",
+                          },
                           booking.id + "memo",
                         )
                       }
@@ -529,48 +715,78 @@ export function AdminDashboard({
         )}
 
         {tab === "reviews" && (
-          <Panel empty={reviews.length === 0} emptyText="아직 등록된 후기가 없습니다.">
+          <Panel
+            empty={reviews.length === 0}
+            emptyText="아직 등록된 후기가 없습니다."
+          >
             {reviews.map((review) => (
               <div key={review.id} className="card p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-bold text-fairway-900">{review.student_name_masked}</span>
+                    <span className="font-bold text-fairway-900">
+                      {review.student_name_masked}
+                    </span>
                     <Stars value={review.rating_total} size={14} />
                     {review.instructor_name && (
-                      <span className="text-sm text-fairway-500">· {review.instructor_name}</span>
+                      <span className="text-sm text-fairway-500">
+                        · {review.instructor_name}
+                      </span>
                     )}
                   </div>
-                  <StatusPill label={reviewStatusLabels[review.status] ?? review.status} status={review.status} />
+                  <StatusPill
+                    label={reviewStatusLabels[review.status] ?? review.status}
+                    status={review.status}
+                  />
                 </div>
-                <p className="mt-3 text-sm leading-6 text-fairway-700">{review.content}</p>
+                <p className="mt-3 text-sm leading-6 text-fairway-700">
+                  {review.content}
+                </p>
                 <label className="mt-4 block">
                   <span className="label">프로 답변</span>
                   <textarea
                     className="input min-h-[80px]"
                     value={reviewReplies[review.id] ?? ""}
                     onChange={(event) =>
-                      setReviewReplies((current) => ({ ...current, [review.id]: event.target.value }))
+                      setReviewReplies((current) => ({
+                        ...current,
+                        [review.id]: event.target.value,
+                      }))
                     }
                     placeholder="후기 하단에 노출될 답변을 입력하세요."
                   />
                 </label>
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   <ActionBtn
-                    onClick={() => postAdminAction({ type: "review", id: review.id, status: "visible" }, review.id + "visible")}
+                    onClick={() =>
+                      postAdminAction(
+                        { type: "review", id: review.id, status: "visible" },
+                        review.id + "visible",
+                      )
+                    }
                     busy={busy === review.id + "visible"}
                     active={review.status === "visible"}
                   >
                     승인
                   </ActionBtn>
                   <ActionBtn
-                    onClick={() => postAdminAction({ type: "review", id: review.id, status: "hidden" }, review.id + "hidden")}
+                    onClick={() =>
+                      postAdminAction(
+                        { type: "review", id: review.id, status: "hidden" },
+                        review.id + "hidden",
+                      )
+                    }
                     busy={busy === review.id + "hidden"}
                     active={review.status === "hidden"}
                   >
                     숨김
                   </ActionBtn>
                   <ActionBtn
-                    onClick={() => postAdminAction({ type: "review", id: review.id, status: "pending" }, review.id + "pending")}
+                    onClick={() =>
+                      postAdminAction(
+                        { type: "review", id: review.id, status: "pending" },
+                        review.id + "pending",
+                      )
+                    }
                     busy={busy === review.id + "pending"}
                     active={review.status === "pending"}
                   >
@@ -579,7 +795,11 @@ export function AdminDashboard({
                   <ActionBtn
                     onClick={() =>
                       postAdminAction(
-                        { type: "review_reply", id: review.id, instructor_reply: reviewReplies[review.id] ?? "" },
+                        {
+                          type: "review_reply",
+                          id: review.id,
+                          instructor_reply: reviewReplies[review.id] ?? "",
+                        },
                         review.id + "reply",
                       )
                     }
@@ -598,35 +818,86 @@ export function AdminDashboard({
           <section>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm text-fairway-500">
-                프로 등록, 기본 정보 수정, 노출/추천/검증 상태를 한 화면에서 관리합니다.
+                프로 등록, 기본 정보 수정, 노출/추천/검증 상태를 한 화면에서
+                관리합니다.
               </p>
-              <button onClick={() => setInstructorForm(emptyInstructorForm)} className="btn-primary">
+              <button
+                onClick={() => setInstructorForm(emptyInstructorForm)}
+                className="btn-primary"
+              >
                 프로 추가
               </button>
             </div>
 
             {instructorForm && (
-              <form onSubmit={submitInstructor} className="mb-5 rounded-lg border border-fairway-100 bg-white p-5">
+              <form
+                onSubmit={submitInstructor}
+                className="mb-5 rounded-lg border border-fairway-100 bg-white p-5"
+              >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <h2 className="text-xl font-black text-fairway-900">
                     {instructorForm.id ? "프로 수정" : "프로 추가"}
                   </h2>
-                  <button type="button" onClick={() => setInstructorForm(null)} className="text-sm font-semibold text-fairway-500">
+                  <button
+                    type="button"
+                    onClick={() => setInstructorForm(null)}
+                    className="text-sm font-semibold text-fairway-500"
+                  >
                     닫기
                   </button>
                 </div>
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
-                  <TextInput label="프로명 *" value={instructorForm.display_name} onChange={(value) => updateInstructorForm("display_name", value)} />
-                  <TextInput label="슬러그 *" value={instructorForm.slug} onChange={(value) => updateInstructorForm("slug", value)} placeholder="kim-pro" />
-                  <TextInput label="지역 *" value={instructorForm.region} onChange={(value) => updateInstructorForm("region", value)} />
-                  <TextInput label="최소가" type="number" value={instructorForm.price_from} onChange={(value) => updateInstructorForm("price_from", value)} />
-                  <TextInput label="경력 연차" type="number" value={instructorForm.career_years} onChange={(value) => updateInstructorForm("career_years", value)} />
-                  <TextInput label="응답 시간" value={instructorForm.response_time} onChange={(value) => updateInstructorForm("response_time", value)} placeholder="평균 1시간 이내" />
+                  <TextInput
+                    label="프로명 *"
+                    value={instructorForm.display_name}
+                    onChange={(value) =>
+                      updateInstructorForm("display_name", value)
+                    }
+                  />
+                  <TextInput
+                    label="슬러그 *"
+                    value={instructorForm.slug}
+                    onChange={(value) => updateInstructorForm("slug", value)}
+                    placeholder="kim-pro"
+                  />
+                  <TextInput
+                    label="지역 *"
+                    value={instructorForm.region}
+                    onChange={(value) => updateInstructorForm("region", value)}
+                  />
+                  <TextInput
+                    label="최소가"
+                    type="number"
+                    value={instructorForm.price_from}
+                    onChange={(value) =>
+                      updateInstructorForm("price_from", value)
+                    }
+                  />
+                  <TextInput
+                    label="경력 연차"
+                    type="number"
+                    value={instructorForm.career_years}
+                    onChange={(value) =>
+                      updateInstructorForm("career_years", value)
+                    }
+                  />
+                  <TextInput
+                    label="응답 시간"
+                    value={instructorForm.response_time}
+                    onChange={(value) =>
+                      updateInstructorForm("response_time", value)
+                    }
+                    placeholder="평균 1시간 이내"
+                  />
                   <ImageUrlField
                     label="프로필 이미지 URL"
                     value={instructorForm.profile_image}
-                    onChange={(value) => updateInstructorForm("profile_image", value)}
-                    onUpload={(event) => uploadInstructorImage(event, "profile_image")}
+                    onChange={(value) =>
+                      updateInstructorForm("profile_image", value)
+                    }
+                    onUpload={(event) =>
+                      uploadInstructorImage(event, "profile_image")
+                    }
                     uploading={busy === "instructor-profile-upload"}
                     uploadLabel="프로필 사진 업로드"
                   />
@@ -634,18 +905,48 @@ export function AdminDashboard({
                     label="갤러리 URL"
                     value={instructorForm.gallery}
                     onChange={(value) => updateInstructorForm("gallery", value)}
-                    onUpload={(event) => uploadInstructorImage(event, "gallery")}
+                    onUpload={(event) =>
+                      uploadInstructorImage(event, "gallery")
+                    }
                     uploading={busy === "instructor-gallery-upload"}
                     uploadLabel="갤러리 사진 추가"
                     multiple
                     placeholder="쉼표 또는 줄바꿈으로 구분"
                   />
-                  <TextInput label="전문 분야" value={instructorForm.specialties} onChange={(value) => updateInstructorForm("specialties", value)} placeholder="입문, 드라이버, 숏게임" />
-                  <TextInput label="레슨 장소" value={instructorForm.lesson_places} onChange={(value) => updateInstructorForm("lesson_places", value)} placeholder="실내연습장, 스크린골프" />
-                  <TextInput label="뱃지" value={instructorForm.badges} onChange={(value) => updateInstructorForm("badges", value)} placeholder="profile_verified, fast_response" />
+                  <TextInput
+                    label="전문 분야"
+                    value={instructorForm.specialties}
+                    onChange={(value) =>
+                      updateInstructorForm("specialties", value)
+                    }
+                    placeholder="입문, 드라이버, 숏게임"
+                  />
+                  <TextInput
+                    label="레슨 장소"
+                    value={instructorForm.lesson_places}
+                    onChange={(value) =>
+                      updateInstructorForm("lesson_places", value)
+                    }
+                    placeholder="실내연습장, 스크린골프"
+                  />
+                  <TextInput
+                    label="뱃지"
+                    value={instructorForm.badges}
+                    onChange={(value) => updateInstructorForm("badges", value)}
+                    placeholder="profile_verified, fast_response"
+                  />
                   <label>
                     <span className="label">성별</span>
-                    <select className="input" value={instructorForm.gender} onChange={(event) => updateInstructorForm("gender", event.target.value as "male" | "female")}>
+                    <select
+                      className="input"
+                      value={instructorForm.gender}
+                      onChange={(event) =>
+                        updateInstructorForm(
+                          "gender",
+                          event.target.value as "male" | "female",
+                        )
+                      }
+                    >
                       <option value="male">남성</option>
                       <option value="female">여성</option>
                     </select>
@@ -656,7 +957,11 @@ export function AdminDashboard({
                       className="input"
                       value={instructorForm.verification_status}
                       onChange={(event) =>
-                        updateInstructorForm("verification_status", event.target.value as "pending" | "verified" | "rejected")
+                        updateInstructorForm(
+                          "verification_status",
+                          event.target.value as
+                            "pending" | "verified" | "rejected",
+                        )
                       }
                     >
                       <option value="pending">대기</option>
@@ -666,41 +971,101 @@ export function AdminDashboard({
                   </label>
                 </div>
                 <div className="mt-3 grid gap-3 md:grid-cols-2">
-                  <TextArea label="목록 소개" value={instructorForm.bio} onChange={(value) => updateInstructorForm("bio", value)} />
-                  <TextArea label="상세 소개" value={instructorForm.about} onChange={(value) => updateInstructorForm("about", value)} />
-                  <TextArea label="경력" value={instructorForm.career_history} onChange={(value) => updateInstructorForm("career_history", value)} placeholder="줄바꿈으로 구분" />
-                  <TextArea label="레슨 스타일" value={instructorForm.lesson_style} onChange={(value) => updateInstructorForm("lesson_style", value)} placeholder="줄바꿈으로 구분" />
+                  <TextArea
+                    label="목록 소개"
+                    value={instructorForm.bio}
+                    onChange={(value) => updateInstructorForm("bio", value)}
+                  />
+                  <TextArea
+                    label="상세 소개"
+                    value={instructorForm.about}
+                    onChange={(value) => updateInstructorForm("about", value)}
+                  />
+                  <TextArea
+                    label="경력"
+                    value={instructorForm.career_history}
+                    onChange={(value) =>
+                      updateInstructorForm("career_history", value)
+                    }
+                    placeholder="줄바꿈으로 구분"
+                  />
+                  <TextArea
+                    label="레슨 스타일"
+                    value={instructorForm.lesson_style}
+                    onChange={(value) =>
+                      updateInstructorForm("lesson_style", value)
+                    }
+                    placeholder="줄바꿈으로 구분"
+                  />
                 </div>
                 <div className="mt-4 flex flex-wrap gap-4">
-                  <Check label="추천 프로" checked={instructorForm.is_featured} onChange={(checked) => updateInstructorForm("is_featured", checked)} />
-                  <Check label="노출 활성" checked={instructorForm.is_active} onChange={(checked) => updateInstructorForm("is_active", checked)} />
+                  <Check
+                    label="추천 프로"
+                    checked={instructorForm.is_featured}
+                    onChange={(checked) =>
+                      updateInstructorForm("is_featured", checked)
+                    }
+                  />
+                  <Check
+                    label="노출 활성"
+                    checked={instructorForm.is_active}
+                    onChange={(checked) =>
+                      updateInstructorForm("is_active", checked)
+                    }
+                  />
                 </div>
                 <div className="mt-5 flex justify-end">
-                  <button type="submit" disabled={busy === "instructor-save"} className="btn-primary">
+                  <button
+                    type="submit"
+                    disabled={busy === "instructor-save"}
+                    className="btn-primary"
+                  >
                     {busy === "instructor-save" ? "저장 중..." : "프로 저장"}
                   </button>
                 </div>
               </form>
             )}
 
-            <Panel empty={instructors.length === 0} emptyText="등록된 프로가 없습니다.">
+            <Panel
+              empty={instructors.length === 0}
+              emptyText="등록된 프로가 없습니다."
+            >
               {instructors.map((instructor) => (
-                <div key={instructor.id} className="card flex flex-wrap items-center justify-between gap-3 p-4">
+                <div
+                  key={instructor.id}
+                  className="card flex flex-wrap items-center justify-between gap-3 p-4"
+                >
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-bold text-fairway-900">{instructor.display_name}</span>
+                      <span className="font-bold text-fairway-900">
+                        {instructor.display_name}
+                      </span>
                       <StatusPill
-                        label={instructor.verification_status === "verified" ? "검증 완료" : "검증 대기"}
+                        label={
+                          instructor.verification_status === "verified"
+                            ? "검증 완료"
+                            : "검증 대기"
+                        }
                         status={instructor.verification_status}
                       />
-                      {!instructor.is_active && <StatusPill label="비활성" status="hidden" />}
-                      {instructor.is_featured && <StatusPill label="추천" status="visible" />}
+                      {!instructor.is_active && (
+                        <StatusPill label="비활성" status="hidden" />
+                      )}
+                      {instructor.is_featured && (
+                        <StatusPill label="추천" status="visible" />
+                      )}
                     </div>
                     <p className="mt-1 text-sm text-fairway-500">
-                      {instructor.region} · {instructor.specialties.join(", ") || "전문 분야 미입력"}
+                      {instructor.region} ·{" "}
+                      {instructor.specialties.join(", ") || "전문 분야 미입력"}
                     </p>
                   </div>
-                  <button onClick={() => setInstructorForm(formFromInstructor(instructor))} className="rounded-lg border border-fairway-200 px-3 py-2 text-sm font-bold text-fairway-700 hover:bg-fairway-50">
+                  <button
+                    onClick={() =>
+                      setInstructorForm(formFromInstructor(instructor))
+                    }
+                    className="rounded-lg border border-fairway-200 px-3 py-2 text-sm font-bold text-fairway-700 hover:bg-fairway-50"
+                  >
                     수정
                   </button>
                 </div>
@@ -756,7 +1121,8 @@ function listText(values?: string[] | null) {
 }
 
 function moneyRange(min?: number | null, max?: number | null) {
-  if (min && max) return `${min.toLocaleString("ko-KR")}~${max.toLocaleString("ko-KR")}원`;
+  if (min && max)
+    return `${min.toLocaleString("ko-KR")}~${max.toLocaleString("ko-KR")}원`;
   if (min) return `${min.toLocaleString("ko-KR")}원 이상`;
   if (max) return `${max.toLocaleString("ko-KR")}원 이하`;
   return "-";
@@ -768,12 +1134,22 @@ function genderPreferenceLabel(value?: string | null) {
   return "상관없음";
 }
 
-function TabBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+function TabBtn({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <button
       onClick={onClick}
       className={`flex shrink-0 items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-bold transition-colors ${
-        active ? "border-fairway-700 text-fairway-900" : "border-transparent text-fairway-400 hover:text-fairway-600"
+        active
+          ? "border-fairway-700 text-fairway-900"
+          : "border-transparent text-fairway-400 hover:text-fairway-600"
       }`}
     >
       {children}
@@ -781,7 +1157,15 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
   );
 }
 
-function FilterBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+function FilterBtn({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <button
       onClick={onClick}
@@ -798,12 +1182,25 @@ function FilterBtn({ active, onClick, children }: { active: boolean; onClick: ()
 
 function Count({ n }: { n: number }) {
   return (
-    <span className="rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold text-white">{n}</span>
+    <span className="rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+      {n}
+    </span>
   );
 }
 
-function Panel({ empty, emptyText, children }: { empty: boolean; emptyText: string; children: React.ReactNode }) {
-  if (empty) return <div className="card p-12 text-center text-fairway-500">{emptyText}</div>;
+function Panel({
+  empty,
+  emptyText,
+  children,
+}: {
+  empty: boolean;
+  emptyText: string;
+  children: React.ReactNode;
+}) {
+  if (empty)
+    return (
+      <div className="card p-12 text-center text-fairway-500">{emptyText}</div>
+    );
   return <div className="space-y-3">{children}</div>;
 }
 
@@ -842,10 +1239,17 @@ function StatusPill({ label, status }: { label: string; status: string }) {
     status === "quoted" ||
     status === "closed"
       ? "bg-fairway-100 text-fairway-800"
-      : status === "requested" || status === "pending" || status === "open" || status === "contacted"
+      : status === "requested" ||
+          status === "pending" ||
+          status === "open" ||
+          status === "contacted"
         ? "bg-gold-100 text-gold-800"
         : "bg-rose-50 text-rose-600";
-  return <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${tone}`}>{label}</span>;
+  return (
+    <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${tone}`}>
+      {label}
+    </span>
+  );
 }
 
 function Info({ label, value }: { label: string; value: React.ReactNode }) {
@@ -937,9 +1341,16 @@ function ImageUrlField({
       {urls.length > 0 && (
         <div className="mt-2 grid grid-cols-4 gap-1.5">
           {urls.map((url, index) => (
-            <div key={`${url}-${index}`} className="relative aspect-square overflow-hidden rounded-lg bg-fairway-100">
+            <div
+              key={`${url}-${index}`}
+              className="relative aspect-square overflow-hidden rounded-lg bg-fairway-100"
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt={`${label} 미리보기 ${index + 1}`} className="h-full w-full object-cover" />
+              <img
+                src={url}
+                alt={`${label} 미리보기 ${index + 1}`}
+                className="h-full w-full object-cover"
+              />
             </div>
           ))}
         </div>
@@ -958,7 +1369,9 @@ function ImageUrlField({
             {uploading ? "업로드 중..." : uploadLabel}
           </span>
         </span>
-        <span className="text-xs text-fairway-400">R2 저장 · JPG, PNG, WebP · 25MB 이하</span>
+        <span className="text-xs text-fairway-400">
+          R2 저장 · JPG, PNG, WebP · 25MB 이하
+        </span>
       </div>
     </div>
   );

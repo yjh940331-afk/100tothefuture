@@ -21,10 +21,16 @@ export async function POST(req: NextRequest) {
   }
 
   const now = Date.now();
-  const failures = parseLoginFailureCookie(req.cookies.get(ADMIN_FAIL_COOKIE)?.value, now);
+  const failures = parseLoginFailureCookie(
+    req.cookies.get(ADMIN_FAIL_COOKIE)?.value,
+    now,
+  );
   if (failures.count >= ADMIN_LOGIN_MAX_FAILURES) {
     return NextResponse.json(
-      { ok: false, error: "로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요." },
+      {
+        ok: false,
+        error: "로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요.",
+      },
       { status: 429 },
     );
   }

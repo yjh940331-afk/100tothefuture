@@ -21,4 +21,3 @@ export async function PATCH(req: Request) {
   const result = await customerCancelBooking(input);
   return NextResponse.json(result, { status: result.ok ? 200 : 400 });
 }
-

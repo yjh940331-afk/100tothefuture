@@ -20,14 +20,19 @@ export function BookingForm({ pro }: { pro: Instructor }) {
   });
   const [privacy, setPrivacy] = useState(false);
   const [thirdParty, setThirdParty] = useState(false);
-  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">(
+    "idle",
+  );
   const [error, setError] = useState("");
   const [demo, setDemo] = useState(false);
   const [bookingId, setBookingId] = useState("");
 
-  const set = (key: string, value: string) => setForm((current) => ({ ...current, [key]: value }));
+  const set = (key: string, value: string) =>
+    setForm((current) => ({ ...current, [key]: value }));
   const today = new Date().toISOString().slice(0, 10);
-  const selectedPackage = pro.packages.find((item) => item.id === form.lesson_package_id);
+  const selectedPackage = pro.packages.find(
+    (item) => item.id === form.lesson_package_id,
+  );
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -72,7 +77,12 @@ export function BookingForm({ pro }: { pro: Instructor }) {
     return (
       <div className="card p-8 text-center">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-fairway-100 text-fairway-700">
-          <svg viewBox="0 0 20 20" className="h-7 w-7" fill="currentColor" aria-hidden>
+          <svg
+            viewBox="0 0 20 20"
+            className="h-7 w-7"
+            fill="currentColor"
+            aria-hidden
+          >
             <path
               fillRule="evenodd"
               d="M16.7 5.3a1 1 0 010 1.4l-7.5 7.5a1 1 0 01-1.4 0L3.3 9.7a1 1 0 011.4-1.4l3.3 3.3 6.8-6.8a1 1 0 011.4 0z"
@@ -80,16 +90,21 @@ export function BookingForm({ pro }: { pro: Instructor }) {
             />
           </svg>
         </div>
-        <h2 className="mt-4 text-xl font-black text-fairway-900">예약 요청이 접수되었습니다.</h2>
+        <h2 className="mt-4 text-xl font-black text-fairway-900">
+          예약 요청이 접수되었습니다.
+        </h2>
         <p className="mt-2 text-fairway-600">
           운영자가 확인한 뒤 입력하신 연락처로 일정 확정을 안내드립니다.
         </p>
         {bookingId && (
           <div className="mt-5 rounded-lg border border-fairway-100 bg-white p-4 text-left">
             <p className="text-sm font-bold text-fairway-500">예약번호</p>
-            <p className="mt-1 break-all font-mono text-sm font-black text-fairway-900">{bookingId}</p>
+            <p className="mt-1 break-all font-mono text-sm font-black text-fairway-900">
+              {bookingId}
+            </p>
             <p className="mt-2 text-xs leading-5 text-fairway-500">
-              내 예약 조회와 취소에 필요합니다. 예약번호를 안전한 곳에 보관해주세요.
+              내 예약 조회와 취소에 필요합니다. 예약번호를 안전한 곳에
+              보관해주세요.
             </p>
           </div>
         )}
@@ -113,7 +128,9 @@ export function BookingForm({ pro }: { pro: Instructor }) {
   return (
     <form onSubmit={submit} className="card space-y-5 p-5 sm:p-6">
       <div className="border-b border-fairway-100 pb-5">
-        <h2 className="text-lg font-extrabold text-fairway-900">상담 요청 정보</h2>
+        <h2 className="text-lg font-extrabold text-fairway-900">
+          상담 요청 정보
+        </h2>
         <p className="mt-1 text-sm text-fairway-600">
           프로가 바로 이해할 수 있도록 목표와 현재 고민을 간단히 적어주세요.
         </p>
@@ -171,7 +188,11 @@ export function BookingForm({ pro }: { pro: Instructor }) {
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="label">지역</label>
-          <select className="input" value={form.region} onChange={(event) => set("region", event.target.value)}>
+          <select
+            className="input"
+            value={form.region}
+            onChange={(event) => set("region", event.target.value)}
+          >
             {REGIONS.map((region) => (
               <option key={region} value={region}>
                 {region}
@@ -196,7 +217,8 @@ export function BookingForm({ pro }: { pro: Instructor }) {
             </select>
             {selectedPackage && (
               <p className="mt-1.5 text-xs font-medium text-fairway-500">
-                {selectedPackage.session_count}회 · 회당 {selectedPackage.duration_minutes}분 ·{" "}
+                {selectedPackage.session_count}회 · 회당{" "}
+                {selectedPackage.duration_minutes}분 ·{" "}
                 {priceLabel(selectedPackage.price)}
               </p>
             )}
@@ -213,7 +235,9 @@ export function BookingForm({ pro }: { pro: Instructor }) {
           maxLength={500}
           placeholder="예: 평균 108타, 드라이버 OB가 많아서 3개월 안에 100타를 깨고 싶습니다."
         />
-        <div className="mt-1 text-right text-xs text-fairway-400">{form.goal.length}/500</div>
+        <div className="mt-1 text-right text-xs text-fairway-400">
+          {form.goal.length}/500
+        </div>
       </div>
 
       <div className="space-y-2 rounded-lg bg-cream p-4">
@@ -239,18 +263,26 @@ export function BookingForm({ pro }: { pro: Instructor }) {
             onChange={(event) => setThirdParty(event.target.checked)}
           />
           <span>
-            <b>[선택]</b> 상담을 위해 연락처를 해당 레슨 프로에게 제공하는 것에 동의합니다.
+            <b>[선택]</b> 상담을 위해 연락처를 해당 레슨 프로에게 제공하는 것에
+            동의합니다.
           </span>
         </label>
       </div>
 
       {error && (
-        <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-600" aria-live="polite">
+        <p
+          className="rounded-lg bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-600"
+          aria-live="polite"
+        >
           {error}
         </p>
       )}
 
-      <button type="submit" disabled={status === "loading"} className="btn-primary w-full text-base">
+      <button
+        type="submit"
+        disabled={status === "loading"}
+        className="btn-primary w-full text-base"
+      >
         {status === "loading" ? "요청 중..." : "상담 · 예약 요청하기"}
       </button>
     </form>

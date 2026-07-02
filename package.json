@@ -10,6 +10,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "cf:build": "opennextjs-cloudflare build",
     "cf:preview": "npm run cf:build && wrangler dev",
     "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
@@ -29,6 +31,7 @@
     "eslint": "^8",
     "eslint-config-next": "^15.5.19",
     "postcss": "^8",
+    "prettier": "^3.9.4",
     "tailwindcss": "^3.4.1",
     "typescript": "^5",
     "wrangler": "^4.106.0"

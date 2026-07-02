@@ -7,7 +7,8 @@ export default function ReviewPolicyPage() {
   return (
     <LegalLayout title="리뷰 운영정책" updated="2026-07-01">
       <p>
-        100 to the Future는 신뢰할 수 있는 후기 문화를 위해 다음 원칙으로 리뷰를 운영합니다.
+        100 to the Future는 신뢰할 수 있는 후기 문화를 위해 다음 원칙으로 리뷰를
+        운영합니다.
       </p>
 
       <h2>1. 작성 자격</h2>
@@ -30,9 +31,9 @@ export default function ReviewPolicyPage() {
 
       <h2>4. 혜택 제공 후기 표시</h2>
       <p>
-        포인트·쿠폰 등 <b>대가·혜택을 받고 작성된 후기</b>는 「추천·보증 등에 관한 표시·광고
-        심사지침」에 따라 그 사실을 명확히 표시합니다. 후기 조작 및 부당한 표시·광고는 하지
-        않습니다.
+        포인트·쿠폰 등 <b>대가·혜택을 받고 작성된 후기</b>는 「추천·보증 등에
+        관한 표시·광고 심사지침」에 따라 그 사실을 명확히 표시합니다. 후기 조작
+        및 부당한 표시·광고는 하지 않습니다.
       </p>
     </LegalLayout>
   );

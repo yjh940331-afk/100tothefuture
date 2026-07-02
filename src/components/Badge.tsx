@@ -15,7 +15,12 @@ export function Badge({ badgeKey }: { badgeKey: string }) {
       className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold ${toneClass[b.tone]}`}
     >
       {b.tone === "green" && (
-        <svg viewBox="0 0 20 20" className="h-3 w-3" fill="currentColor" aria-hidden>
+        <svg
+          viewBox="0 0 20 20"
+          className="h-3 w-3"
+          fill="currentColor"
+          aria-hidden
+        >
           <path
             fillRule="evenodd"
             d="M16.7 5.3a1 1 0 010 1.4l-7.5 7.5a1 1 0 01-1.4 0L3.3 9.7a1 1 0 011.4-1.4l3.3 3.3 6.8-6.8a1 1 0 011.4 0z"

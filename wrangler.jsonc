@@ -6,15 +6,15 @@
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": {
     "directory": ".open-next/assets",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
   },
   "r2_buckets": [
     {
       "binding": "PRO_IMAGES",
-      "bucket_name": "100tothefuture-pro-images"
-    }
+      "bucket_name": "100tothefuture-pro-images",
+    },
   ],
   "observability": {
-    "enabled": true
-  }
+    "enabled": true,
+  },
 }

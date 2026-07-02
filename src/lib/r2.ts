@@ -43,9 +43,9 @@ export function publicMediaUrl(key: string) {
 export function isSafeMediaKey(key: string) {
   return Boolean(
     key &&
-      !key.includes("..") &&
-      !key.startsWith("/") &&
-      key.split("/").every(Boolean) &&
-      /^[-/._a-zA-Z0-9]+$/.test(key),
+    !key.includes("..") &&
+    !key.startsWith("/") &&
+    key.split("/").every(Boolean) &&
+    /^[-/._a-zA-Z0-9]+$/.test(key),
   );
 }

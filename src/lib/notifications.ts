@@ -42,7 +42,11 @@ async function hmacSha256Hex(secret: string, message: string) {
     false,
     ["sign"],
   );
-  const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(message));
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(message),
+  );
   return bytesToHex(new Uint8Array(signature));
 }
 
@@ -55,7 +59,11 @@ function randomSalt() {
 async function logNotification(
   payload: NotificationPayload,
   status: "skipped" | "sent" | "failed",
-  extra: { provider?: string; providerMessageId?: string | null; error?: string | null } = {},
+  extra: {
+    provider?: string;
+    providerMessageId?: string | null;
+    error?: string | null;
+  } = {},
 ) {
   const sb = getSupabaseAdmin();
   if (!sb) return;
@@ -65,7 +73,9 @@ async function logNotification(
       event_type: payload.eventType,
       channel: payload.channel,
       recipient_type: payload.recipientType,
-      recipient_phone: payload.recipientPhone ? normalizePhone(payload.recipientPhone) : null,
+      recipient_phone: payload.recipientPhone
+        ? normalizePhone(payload.recipientPhone)
+        : null,
       title: payload.title,
       content: payload.content,
       status,
@@ -140,7 +150,12 @@ async function sendSolapiSms(payload: NotificationPayload) {
       }),
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data?.errorMessage || data?.message || `Solapi failed with ${res.status}`);
+    if (!res.ok)
+      throw new Error(
+        data?.errorMessage ||
+          data?.message ||
+          `Solapi failed with ${res.status}`,
+      );
     await logNotification(payload, "sent", {
       provider: "solapi",
       providerMessageId: data?.messageId ?? data?.groupId ?? null,
@@ -165,16 +180,24 @@ async function sendNotification(payload: NotificationPayload) {
   await logNotification(payload, "skipped", { provider: "push" });
 }
 
-function bookingScheduleText(input: { preferred_date?: string | null; preferred_time?: string | null }) {
+function bookingScheduleText(input: {
+  preferred_date?: string | null;
+  preferred_time?: string | null;
+}) {
   return [input.preferred_date, input.preferred_time].filter(Boolean).join(" ");
 }
 
-function budgetText(input: { budget_min?: number | null; budget_max?: number | null }) {
+function budgetText(input: {
+  budget_min?: number | null;
+  budget_max?: number | null;
+}) {
   if (input.budget_min && input.budget_max) {
     return `${input.budget_min.toLocaleString("ko-KR")}~${input.budget_max.toLocaleString("ko-KR")}원`;
   }
-  if (input.budget_min) return `${input.budget_min.toLocaleString("ko-KR")}원 이상`;
-  if (input.budget_max) return `${input.budget_max.toLocaleString("ko-KR")}원 이하`;
+  if (input.budget_min)
+    return `${input.budget_min.toLocaleString("ko-KR")}원 이상`;
+  if (input.budget_max)
+    return `${input.budget_max.toLocaleString("ko-KR")}원 이하`;
   return "";
 }
 
@@ -191,7 +214,10 @@ export async function notifyLessonRequestCreated(input: {
 }) {
   const requestUrl = `${SITE_URL}/admin`;
   const goals = input.goals.join(", ");
-  const preferred = [...(input.preferred_days ?? []), input.preferred_time_slot ?? ""]
+  const preferred = [
+    ...(input.preferred_days ?? []),
+    input.preferred_time_slot ?? "",
+  ]
     .filter(Boolean)
     .join(" ");
   const budget = budgetText(input);

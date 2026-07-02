@@ -4,7 +4,12 @@ import {
   notifyBookingStatusChanged,
   notifyLessonRequestCreated,
 } from "./notifications";
-import { SEED_INSTRUCTORS, SEED_REVIEWS, seedBySlug, seedReviewsFor } from "./seed-data";
+import {
+  SEED_INSTRUCTORS,
+  SEED_REVIEWS,
+  seedBySlug,
+  seedReviewsFor,
+} from "./seed-data";
 import type {
   BookingStatus,
   AvailabilityRule,
@@ -37,7 +42,8 @@ function koreaToday(): string {
     month: "2-digit",
     day: "2-digit",
   }).formatToParts(new Date());
-  const pick = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  const pick = (type: string) =>
+    parts.find((p) => p.type === type)?.value ?? "";
   return `${pick("year")}-${pick("month")}-${pick("day")}`;
 }
 
@@ -113,7 +119,9 @@ function matchesTimeSlot(rules: AvailabilityRule[], slot?: string): boolean {
 }
 
 function isFoundingInstructor(instructor: Instructor): boolean {
-  return instructor.slug === "lee-hyun" || instructor.badges.includes("founding_pro");
+  return (
+    instructor.slug === "lee-hyun" || instructor.badges.includes("founding_pro")
+  );
 }
 
 function foundingFirst(a: Instructor, b: Instructor): number {
@@ -121,27 +129,35 @@ function foundingFirst(a: Instructor, b: Instructor): number {
 }
 
 function sortablePrice(instructor: Instructor): number {
-  return instructor.price_from > 0 ? instructor.price_from : Number.MAX_SAFE_INTEGER;
+  return instructor.price_from > 0
+    ? instructor.price_from
+    : Number.MAX_SAFE_INTEGER;
 }
 
 function applyFilters(list: Instructor[], f: InstructorFilters): Instructor[] {
   let out = list.filter((i) => i.is_active);
   if (f.region) out = out.filter((i) => i.region === f.region);
-  if (f.specialty) out = out.filter((i) => i.specialties.includes(f.specialty!));
+  if (f.specialty)
+    out = out.filter((i) => i.specialties.includes(f.specialty!));
   if (f.place) out = out.filter((i) => i.lesson_places.includes(f.place!));
   if (f.gender) out = out.filter((i) => i.gender === f.gender);
   if (f.priceMax) out = out.filter((i) => i.price_from <= f.priceMax!);
-  if (f.timeSlot) out = out.filter((i) => matchesTimeSlot(i.availability, f.timeSlot));
+  if (f.timeSlot)
+    out = out.filter((i) => matchesTimeSlot(i.availability, f.timeSlot));
 
   switch (f.sort) {
     case "rating":
       out.sort((a, b) => foundingFirst(a, b) || b.rating_avg - a.rating_avg);
       break;
     case "reviews":
-      out.sort((a, b) => foundingFirst(a, b) || b.review_count - a.review_count);
+      out.sort(
+        (a, b) => foundingFirst(a, b) || b.review_count - a.review_count,
+      );
       break;
     case "price":
-      out.sort((a, b) => foundingFirst(a, b) || sortablePrice(a) - sortablePrice(b));
+      out.sort(
+        (a, b) => foundingFirst(a, b) || sortablePrice(a) - sortablePrice(b),
+      );
       break;
     default: // recommended: featured 먼저, 그다음 평점
       out.sort(
@@ -206,18 +222,33 @@ export async function getInstructorBySlug(
     .maybeSingle();
   if (!row) return null;
 
-  const [{ data: certs }, { data: packages }, { data: availability }, { data: stat }] =
-    await Promise.all([
-      sb.from("instructor_certifications").select("*").eq("instructor_id", row.id),
-      sb
-        .from("lesson_packages")
-        .select("*")
-        .eq("instructor_id", row.id)
-        .eq("is_active", true)
-        .order("sort_order"),
-      sb.from("availability_rules").select("*").eq("instructor_id", row.id).eq("is_active", true),
-      sb.from("instructor_rating_stats").select("*").eq("instructor_id", row.id).maybeSingle(),
-    ]);
+  const [
+    { data: certs },
+    { data: packages },
+    { data: availability },
+    { data: stat },
+  ] = await Promise.all([
+    sb
+      .from("instructor_certifications")
+      .select("*")
+      .eq("instructor_id", row.id),
+    sb
+      .from("lesson_packages")
+      .select("*")
+      .eq("instructor_id", row.id)
+      .eq("is_active", true)
+      .order("sort_order"),
+    sb
+      .from("availability_rules")
+      .select("*")
+      .eq("instructor_id", row.id)
+      .eq("is_active", true),
+    sb
+      .from("instructor_rating_stats")
+      .select("*")
+      .eq("instructor_id", row.id)
+      .maybeSingle(),
+  ]);
 
   return mapInstructor(row, {
     certifications: certs ?? [],
@@ -231,11 +262,16 @@ export async function getInstructorBySlug(
 export async function getAllSlugs(): Promise<string[]> {
   const sb = getSupabase();
   if (!sb) return SEED_INSTRUCTORS.map((i) => i.slug);
-  const { data } = await sb.from("instructors").select("slug").eq("is_active", true);
+  const { data } = await sb
+    .from("instructors")
+    .select("slug")
+    .eq("is_active", true);
   return (data ?? []).map((r: any) => r.slug);
 }
 
-export async function getReviews(instructorId: string): Promise<ReviewSummary[]> {
+export async function getReviews(
+  instructorId: string,
+): Promise<ReviewSummary[]> {
   const sb = getSupabase();
   if (!sb) return seedReviewsFor(instructorId);
   const { data } = await sb
@@ -307,7 +343,10 @@ export async function createLessonRequest(
 
   const sb = getSupabaseAdmin();
   if (!sb) {
-    return { ok: false, error: "견적 요청 저장을 위한 서버 권한이 설정되지 않았습니다." };
+    return {
+      ok: false,
+      error: "견적 요청 저장을 위한 서버 권한이 설정되지 않았습니다.",
+    };
   }
 
   const budgetMin = normalizeBudget(input.budget_min);
@@ -328,7 +367,8 @@ export async function createLessonRequest(
     preferred_time_slot: input.preferred_time_slot?.trim() || null,
     budget_min: budgetMin,
     budget_max: budgetMax,
-    instructor_gender_preference: input.instructor_gender_preference?.trim() || null,
+    instructor_gender_preference:
+      input.instructor_gender_preference?.trim() || null,
     package_preference: input.package_preference?.trim() || null,
     memo: input.memo?.trim() || null,
     privacy_agreed: Boolean(input.privacy_agreed),
@@ -400,7 +440,10 @@ export async function createBooking(
   // 서버(API 라우트)에서 실행되므로 service_role 로 검증/저장한다.
   const sb = getSupabaseAdmin();
   if (!sb) {
-    return { ok: false, error: "예약 저장을 위한 서버 권한이 설정되지 않았습니다." };
+    return {
+      ok: false,
+      error: "예약 저장을 위한 서버 권한이 설정되지 않았습니다.",
+    };
   }
 
   const { data: instructor } = await sb
@@ -427,36 +470,43 @@ export async function createBooking(
   }
 
   if (input.preferred_date && input.preferred_time) {
-    const [{ data: rules }, { data: exceptions }, { data: conflictingBookings }] =
-      await Promise.all([
-        sb
-          .from("availability_rules")
-          .select("*")
-          .eq("instructor_id", input.instructor_id)
-          .eq("day_of_week", dayOfWeekInKorea(input.preferred_date))
-          .eq("is_active", true),
-        sb
-          .from("availability_exceptions")
-          .select("*")
-          .eq("instructor_id", input.instructor_id)
-          .eq("date", input.preferred_date),
-        sb
-          .from("bookings")
-          .select("id")
-          .eq("instructor_id", input.instructor_id)
-          .eq("preferred_date", input.preferred_date)
-          .eq("preferred_time", input.preferred_time)
-          .in("status", BOOKING_BLOCKING_STATUSES),
-      ]);
+    const [
+      { data: rules },
+      { data: exceptions },
+      { data: conflictingBookings },
+    ] = await Promise.all([
+      sb
+        .from("availability_rules")
+        .select("*")
+        .eq("instructor_id", input.instructor_id)
+        .eq("day_of_week", dayOfWeekInKorea(input.preferred_date))
+        .eq("is_active", true),
+      sb
+        .from("availability_exceptions")
+        .select("*")
+        .eq("instructor_id", input.instructor_id)
+        .eq("date", input.preferred_date),
+      sb
+        .from("bookings")
+        .select("id")
+        .eq("instructor_id", input.instructor_id)
+        .eq("preferred_date", input.preferred_date)
+        .eq("preferred_time", input.preferred_time)
+        .in("status", BOOKING_BLOCKING_STATUSES),
+    ]);
 
     const blocked = (exceptions ?? []).some(
       (ex: any) =>
         ex.type === "block" &&
-        (!ex.start_time || !ex.end_time ||
+        (!ex.start_time ||
+          !ex.end_time ||
           timeWithin(ex.start_time, ex.end_time, input.preferred_time!)),
     );
     if (blocked) {
-      return { ok: false, error: "해당 시간은 프로 일정상 예약할 수 없습니다." };
+      return {
+        ok: false,
+        error: "해당 시간은 프로 일정상 예약할 수 없습니다.",
+      };
     }
 
     const exceptionOpen = (exceptions ?? []).some(
@@ -470,11 +520,17 @@ export async function createBooking(
       timeWithin(rule.start_time, rule.end_time, input.preferred_time!),
     );
     if (!exceptionOpen && !ruleOpen) {
-      return { ok: false, error: "프로의 가능 시간 안에서 희망 시간을 선택해주세요." };
+      return {
+        ok: false,
+        error: "프로의 가능 시간 안에서 희망 시간을 선택해주세요.",
+      };
     }
 
     if ((conflictingBookings ?? []).length > 0) {
-      return { ok: false, error: "이미 요청되었거나 확정된 시간입니다. 다른 시간을 선택해주세요." };
+      return {
+        ok: false,
+        error: "이미 요청되었거나 확정된 시간입니다. 다른 시간을 선택해주세요.",
+      };
     }
   }
 
@@ -487,8 +543,16 @@ export async function createBooking(
 
   // 동의 로그 기록
   await sb.from("consent_logs").insert([
-    { booking_id: data.id, consent_type: "privacy", agreed: input.privacy_agreed },
-    { booking_id: data.id, consent_type: "third_party", agreed: input.third_party_agreed },
+    {
+      booking_id: data.id,
+      consent_type: "privacy",
+      agreed: input.privacy_agreed,
+    },
+    {
+      booking_id: data.id,
+      consent_type: "third_party",
+      agreed: input.third_party_agreed,
+    },
   ]);
 
   await notifyBookingCreated({
@@ -510,7 +574,8 @@ export async function customerLookupBooking(input: {
   student_phone: string;
 }): Promise<{ ok: boolean; booking?: Booking; error?: string }> {
   const sb = getSupabaseAdmin();
-  if (!sb) return { ok: false, error: "예약 조회를 위한 서버 설정이 필요합니다." };
+  if (!sb)
+    return { ok: false, error: "예약 조회를 위한 서버 설정이 필요합니다." };
 
   const bookingId = input.booking_id.trim();
   const phone = normalizePhone(input.student_phone);
@@ -550,7 +615,8 @@ export async function customerCancelBooking(input: {
   }
 
   const sb = getSupabaseAdmin();
-  if (!sb) return { ok: false, error: "예약 취소를 위한 서버 설정이 필요합니다." };
+  if (!sb)
+    return { ok: false, error: "예약 취소를 위한 서버 설정이 필요합니다." };
   const { error } = await sb
     .from("bookings")
     .update({ status: "canceled" })
@@ -589,7 +655,11 @@ export async function createReview(
   }
   if (!isDbConfigured()) return { ok: true, demo: true };
   const sb = getSupabaseAdmin();
-  if (!sb) return { ok: false, error: "후기 등록을 위한 서버 권한이 설정되지 않았습니다." };
+  if (!sb)
+    return {
+      ok: false,
+      error: "후기 등록을 위한 서버 권한이 설정되지 않았습니다.",
+    };
 
   const { data: booking } = await sb
     .from("bookings")
@@ -604,7 +674,8 @@ export async function createReview(
   if (!booking) {
     return {
       ok: false,
-      error: "완료된 예약을 확인할 수 없습니다. 예약 시 사용한 연락처를 입력해주세요.",
+      error:
+        "완료된 예약을 확인할 수 없습니다. 예약 시 사용한 연락처를 입력해주세요.",
     };
   }
 
@@ -617,20 +688,18 @@ export async function createReview(
     return { ok: false, error: "이미 해당 예약으로 후기가 등록되었습니다." };
   }
 
-  const { error } = await sb
-    .from("reviews")
-    .insert({
-      booking_id: booking.id,
-      instructor_id: input.instructor_id,
-      student_name_masked: input.student_name_masked,
-      rating_total: input.rating_total,
-      rating_kindness: input.rating_kindness,
-      rating_explanation: input.rating_explanation,
-      rating_effect: input.rating_effect,
-      recommend_for: input.recommend_for,
-      content: input.content,
-      status: "pending",
-    });
+  const { error } = await sb.from("reviews").insert({
+    booking_id: booking.id,
+    instructor_id: input.instructor_id,
+    student_name_masked: input.student_name_masked,
+    rating_total: input.rating_total,
+    rating_kindness: input.rating_kindness,
+    rating_explanation: input.rating_explanation,
+    rating_effect: input.rating_effect,
+    recommend_for: input.recommend_for,
+    content: input.content,
+    status: "pending",
+  });
   if (error) return { ok: false, error: error.message };
   return { ok: true };
 }
@@ -665,14 +734,19 @@ export async function adminListLessonRequests(): Promise<LessonRequest[]> {
 
 export async function adminUpdateLessonRequest(
   id: string,
-  input: { status?: LessonRequestStatus; admin_memo?: string; matched_instructor_ids?: string[] },
+  input: {
+    status?: LessonRequestStatus;
+    admin_memo?: string;
+    matched_instructor_ids?: string[];
+  },
 ) {
   const sb = getSupabaseAdmin();
   if (!sb) return { ok: false, error: "DB 미설정" };
   const patch: Record<string, unknown> = {};
   if (input.status) patch.status = input.status;
   if (typeof input.admin_memo === "string") patch.admin_memo = input.admin_memo;
-  if (input.matched_instructor_ids) patch.matched_instructor_ids = cleanList(input.matched_instructor_ids);
+  if (input.matched_instructor_ids)
+    patch.matched_instructor_ids = cleanList(input.matched_instructor_ids);
   if (Object.keys(patch).length === 0) {
     return { ok: false, error: "변경할 내용이 없습니다." };
   }
@@ -705,7 +779,9 @@ async function bookingNotificationSnapshot(id: string) {
   if (!sb) return null;
   const { data } = await sb
     .from("bookings")
-    .select("id, status, student_name, student_phone, preferred_date, preferred_time, instructors(display_name)")
+    .select(
+      "id, status, student_name, student_phone, preferred_date, preferred_time, instructors(display_name)",
+    )
     .eq("id", id)
     .maybeSingle();
   if (!data) return null;
@@ -775,7 +851,10 @@ export async function adminUpdateReviewStatus(id: string, status: string) {
   return { ok: !error, error: error?.message };
 }
 
-export async function adminUpdateReviewReply(id: string, instructor_reply: string) {
+export async function adminUpdateReviewReply(
+  id: string,
+  instructor_reply: string,
+) {
   const sb = getSupabaseAdmin();
   if (!sb) return { ok: false, error: "DB 미설정" };
   const { error } = await sb
@@ -820,7 +899,10 @@ export async function adminSaveInstructor(input: AdminInstructorInput) {
 
   const slug = input.slug.trim().toLowerCase();
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
-    return { ok: false, error: "슬러그는 영문 소문자, 숫자, 하이픈만 사용할 수 있습니다." };
+    return {
+      ok: false,
+      error: "슬러그는 영문 소문자, 숫자, 하이픈만 사용할 수 있습니다.",
+    };
   }
   if (!input.display_name.trim() || !input.region.trim()) {
     return { ok: false, error: "프로명과 지역은 필수입니다." };
@@ -851,7 +933,12 @@ export async function adminSaveInstructor(input: AdminInstructorInput) {
   };
 
   const query = input.id
-    ? sb.from("instructors").update(payload).eq("id", input.id).select("id").single()
+    ? sb
+        .from("instructors")
+        .update(payload)
+        .eq("id", input.id)
+        .select("id")
+        .single()
     : sb.from("instructors").insert(payload).select("id").single();
   const { data, error } = await query;
   return { ok: !error, id: data?.id, error: error?.message };

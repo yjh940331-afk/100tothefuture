@@ -4,7 +4,8 @@ import type { Instructor } from "@/lib/types";
 import { RatingInline } from "./Stars";
 import { Badge } from "./Badge";
 
-const priceFmt = (n: number) => (n > 0 ? `${n.toLocaleString("ko-KR")}원~` : "상담 후 안내");
+const priceFmt = (n: number) =>
+  n > 0 ? `${n.toLocaleString("ko-KR")}원~` : "상담 후 안내";
 
 // 대표 뱃지 2개만 카드에 노출 (검증 우선)
 function topBadges(badges: string[]): string[] {
@@ -29,7 +30,7 @@ export function InstructorCard({ pro }: { pro: Instructor }) {
   return (
     <Link
       href={`/pros/${pro.slug}`}
-      className="card group flex h-full flex-col overflow-hidden transition hover:-translate-y-1 hover:border-fairway-200 hover:shadow-card-hover"
+      className="card group flex h-full flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-fairway-200 hover:shadow-card-hover"
     >
       <div className="relative aspect-[16/10] overflow-hidden bg-fairway-100">
         <Image
@@ -46,7 +47,8 @@ export function InstructorCard({ pro }: { pro: Instructor }) {
           </span>
         )}
         <span className="absolute bottom-3 left-3 rounded-full bg-fairway-950/75 px-2.5 py-1 text-xs font-bold text-white backdrop-blur">
-          {pro.region} · {pro.career_years > 0 ? `경력 ${pro.career_years}년` : "경력 확인 중"}
+          {pro.region} ·{" "}
+          {pro.career_years > 0 ? `경력 ${pro.career_years}년` : "경력 확인 중"}
         </span>
       </div>
 

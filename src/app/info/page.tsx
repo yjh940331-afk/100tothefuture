@@ -27,8 +27,8 @@ export default function GolfInfoPage() {
               레슨 전후에 필요한 골프 정보를 함께 모읍니다
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-fairway-600 sm:text-base">
-              김캐디처럼 예약만이 아니라 장비, 웨어, 골프 이야기, 기본 용어까지 연결해
-              초보 골퍼가 계속 돌아올 수 있는 정보 허브로 확장합니다.
+              김캐디처럼 예약만이 아니라 장비, 웨어, 골프 이야기, 기본 용어까지
+              연결해 초보 골퍼가 계속 돌아올 수 있는 정보 허브로 확장합니다.
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               {GOLF_INFO_CATEGORIES.map((category) => (
@@ -43,7 +43,10 @@ export default function GolfInfoPage() {
             </div>
           </div>
 
-          <Link href={`/info/${featured.slug}`} className="group overflow-hidden rounded-lg bg-fairway-950 text-white shadow-card">
+          <Link
+            href={`/info/${featured.slug}`}
+            className="group overflow-hidden rounded-lg bg-fairway-950 text-white shadow-card"
+          >
             <div className="relative aspect-[16/10] overflow-hidden">
               <Image
                 src={featured.image}
@@ -55,9 +58,13 @@ export default function GolfInfoPage() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-fairway-950 via-fairway-950/20 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-4">
-                <p className="text-xs font-bold text-gold-200">{featured.eyebrow}</p>
+                <p className="text-xs font-bold text-gold-200">
+                  {featured.eyebrow}
+                </p>
                 <h2 className="mt-1 text-xl font-black">{featured.title}</h2>
-                <p className="mt-1 text-sm text-fairway-100">{featured.articles[0]?.title}</p>
+                <p className="mt-1 text-sm text-fairway-100">
+                  {featured.articles[0]?.title}
+                </p>
               </div>
             </div>
           </Link>
@@ -77,8 +84,13 @@ export default function GolfInfoPage() {
           <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[13px] font-bold text-gold-700">Ad Partner</p>
-              <h2 className="mt-1 text-xl font-extrabold text-fairway-900">골프용품 광고 배너</h2>
-              <p className="mt-1 text-sm text-fairway-600">콘텐츠를 보는 골퍼에게 장비, 웨어, 필드 준비물 배너를 함께 노출합니다.</p>
+              <h2 className="mt-1 text-xl font-extrabold text-fairway-900">
+                골프용품 광고 배너
+              </h2>
+              <p className="mt-1 text-sm text-fairway-600">
+                콘텐츠를 보는 골퍼에게 장비, 웨어, 필드 준비물 배너를 함께
+                노출합니다.
+              </p>
             </div>
             <a
               href="mailto:contact@100tothefuture.com?subject=골프정보 광고 문의"
@@ -98,7 +110,11 @@ export default function GolfInfoPage() {
   );
 }
 
-function InfoCard({ category }: { category: (typeof GOLF_INFO_CATEGORIES)[number] }) {
+function InfoCard({
+  category,
+}: {
+  category: (typeof GOLF_INFO_CATEGORIES)[number];
+}) {
   return (
     <Link
       href={`/info/${category.slug}`}
@@ -114,12 +130,21 @@ function InfoCard({ category }: { category: (typeof GOLF_INFO_CATEGORIES)[number
         />
       </div>
       <div className="p-3">
-        <p className="text-[11px] font-bold uppercase text-gold-700">{category.eyebrow}</p>
-        <h2 className="mt-0.5 text-base font-black text-fairway-900">{category.title}</h2>
-        <p className="mt-1 line-clamp-2 text-[13px] leading-5 text-fairway-600">{category.description}</p>
+        <p className="text-[11px] font-bold uppercase text-gold-700">
+          {category.eyebrow}
+        </p>
+        <h2 className="mt-0.5 text-base font-black text-fairway-900">
+          {category.title}
+        </h2>
+        <p className="mt-1 line-clamp-2 text-[13px] leading-5 text-fairway-600">
+          {category.description}
+        </p>
         <div className="mt-3 flex flex-wrap gap-1">
           {category.highlights.slice(0, 2).map((highlight) => (
-            <span key={highlight} className="rounded-md bg-fairway-50 px-2 py-0.5 text-[11px] font-bold text-fairway-600">
+            <span
+              key={highlight}
+              className="rounded-md bg-fairway-50 px-2 py-0.5 text-[11px] font-bold text-fairway-600"
+            >
               {highlight}
             </span>
           ))}

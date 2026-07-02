@@ -15,10 +15,17 @@ export function AvailabilityTable({ rules }: { rules: AvailabilityRule[] }) {
       {DAYS_KO.map((d, i) => {
         const dayRules = byDay.get(i);
         return (
-          <div key={i} className="rounded-lg border border-fairway-100 bg-white p-2">
+          <div
+            key={i}
+            className="rounded-lg border border-fairway-100 bg-white p-2"
+          >
             <div
               className={`text-sm font-bold ${
-                i === 0 ? "text-rose-500" : i === 6 ? "text-sky-500" : "text-fairway-700"
+                i === 0
+                  ? "text-rose-500"
+                  : i === 6
+                    ? "text-sky-500"
+                    : "text-fairway-700"
               }`}
             >
               {d}

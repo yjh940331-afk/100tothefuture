@@ -18,7 +18,7 @@ html {
 body {
   color: var(--foreground);
   background: var(--background);
-  letter-spacing: -0.011em;
+  letter-spacing: 0;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -35,6 +35,50 @@ body {
   }
   .scrollbar-none::-webkit-scrollbar {
     display: none;
+  }
+  .motion-hero-drift {
+    animation: hero-drift 18s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+  .motion-fade-up {
+    animation: fade-up 0.72s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .motion-delay-1 {
+    animation-delay: 0.12s;
+  }
+  .motion-delay-2 {
+    animation-delay: 0.22s;
+  }
+  .motion-delay-3 {
+    animation-delay: 0.34s;
+  }
+  .motion-button-pop {
+    animation: button-pop 1.8s ease-in-out infinite;
+  }
+  .motion-live-dot {
+    animation: live-dot 1.4s ease-in-out infinite;
+  }
+  .motion-slide-progress {
+    animation: slide-progress 3.6s linear both;
+    transform-origin: left center;
+  }
+  .motion-marquee {
+    animation: marquee 24s linear infinite;
+  }
+  .motion-marquee:hover {
+    animation-play-state: paused;
+  }
+  .motion-reveal {
+    animation: reveal 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .motion-pop-in {
+    animation: pop-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .motion-backdrop-in {
+    animation: backdrop-in 0.22s ease-out both;
+  }
+  .motion-drawer-in {
+    animation: drawer-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 }
 
@@ -65,5 +109,121 @@ body {
   }
   .legal ul {
     @apply list-disc space-y-1 pl-5;
+  }
+}
+
+@keyframes hero-drift {
+  from {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.06) translate3d(-1.5%, 1%, 0);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes button-pop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes live-dot {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes slide-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .motion-marquee,
+  .motion-hero-drift {
+    transform: none !important;
   }
 }

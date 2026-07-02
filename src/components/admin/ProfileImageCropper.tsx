@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type PointerEvent, type SyntheticEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent,
+  type SyntheticEvent,
+} from "react";
 
 const DEFAULT_STAGE_WIDTH = 360;
 const MIN_ZOOM = 1;
@@ -81,7 +88,9 @@ export function ProfileImageCropper({
     originY: number;
   } | null>(null);
 
-  const stageHeight = Math.round((stageWidth * activePreset.height) / activePreset.width);
+  const stageHeight = Math.round(
+    (stageWidth * activePreset.height) / activePreset.width,
+  );
 
   useEffect(() => {
     const url = URL.createObjectURL(file);
@@ -94,7 +103,9 @@ export function ProfileImageCropper({
   }, [file]);
 
   useEffect(() => {
-    setActivePresetId(presetIds.includes(initialPreset) ? initialPreset : presetIds[0]);
+    setActivePresetId(
+      presetIds.includes(initialPreset) ? initialPreset : presetIds[0],
+    );
   }, [initialPreset, presetIds]);
 
   useEffect(() => {
@@ -114,7 +125,10 @@ export function ProfileImageCropper({
 
   const baseScale = useMemo(() => {
     if (!metrics) return 1;
-    return Math.max(stageWidth / metrics.naturalWidth, stageHeight / metrics.naturalHeight);
+    return Math.max(
+      stageWidth / metrics.naturalWidth,
+      stageHeight / metrics.naturalHeight,
+    );
   }, [metrics, stageHeight, stageWidth]);
 
   const displaySize = useMemo(() => {
@@ -127,7 +141,15 @@ export function ProfileImageCropper({
 
   useEffect(() => {
     if (!metrics) return;
-    setOffset((current) => clampOffset(current, displaySize.width, displaySize.height, stageWidth, stageHeight));
+    setOffset((current) =>
+      clampOffset(
+        current,
+        displaySize.width,
+        displaySize.height,
+        stageWidth,
+        stageHeight,
+      ),
+    );
   }, [displaySize.height, displaySize.width, metrics, stageHeight, stageWidth]);
 
   function displaySizeForZoom(nextZoom: number) {
@@ -175,7 +197,15 @@ export function ProfileImageCropper({
       x: drag.originX + event.clientX - drag.startX,
       y: drag.originY + event.clientY - drag.startY,
     };
-    setOffset(clampOffset(nextOffset, displaySize.width, displaySize.height, stageWidth, stageHeight));
+    setOffset(
+      clampOffset(
+        nextOffset,
+        displaySize.width,
+        displaySize.height,
+        stageWidth,
+        stageHeight,
+      ),
+    );
   }
 
   function handlePointerEnd(event: PointerEvent<HTMLDivElement>) {
@@ -189,7 +219,15 @@ export function ProfileImageCropper({
     const nextZoom = clamp(Number(value), MIN_ZOOM, MAX_ZOOM);
     const nextDisplaySize = displaySizeForZoom(nextZoom);
     setZoom(nextZoom);
-    setOffset((current) => clampOffset(current, nextDisplaySize.width, nextDisplaySize.height, stageWidth, stageHeight));
+    setOffset((current) =>
+      clampOffset(
+        current,
+        nextDisplaySize.width,
+        nextDisplaySize.height,
+        stageWidth,
+        stageHeight,
+      ),
+    );
   }
 
   async function handleConfirm() {
@@ -212,14 +250,21 @@ export function ProfileImageCropper({
         preset: activePreset,
       });
       const uploaded = await onConfirm(croppedFile);
-      if (!uploaded) setError("사진을 업로드하지 못했습니다. 로그인 상태와 파일 형식을 확인해주세요.");
+      if (!uploaded)
+        setError(
+          "사진을 업로드하지 못했습니다. 로그인 상태와 파일 형식을 확인해주세요.",
+        );
     } catch {
       setError("사진을 자르지 못했습니다. 다른 사진으로 다시 시도해주세요.");
     }
   }
 
-  const title = mode === "gallery" ? "갤러리 사진 크기 지정" : "프로필 사진 위치 지정";
-  const description = mode === "gallery" ? "표시될 영역에 맞춰 사진을 조정해주세요." : "사각형 안에 얼굴이 오도록 맞춰주세요.";
+  const title =
+    mode === "gallery" ? "갤러리 사진 크기 지정" : "프로필 사진 위치 지정";
+  const description =
+    mode === "gallery"
+      ? "표시될 영역에 맞춰 사진을 조정해주세요."
+      : "사각형 안에 얼굴이 오도록 맞춰주세요.";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-fairway-950/70 px-4 py-6">
@@ -267,7 +312,10 @@ export function ProfileImageCropper({
             onPointerUp={handlePointerEnd}
             onPointerCancel={handlePointerEnd}
             className="relative w-full max-w-[380px] cursor-grab overflow-hidden rounded-lg bg-fairway-100 ring-1 ring-fairway-200 active:cursor-grabbing"
-            style={{ aspectRatio: `${activePreset.width} / ${activePreset.height}`, touchAction: "none" }}
+            style={{
+              aspectRatio: `${activePreset.width} / ${activePreset.height}`,
+              touchAction: "none",
+            }}
           >
             {previewUrl && (
               // eslint-disable-next-line @next/next/no-img-element
@@ -299,7 +347,9 @@ export function ProfileImageCropper({
         <label className="mt-4 block">
           <div className="flex items-center justify-between gap-3">
             <span className="label mb-0">확대</span>
-            <span className="text-xs font-bold text-fairway-500">{Math.round(zoom * 100)}%</span>
+            <span className="text-xs font-bold text-fairway-500">
+              {Math.round(zoom * 100)}%
+            </span>
           </div>
           <input
             type="range"
@@ -313,13 +363,27 @@ export function ProfileImageCropper({
           />
         </label>
 
-        {error && <p className="mt-3 text-[13px] font-semibold text-rose-600">{error}</p>}
+        {error && (
+          <p className="mt-3 text-[13px] font-semibold text-rose-600">
+            {error}
+          </p>
+        )}
 
         <div className="mt-4 flex justify-end gap-2">
-          <button type="button" onClick={onCancel} disabled={uploading} className="btn-outline">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={uploading}
+            className="btn-outline"
+          >
             취소
           </button>
-          <button type="button" onClick={handleConfirm} disabled={!metrics || uploading} className="btn-primary">
+          <button
+            type="button"
+            onClick={handleConfirm}
+            disabled={!metrics || uploading}
+            className="btn-primary"
+          >
             {uploading ? "업로드 중..." : "이대로 업로드"}
           </button>
         </div>
@@ -354,8 +418,16 @@ async function createCroppedImageFile({
   const sourceHeight = stageHeight / visibleScale;
   const maxSourceX = Math.max(0, metrics.naturalWidth - sourceWidth);
   const maxSourceY = Math.max(0, metrics.naturalHeight - sourceHeight);
-  const sourceX = clamp((metrics.naturalWidth - sourceWidth) / 2 - offset.x / visibleScale, 0, maxSourceX);
-  const sourceY = clamp((metrics.naturalHeight - sourceHeight) / 2 - offset.y / visibleScale, 0, maxSourceY);
+  const sourceX = clamp(
+    (metrics.naturalWidth - sourceWidth) / 2 - offset.x / visibleScale,
+    0,
+    maxSourceX,
+  );
+  const sourceY = clamp(
+    (metrics.naturalHeight - sourceHeight) / 2 - offset.y / visibleScale,
+    0,
+    maxSourceY,
+  );
 
   const canvas = document.createElement("canvas");
   canvas.width = preset.outputWidth;
@@ -367,13 +439,27 @@ async function createCroppedImageFile({
   context.fillStyle = "#ffffff";
   context.fillRect(0, 0, preset.outputWidth, preset.outputHeight);
   context.imageSmoothingQuality = "high";
-  context.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, preset.outputWidth, preset.outputHeight);
+  context.drawImage(
+    image,
+    sourceX,
+    sourceY,
+    sourceWidth,
+    sourceHeight,
+    0,
+    0,
+    preset.outputWidth,
+    preset.outputHeight,
+  );
 
   const blob = await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob((nextBlob) => {
-      if (nextBlob) resolve(nextBlob);
-      else reject(new Error("Failed to create cropped image."));
-    }, "image/jpeg", 0.92);
+    canvas.toBlob(
+      (nextBlob) => {
+        if (nextBlob) resolve(nextBlob);
+        else reject(new Error("Failed to create cropped image."));
+      },
+      "image/jpeg",
+      0.92,
+    );
   });
 
   const stem = originalFile.name.replace(/\.[^.]+$/, "") || "photo";
@@ -383,7 +469,13 @@ async function createCroppedImageFile({
   });
 }
 
-function clampOffset(offset: Offset, displayWidth: number, displayHeight: number, stageWidth: number, stageHeight: number) {
+function clampOffset(
+  offset: Offset,
+  displayWidth: number,
+  displayHeight: number,
+  stageWidth: number,
+  stageHeight: number,
+) {
   const maxX = Math.max(0, (displayWidth - stageWidth) / 2);
   const maxY = Math.max(0, (displayHeight - stageHeight) / 2);
   return {

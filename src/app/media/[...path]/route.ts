@@ -4,7 +4,11 @@ type MediaRouteContext = {
   params: Promise<{ path: string[] }>;
 };
 
-async function readObject(req: Request, { params }: MediaRouteContext, headOnly = false) {
+async function readObject(
+  req: Request,
+  { params }: MediaRouteContext,
+  headOnly = false,
+) {
   const { path } = await params;
   const key = path.join("/");
   if (!isSafeMediaKey(key)) {
@@ -17,18 +21,27 @@ async function readObject(req: Request, { params }: MediaRouteContext, headOnly 
   }
 
   const ifNoneMatch = req.headers.get("if-none-match")?.replace(/"/g, "");
-  const object = await bucket.get(key, ifNoneMatch ? { onlyIf: { etagDoesNotMatch: ifNoneMatch } } : undefined);
+  const object = await bucket.get(
+    key,
+    ifNoneMatch ? { onlyIf: { etagDoesNotMatch: ifNoneMatch } } : undefined,
+  );
   if (!object) {
     return new Response("Not found", { status: 404 });
   }
   if (!object.body) {
-    return new Response(null, { status: 304, headers: { etag: object.httpEtag } });
+    return new Response(null, {
+      status: 304,
+      headers: { etag: object.httpEtag },
+    });
   }
 
   const headers = new Headers();
   object.writeHttpMetadata(headers);
   headers.set("etag", object.httpEtag);
-  headers.set("cache-control", headers.get("cache-control") || "public, max-age=31536000, immutable");
+  headers.set(
+    "cache-control",
+    headers.get("cache-control") || "public, max-age=31536000, immutable",
+  );
   headers.set("x-content-type-options", "nosniff");
 
   return new Response(headOnly ? null : object.body, { headers });

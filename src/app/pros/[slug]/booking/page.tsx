@@ -21,7 +21,11 @@ export async function generateMetadata({
     path: `/pros/${pro.slug}/booking`,
     image: pro.profile_image || pro.gallery[0],
     imageAlt: `${pro.display_name} 상담·예약`,
-    keywords: [`${pro.display_name} 예약`, `${pro.region} 골프레슨 예약`, ...pro.specialties],
+    keywords: [
+      `${pro.display_name} 예약`,
+      `${pro.region} 골프레슨 예약`,
+      ...pro.specialties,
+    ],
     noIndex: true,
   });
 }
@@ -49,10 +53,18 @@ export default async function BookingPage({
 
           <div className="mt-4 flex items-center gap-4">
             <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-fairway-100">
-              <Image src={pro.profile_image} alt={pro.display_name} fill sizes="64px" className="object-cover" />
+              <Image
+                src={pro.profile_image}
+                alt={pro.display_name}
+                fill
+                sizes="64px"
+                className="object-cover"
+              />
             </div>
             <div>
-              <span className="text-sm font-bold text-gold-700">상담 · 예약 요청</span>
+              <span className="text-sm font-bold text-gold-700">
+                상담 · 예약 요청
+              </span>
               <h1 className="mt-1 text-2xl font-black text-fairway-900 sm:text-3xl">
                 원하는 일정과 고민을 남겨주세요
               </h1>
@@ -71,7 +83,9 @@ export default async function BookingPage({
 
         <aside className="space-y-4 lg:sticky lg:top-20 lg:h-fit">
           <div className="card p-5">
-            <h2 className="text-lg font-extrabold text-fairway-900">요청 전 확인</h2>
+            <h2 className="text-lg font-extrabold text-fairway-900">
+              요청 전 확인
+            </h2>
             <ul className="mt-4 space-y-3 text-sm leading-relaxed text-fairway-600">
               <li>결제는 일정 확정 이후 별도로 진행됩니다.</li>
               <li>희망 시간은 프로 일정에 따라 조정될 수 있습니다.</li>
@@ -81,11 +95,21 @@ export default async function BookingPage({
 
           <div className="card overflow-hidden">
             <div className="relative aspect-[16/10] bg-fairway-100">
-              <Image src={pro.profile_image} alt={pro.display_name} fill sizes="360px" className="object-cover" />
+              <Image
+                src={pro.profile_image}
+                alt={pro.display_name}
+                fill
+                sizes="360px"
+                className="object-cover"
+              />
             </div>
             <div className="p-5">
-              <h2 className="font-extrabold text-fairway-900">{pro.display_name}</h2>
-              <p className="mt-1 text-sm text-fairway-600">{pro.region} · 경력 {pro.career_years}년</p>
+              <h2 className="font-extrabold text-fairway-900">
+                {pro.display_name}
+              </h2>
+              <p className="mt-1 text-sm text-fairway-600">
+                {pro.region} · 경력 {pro.career_years}년
+              </p>
               <div className="mt-4 border-t border-fairway-100 pt-4">
                 <div className="text-sm text-fairway-500">레슨 시작가</div>
                 <div className="mt-1 text-2xl font-black text-fairway-900">

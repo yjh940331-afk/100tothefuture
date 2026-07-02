@@ -10,7 +10,8 @@ export function DemoBanner() {
           DEMO
         </span>
         <span>
-          예시 데이터로 표시 중입니다. Supabase를 연결하면 실제 데이터·예약·리뷰가 저장됩니다.
+          예시 데이터로 표시 중입니다. Supabase를 연결하면 실제
+          데이터·예약·리뷰가 저장됩니다.
         </span>
       </div>
     </div>

@@ -6,11 +6,18 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ ok: false, error: "잘못된 요청" }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "잘못된 요청" },
+      { status: 400 },
+    );
   }
 
   // 필수값 검증
-  if (!body.instructor_id || !body.student_name?.trim() || !body.student_phone?.trim()) {
+  if (
+    !body.instructor_id ||
+    !body.student_name?.trim() ||
+    !body.student_phone?.trim()
+  ) {
     return NextResponse.json(
       { ok: false, error: "이름과 연락처는 필수입니다." },
       { status: 400 },

@@ -19,7 +19,10 @@ function base64UrlEncode(bytes: Uint8Array): string {
   bytes.forEach((byte) => {
     binary += String.fromCharCode(byte);
   });
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  return btoa(binary)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
 }
 
 async function hmac(message: string): Promise<string | null> {
@@ -40,7 +43,9 @@ async function hmac(message: string): Promise<string | null> {
   return base64UrlEncode(new Uint8Array(signature));
 }
 
-export async function createAdminSessionToken(now = Date.now()): Promise<string | null> {
+export async function createAdminSessionToken(
+  now = Date.now(),
+): Promise<string | null> {
   if (!adminSessionSecret()) return null;
   const expiresAt = now + ADMIN_SESSION_MAX_AGE * 1000;
   const nonceBytes = new Uint8Array(16);
@@ -72,7 +77,10 @@ export async function isAdminAuthed(): Promise<boolean> {
   return verifyAdminSessionToken(store.get(ADMIN_COOKIE)?.value);
 }
 
-export function parseLoginFailureCookie(value: string | undefined, now = Date.now()) {
+export function parseLoginFailureCookie(
+  value: string | undefined,
+  now = Date.now(),
+) {
   const empty = { count: 0, firstFailedAt: now };
   if (!value) return empty;
   const [countRaw, firstFailedAtRaw] = value.split(".");
@@ -83,6 +91,9 @@ export function parseLoginFailureCookie(value: string | undefined, now = Date.no
   return { count, firstFailedAt };
 }
 
-export function serializeLoginFailureCookie(count: number, firstFailedAt: number): string {
+export function serializeLoginFailureCookie(
+  count: number,
+  firstFailedAt: number,
+): string {
   return `${count}.${firstFailedAt}`;
 }

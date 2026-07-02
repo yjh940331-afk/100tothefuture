@@ -2,7 +2,12 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
-import { REGIONS, SPECIALTIES, LESSON_PLACES, TIME_SLOTS } from "@/lib/constants";
+import {
+  REGIONS,
+  SPECIALTIES,
+  LESSON_PLACES,
+  TIME_SLOTS,
+} from "@/lib/constants";
 
 const SORTS = [
   { key: "recommended", label: "추천순" },
@@ -48,7 +53,9 @@ export function InstructorFilters() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-extrabold text-fairway-900">필터</h2>
-          <p className="mt-0.5 text-xs text-fairway-500">조건을 누르면 바로 적용됩니다.</p>
+          <p className="mt-0.5 text-xs text-fairway-500">
+            조건을 누르면 바로 적용됩니다.
+          </p>
         </div>
         {hasAny && (
           <button
@@ -62,7 +69,11 @@ export function InstructorFilters() {
 
       <FilterGroup label="지역">
         {REGIONS.map((r) => (
-          <Chip key={r} active={has("region", r)} onClick={() => toggleChip("region", r)}>
+          <Chip
+            key={r}
+            active={has("region", r)}
+            onClick={() => toggleChip("region", r)}
+          >
             {r}
           </Chip>
         ))}
@@ -70,7 +81,11 @@ export function InstructorFilters() {
 
       <FilterGroup label="전문 분야">
         {SPECIALTIES.map((s) => (
-          <Chip key={s} active={has("specialty", s)} onClick={() => toggleChip("specialty", s)}>
+          <Chip
+            key={s}
+            active={has("specialty", s)}
+            onClick={() => toggleChip("specialty", s)}
+          >
             {s}
           </Chip>
         ))}
@@ -78,7 +93,11 @@ export function InstructorFilters() {
 
       <FilterGroup label="레슨 장소">
         {LESSON_PLACES.map((p) => (
-          <Chip key={p} active={has("place", p)} onClick={() => toggleChip("place", p)}>
+          <Chip
+            key={p}
+            active={has("place", p)}
+            onClick={() => toggleChip("place", p)}
+          >
             {p}
           </Chip>
         ))}

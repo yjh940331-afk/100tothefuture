@@ -10,7 +10,9 @@ export function ReviewForm({ instructorId }: { instructorId: string }) {
   const [phone, setPhone] = useState("");
   const [recommendFor, setRecommendFor] = useState("");
   const [content, setContent] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">(
+    "idle",
+  );
   const [error, setError] = useState("");
 
   async function submit(e: React.FormEvent) {
@@ -74,9 +76,13 @@ export function ReviewForm({ instructorId }: { instructorId: string }) {
   }
 
   return (
-    <form onSubmit={submit} className="rounded-lg border border-fairway-200 bg-white p-5">
+    <form
+      onSubmit={submit}
+      className="rounded-lg border border-fairway-200 bg-white p-5"
+    >
       <div className="mb-4 rounded-lg bg-fairway-50 px-3 py-2 text-sm text-fairway-600">
-        완료된 예약 연락처가 확인된 후기만 접수됩니다. 운영자 확인 후 노출되며, 이름은 자동으로 마스킹됩니다.
+        완료된 예약 연락처가 확인된 후기만 접수됩니다. 운영자 확인 후 노출되며,
+        이름은 자동으로 마스킹됩니다.
       </div>
 
       <div className="mb-4">
@@ -145,20 +151,33 @@ export function ReviewForm({ instructorId }: { instructorId: string }) {
           maxLength={600}
           required
         />
-        <div className="mt-1 text-right text-xs text-fairway-400">{content.length}/600</div>
+        <div className="mt-1 text-right text-xs text-fairway-400">
+          {content.length}/600
+        </div>
       </div>
 
       {error && (
-        <p className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-600" aria-live="polite">
+        <p
+          className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-600"
+          aria-live="polite"
+        >
           {error}
         </p>
       )}
 
       <div className="flex gap-2">
-        <button type="submit" disabled={status === "loading"} className="btn-primary">
+        <button
+          type="submit"
+          disabled={status === "loading"}
+          className="btn-primary"
+        >
           {status === "loading" ? "등록 중..." : "후기 등록"}
         </button>
-        <button type="button" onClick={() => setOpen(false)} className="btn-outline">
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          className="btn-outline"
+        >
           취소
         </button>
       </div>

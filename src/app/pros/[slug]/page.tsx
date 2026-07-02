@@ -13,10 +13,18 @@ import { ReviewForm } from "@/components/ReviewForm";
 import { ProTabBar, type ProTab } from "@/components/ProTabBar";
 import { MobileBookingBar } from "@/components/MobileBookingBar";
 import { JsonLd } from "@/components/JsonLd";
-import { DEFAULT_OG_IMAGE, SITE_NAME, absoluteUrl, pageSeo, truncateMeta } from "@/lib/seo";
+import {
+  DEFAULT_OG_IMAGE,
+  SITE_NAME,
+  absoluteUrl,
+  pageSeo,
+  truncateMeta,
+} from "@/lib/seo";
 
-const won = (n: number) => (n > 0 ? `${n.toLocaleString("ko-KR")}원` : "상담 후 안내");
-const wonFrom = (n: number) => (n > 0 ? `${n.toLocaleString("ko-KR")}원~` : "상담 후 안내");
+const won = (n: number) =>
+  n > 0 ? `${n.toLocaleString("ko-KR")}원` : "상담 후 안내";
+const wonFrom = (n: number) =>
+  n > 0 ? `${n.toLocaleString("ko-KR")}원~` : "상담 후 안내";
 
 export async function generateMetadata({
   params,
@@ -27,9 +35,14 @@ export async function generateMetadata({
   const pro = await getInstructorBySlug(slug);
   if (!pro) return { title: "프로를 찾을 수 없습니다" };
   const title = `${pro.display_name} ${pro.region} 골프레슨`;
-  const price = pro.price_from > 0 ? ` ${pro.price_from.toLocaleString("ko-KR")}원부터.` : "";
+  const price =
+    pro.price_from > 0
+      ? ` ${pro.price_from.toLocaleString("ko-KR")}원부터.`
+      : "";
   const rating =
-    pro.review_count > 0 ? ` 후기 ${pro.review_count}개, 평점 ${pro.rating_avg.toFixed(1)}.` : "";
+    pro.review_count > 0
+      ? ` 후기 ${pro.review_count}개, 평점 ${pro.rating_avg.toFixed(1)}.`
+      : "";
 
   return pageSeo({
     title,
@@ -58,7 +71,9 @@ export default async function ProDetailPage({
 
   const reviews = await getReviews(pro.id);
   const portfolio = getPortfolioForSlug(pro.slug);
-  const sameAs = portfolio.map((item) => item.href).filter((href) => href.startsWith("https://"));
+  const sameAs = portfolio
+    .map((item) => item.href)
+    .filter((href) => href.startsWith("https://"));
 
   const hasPortfolio =
     portfolio.length > 0 ||
@@ -76,7 +91,9 @@ export default async function ProDetailPage({
   ];
 
   // 가능 요일 요약
-  const days = Array.from(new Set(pro.availability.map((a) => a.day_of_week))).sort();
+  const days = Array.from(
+    new Set(pro.availability.map((a) => a.day_of_week)),
+  ).sort();
   const availSummary = days.length
     ? `${days.map((d) => DAYS_KO[d]).join("·")} 가능`
     : "상담 시 안내";
@@ -145,16 +162,27 @@ export default async function ProDetailPage({
       {/* 헤더 (라이트·컴팩트) */}
       <div className="border-b border-fairway-100 bg-white">
         <div className="container-page py-4">
-          <Link href="/pros" className="text-[13px] font-semibold text-fairway-500 hover:text-fairway-800">
+          <Link
+            href="/pros"
+            className="text-[13px] font-semibold text-fairway-500 hover:text-fairway-800"
+          >
             ← 레슨프로 목록
           </Link>
           <div className="mt-3 flex gap-4">
             <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-fairway-100 sm:h-20 sm:w-20">
-              <Image src={pro.profile_image} alt={pro.display_name} fill sizes="80px" className="object-cover" />
+              <Image
+                src={pro.profile_image}
+                alt={pro.display_name}
+                fill
+                sizes="80px"
+                className="object-cover"
+              />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-1.5">
-                <h1 className="text-lg font-black text-fairway-900 sm:text-xl">{pro.display_name}</h1>
+                <h1 className="text-lg font-black text-fairway-900 sm:text-xl">
+                  {pro.display_name}
+                </h1>
                 {pro.verification_status === "verified" && (
                   <span className="rounded-full bg-fairway-900 px-2 py-0.5 text-[11px] font-bold text-gold-300">
                     검증완료
@@ -166,9 +194,15 @@ export default async function ProDetailPage({
                 <span>·</span>
                 <span>{pro.region}</span>
                 <span>·</span>
-                <span>{pro.career_years > 0 ? `경력 ${pro.career_years}년` : "경력 확인 중"}</span>
+                <span>
+                  {pro.career_years > 0
+                    ? `경력 ${pro.career_years}년`
+                    : "경력 확인 중"}
+                </span>
               </div>
-              <p className="mt-1.5 line-clamp-2 text-[13px] leading-relaxed text-fairway-600">{pro.bio}</p>
+              <p className="mt-1.5 line-clamp-2 text-[13px] leading-relaxed text-fairway-600">
+                {pro.bio}
+              </p>
             </div>
           </div>
           <div className="mt-3">
@@ -187,20 +221,47 @@ export default async function ProDetailPage({
           <Section id="info" title="고수정보">
             <div className="grid gap-x-6 gap-y-2.5 rounded-xl border border-fairway-100 bg-white p-4 sm:grid-cols-2">
               <InfoRow icon={<PinIcon />} label="지역" value={pro.region} />
-              <InfoRow icon={<PlaceIcon />} label="레슨 장소" value={pro.lesson_places.join(", ") || "상담 후 결정"} />
-              <InfoRow icon={<ClockIcon />} label="가능 시간" value={availSummary} />
-              {pro.response_time && <InfoRow icon={<BoltIcon />} label="응답" value={pro.response_time} />}
-              <InfoRow icon={<CardIcon />} label="결제" value="상담 확정 후 안내 (카드·계좌이체)" />
-              <InfoRow icon={<WonIcon />} label="레슨 시작가" value={wonFrom(pro.price_from)} />
+              <InfoRow
+                icon={<PlaceIcon />}
+                label="레슨 장소"
+                value={pro.lesson_places.join(", ") || "상담 후 결정"}
+              />
+              <InfoRow
+                icon={<ClockIcon />}
+                label="가능 시간"
+                value={availSummary}
+              />
+              {pro.response_time && (
+                <InfoRow
+                  icon={<BoltIcon />}
+                  label="응답"
+                  value={pro.response_time}
+                />
+              )}
+              <InfoRow
+                icon={<CardIcon />}
+                label="결제"
+                value="상담 확정 후 안내 (카드·계좌이체)"
+              />
+              <InfoRow
+                icon={<WonIcon />}
+                label="레슨 시작가"
+                value={wonFrom(pro.price_from)}
+              />
             </div>
 
             <div className="mt-5">
               <h3 className="mb-2 text-sm font-bold text-fairway-900">소개</h3>
-              <p className="whitespace-pre-line text-sm leading-relaxed text-fairway-700">{pro.about}</p>
+              <p className="whitespace-pre-line text-sm leading-relaxed text-fairway-700">
+                {pro.about}
+              </p>
               {pro.lesson_style.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {pro.lesson_style.map((s) => (
-                    <span key={s} className="rounded-full bg-fairway-50 px-2.5 py-1 text-[13px] font-medium text-fairway-700">
+                    <span
+                      key={s}
+                      className="rounded-full bg-fairway-50 px-2.5 py-1 text-[13px] font-medium text-fairway-700"
+                    >
                       {s}
                     </span>
                   ))}
@@ -209,10 +270,15 @@ export default async function ProDetailPage({
             </div>
 
             <div className="mt-5">
-              <h3 className="mb-2 text-sm font-bold text-fairway-900">전문 분야</h3>
+              <h3 className="mb-2 text-sm font-bold text-fairway-900">
+                전문 분야
+              </h3>
               <div className="flex flex-wrap gap-1.5">
                 {pro.specialties.map((s) => (
-                  <span key={s} className="rounded-lg bg-gold-100 px-2.5 py-1 text-[13px] font-semibold text-gold-800">
+                  <span
+                    key={s}
+                    className="rounded-lg bg-gold-100 px-2.5 py-1 text-[13px] font-semibold text-gold-800"
+                  >
                     {s}
                   </span>
                 ))}
@@ -221,7 +287,9 @@ export default async function ProDetailPage({
 
             {pro.availability.length > 0 && (
               <div className="mt-5">
-                <h3 className="mb-2 text-sm font-bold text-fairway-900">가능 시간</h3>
+                <h3 className="mb-2 text-sm font-bold text-fairway-900">
+                  가능 시간
+                </h3>
                 <AvailabilityTable rules={pro.availability} />
                 <p className="mt-2 text-[11px] text-fairway-500">
                   * 실제 예약 가능 여부는 상담 후 확정됩니다.
@@ -235,10 +303,15 @@ export default async function ProDetailPage({
             <Section id="portfolio" title="포트폴리오">
               {pro.career_history.length > 0 && (
                 <div className="mb-5">
-                  <h3 className="mb-2 text-sm font-bold text-fairway-900">약력 · 경력</h3>
+                  <h3 className="mb-2 text-sm font-bold text-fairway-900">
+                    약력 · 경력
+                  </h3>
                   <ul className="space-y-1.5">
                     {pro.career_history.map((c, i) => (
-                      <li key={i} className="flex gap-2 text-sm text-fairway-700">
+                      <li
+                        key={i}
+                        className="flex gap-2 text-sm text-fairway-700"
+                      >
                         <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gold-400" />
                         {c}
                       </li>
@@ -249,12 +322,19 @@ export default async function ProDetailPage({
 
               {pro.certifications.length > 0 && (
                 <div className="mb-5">
-                  <h3 className="mb-2 text-sm font-bold text-fairway-900">자격 · 라이선스</h3>
+                  <h3 className="mb-2 text-sm font-bold text-fairway-900">
+                    자격 · 라이선스
+                  </h3>
                   <div className="space-y-2">
                     {pro.certifications.map((c) => (
-                      <div key={c.id} className="flex items-center justify-between rounded-lg border border-fairway-100 bg-white px-3 py-2.5">
+                      <div
+                        key={c.id}
+                        className="flex items-center justify-between rounded-lg border border-fairway-100 bg-white px-3 py-2.5"
+                      >
                         <div>
-                          <div className="text-sm font-semibold text-fairway-900">{c.title}</div>
+                          <div className="text-sm font-semibold text-fairway-900">
+                            {c.title}
+                          </div>
                           <div className="text-[13px] text-fairway-500">
                             {c.issuer}
                             {c.issued_year ? ` · ${c.issued_year}년` : ""}
@@ -273,14 +353,21 @@ export default async function ProDetailPage({
 
               {pro.curriculum.length > 0 && (
                 <div className="mb-5">
-                  <h3 className="mb-2 text-sm font-bold text-fairway-900">커리큘럼</h3>
+                  <h3 className="mb-2 text-sm font-bold text-fairway-900">
+                    커리큘럼
+                  </h3>
                   <div className="grid gap-2 sm:grid-cols-2">
                     {pro.curriculum.map((c) => (
-                      <div key={c.session} className="flex items-start gap-2.5 rounded-lg bg-cream p-2.5">
+                      <div
+                        key={c.session}
+                        className="flex items-start gap-2.5 rounded-lg bg-cream p-2.5"
+                      >
                         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-fairway-700 text-[11px] font-bold text-gold-300">
                           {c.session}
                         </span>
-                        <span className="text-[13px] leading-tight text-fairway-700">{c.title}</span>
+                        <span className="text-[13px] leading-tight text-fairway-700">
+                          {c.title}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -298,7 +385,9 @@ export default async function ProDetailPage({
                         target="_blank"
                         rel="noreferrer"
                         className={`group overflow-hidden rounded-lg border border-fairway-100 bg-white transition hover:border-fairway-200 hover:shadow-card ${
-                          imageMode === "cover" ? "" : "flex min-h-[132px] items-center gap-3 p-3"
+                          imageMode === "cover"
+                            ? ""
+                            : "flex min-h-[132px] items-center gap-3 p-3"
                         }`}
                       >
                         {imageMode === "cover" ? (
@@ -318,8 +407,12 @@ export default async function ProDetailPage({
                               </div>
                             </div>
                             <div className="p-3">
-                              <h3 className="text-sm font-black text-fairway-900">{item.title}</h3>
-                              <p className="mt-1 text-[13px] leading-relaxed text-fairway-600">{item.description}</p>
+                              <h3 className="text-sm font-black text-fairway-900">
+                                {item.title}
+                              </h3>
+                              <p className="mt-1 text-[13px] leading-relaxed text-fairway-600">
+                                {item.description}
+                              </p>
                             </div>
                           </>
                         ) : (
@@ -339,8 +432,12 @@ export default async function ProDetailPage({
                               <span className="rounded-full bg-fairway-50 px-2 py-0.5 text-[11px] font-black text-fairway-700">
                                 {item.platform}
                               </span>
-                              <h3 className="mt-2 text-sm font-black text-fairway-900">{item.title}</h3>
-                              <p className="mt-1 text-[13px] leading-relaxed text-fairway-600">{item.description}</p>
+                              <h3 className="mt-2 text-sm font-black text-fairway-900">
+                                {item.title}
+                              </h3>
+                              <p className="mt-1 text-[13px] leading-relaxed text-fairway-600">
+                                {item.description}
+                              </p>
                             </div>
                           </>
                         )}
@@ -363,7 +460,13 @@ export default async function ProDetailPage({
                       i === 0 ? "aspect-[16/10] sm:col-span-2" : "aspect-[4/3]"
                     }`}
                   >
-                    <Image src={g} alt={`${pro.display_name} 레슨 ${i + 1}`} fill sizes="(max-width: 768px) 100vw, 45vw" className="object-cover" />
+                    <Image
+                      src={g}
+                      alt={`${pro.display_name} 레슨 ${i + 1}`}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 45vw"
+                      className="object-cover"
+                    />
                   </div>
                 ))}
               </div>
@@ -373,13 +476,20 @@ export default async function ProDetailPage({
           {/* 리뷰 */}
           <Section id="reviews" title={`리뷰 ${reviews.length}`}>
             {reviews.length === 0 ? (
-              <p className="text-sm text-fairway-500">아직 등록된 후기가 없어요. 첫 후기를 남겨주세요.</p>
+              <p className="text-sm text-fairway-500">
+                아직 등록된 후기가 없어요. 첫 후기를 남겨주세요.
+              </p>
             ) : (
               <div className="space-y-3">
                 {reviews.map((r) => (
-                  <div key={r.id} className="rounded-lg border border-fairway-100 bg-white p-3">
+                  <div
+                    key={r.id}
+                    className="rounded-lg border border-fairway-100 bg-white p-3"
+                  >
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-fairway-900">{r.student_name_masked}</span>
+                      <span className="text-sm font-semibold text-fairway-900">
+                        {r.student_name_masked}
+                      </span>
                       <Stars value={r.rating_total} size={14} />
                     </div>
                     {r.recommend_for && (
@@ -387,11 +497,17 @@ export default async function ProDetailPage({
                         추천 대상: {r.recommend_for}
                       </span>
                     )}
-                    <p className="mt-1.5 text-sm leading-relaxed text-fairway-700">{r.content}</p>
+                    <p className="mt-1.5 text-sm leading-relaxed text-fairway-700">
+                      {r.content}
+                    </p>
                     {r.instructor_reply && (
                       <div className="mt-2.5 rounded-lg bg-fairway-50 p-2.5 text-[13px]">
-                        <span className="font-bold text-fairway-700">프로 답글</span>
-                        <p className="mt-1 text-fairway-600">{r.instructor_reply}</p>
+                        <span className="font-bold text-fairway-700">
+                          프로 답글
+                        </span>
+                        <p className="mt-1 text-fairway-600">
+                          {r.instructor_reply}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -407,9 +523,13 @@ export default async function ProDetailPage({
           <Section id="qna" title="질문답변">
             <div className="rounded-xl border border-fairway-100 bg-white p-4 text-center">
               <p className="text-sm text-fairway-600">
-                궁금한 점이 있으신가요? 상담·예약 요청 시 메모로 질문을 남기면 프로가 직접 답변드립니다.
+                궁금한 점이 있으신가요? 상담·예약 요청 시 메모로 질문을 남기면
+                프로가 직접 답변드립니다.
               </p>
-              <Link href={`/pros/${pro.slug}/booking`} className="btn-outline mt-3">
+              <Link
+                href={`/pros/${pro.slug}/booking`}
+                className="btn-outline mt-3"
+              >
                 질문하며 상담 요청하기
               </Link>
             </div>
@@ -421,30 +541,48 @@ export default async function ProDetailPage({
           <div className="card space-y-3 p-4">
             <div>
               <div className="text-[13px] text-fairway-500">레슨 가격</div>
-              <div className="text-xl font-black text-fairway-900">{wonFrom(pro.price_from)}</div>
+              <div className="text-xl font-black text-fairway-900">
+                {wonFrom(pro.price_from)}
+              </div>
             </div>
 
             {pro.packages.length > 0 && (
               <div className="space-y-2">
                 {pro.packages.map((p) => (
-                  <div key={p.id} className="rounded-lg border border-fairway-100 p-2.5">
+                  <div
+                    key={p.id}
+                    className="rounded-lg border border-fairway-100 p-2.5"
+                  >
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-fairway-900">{p.title}</span>
-                      <span className="text-sm font-bold text-fairway-800">{won(p.price)}</span>
+                      <span className="text-sm font-semibold text-fairway-900">
+                        {p.title}
+                      </span>
+                      <span className="text-sm font-bold text-fairway-800">
+                        {won(p.price)}
+                      </span>
                     </div>
                     <div className="mt-0.5 text-[11px] text-fairway-500">
                       {p.session_count}회 · 회당 {p.duration_minutes}분
                     </div>
-                    {p.description && <div className="mt-0.5 text-[11px] text-fairway-500">{p.description}</div>}
+                    {p.description && (
+                      <div className="mt-0.5 text-[11px] text-fairway-500">
+                        {p.description}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
             )}
 
-            <Link href={`/pros/${pro.slug}/booking`} className="btn-primary w-full">
+            <Link
+              href={`/pros/${pro.slug}/booking`}
+              className="btn-primary w-full"
+            >
               상담 · 예약 요청하기
             </Link>
-            <p className="text-center text-[11px] text-fairway-400">회원가입 없이 요청할 수 있어요</p>
+            <p className="text-center text-[11px] text-fairway-400">
+              회원가입 없이 요청할 수 있어요
+            </p>
           </div>
         </aside>
       </div>
@@ -465,8 +603,13 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="scroll-mt-32 border-b border-fairway-100 pb-6 last:border-b-0">
-      <h2 className="mb-3 text-base font-extrabold text-fairway-900 sm:text-lg">{title}</h2>
+    <section
+      id={id}
+      className="scroll-mt-32 border-b border-fairway-100 pb-6 last:border-b-0"
+    >
+      <h2 className="mb-3 text-base font-extrabold text-fairway-900 sm:text-lg">
+        {title}
+      </h2>
       {children}
     </section>
   );
@@ -484,8 +627,12 @@ function InfoRow({
   return (
     <div className="flex items-center gap-2.5 text-[13px]">
       <span className="text-fairway-400">{icon}</span>
-      <span className="w-16 shrink-0 font-semibold text-fairway-500">{label}</span>
-      <span className="min-w-0 flex-1 truncate font-medium text-fairway-800">{value}</span>
+      <span className="w-16 shrink-0 font-semibold text-fairway-500">
+        {label}
+      </span>
+      <span className="min-w-0 flex-1 truncate font-medium text-fairway-800">
+        {value}
+      </span>
     </div>
   );
 }
@@ -494,43 +641,85 @@ function InfoRow({
 const iconCls = "h-4 w-4";
 function PinIcon() {
   return (
-    <svg viewBox="0 0 20 20" className={iconCls} fill="currentColor" aria-hidden>
-      <path fillRule="evenodd" d="M10 18s6-5.3 6-10a6 6 0 10-12 0c0 4.7 6 10 6 10zm0-7.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" clipRule="evenodd" />
+    <svg
+      viewBox="0 0 20 20"
+      className={iconCls}
+      fill="currentColor"
+      aria-hidden
+    >
+      <path
+        fillRule="evenodd"
+        d="M10 18s6-5.3 6-10a6 6 0 10-12 0c0 4.7 6 10 6 10zm0-7.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"
+        clipRule="evenodd"
+      />
     </svg>
   );
 }
 function PlaceIcon() {
   return (
-    <svg viewBox="0 0 20 20" className={iconCls} fill="currentColor" aria-hidden>
+    <svg
+      viewBox="0 0 20 20"
+      className={iconCls}
+      fill="currentColor"
+      aria-hidden
+    >
       <path d="M3 8l7-5 7 5v8a1 1 0 01-1 1h-4v-5H8v5H4a1 1 0 01-1-1V8z" />
     </svg>
   );
 }
 function ClockIcon() {
   return (
-    <svg viewBox="0 0 20 20" className={iconCls} fill="currentColor" aria-hidden>
-      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-12a.75.75 0 00-1.5 0v4c0 .3.18.57.46.69l2.75 1.25a.75.75 0 00.62-1.36L10.75 9.5V6z" clipRule="evenodd" />
+    <svg
+      viewBox="0 0 20 20"
+      className={iconCls}
+      fill="currentColor"
+      aria-hidden
+    >
+      <path
+        fillRule="evenodd"
+        d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-12a.75.75 0 00-1.5 0v4c0 .3.18.57.46.69l2.75 1.25a.75.75 0 00.62-1.36L10.75 9.5V6z"
+        clipRule="evenodd"
+      />
     </svg>
   );
 }
 function BoltIcon() {
   return (
-    <svg viewBox="0 0 20 20" className={iconCls} fill="currentColor" aria-hidden>
+    <svg
+      viewBox="0 0 20 20"
+      className={iconCls}
+      fill="currentColor"
+      aria-hidden
+    >
       <path d="M11 2L4 11h4l-1 7 7-9h-4l1-7z" />
     </svg>
   );
 }
 function CardIcon() {
   return (
-    <svg viewBox="0 0 20 20" className={iconCls} fill="currentColor" aria-hidden>
+    <svg
+      viewBox="0 0 20 20"
+      className={iconCls}
+      fill="currentColor"
+      aria-hidden
+    >
       <path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v1H2V6zm0 3h16v5a2 2 0 01-2 2H4a2 2 0 01-2-2V9zm3 4h4v1H5v-1z" />
     </svg>
   );
 }
 function WonIcon() {
   return (
-    <svg viewBox="0 0 20 20" className={iconCls} fill="currentColor" aria-hidden>
-      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM6.2 7l1.1 4 1.2-3h1l1.2 3 1.1-4h1.2l-1.7 6h-1.1l-1.2-3-1.2 3H6.7L5 7h1.2z" clipRule="evenodd" />
+    <svg
+      viewBox="0 0 20 20"
+      className={iconCls}
+      fill="currentColor"
+      aria-hidden
+    >
+      <path
+        fillRule="evenodd"
+        d="M10 18a8 8 0 100-16 8 8 0 000 16zM6.2 7l1.1 4 1.2-3h1l1.2 3 1.1-4h1.2l-1.7 6h-1.1l-1.2-3-1.2 3H6.7L5 7h1.2z"
+        clipRule="evenodd"
+      />
     </svg>
   );
 }

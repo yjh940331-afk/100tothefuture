@@ -2,16 +2,12 @@
 // Supabase 스키마(supabase/schema.sql)와 시드 데이터(seed-data.ts)가 공유한다.
 
 export type BookingStatus =
-  | "requested"
-  | "confirmed"
-  | "completed"
-  | "canceled"
-  | "rejected"
-  | "no_show";
+  "requested" | "confirmed" | "completed" | "canceled" | "rejected" | "no_show";
 
 export type ReviewStatus = "pending" | "visible" | "hidden" | "reported";
 export type VerificationStatus = "pending" | "verified" | "rejected";
-export type LessonRequestStatus = "open" | "contacted" | "quoted" | "closed" | "canceled";
+export type LessonRequestStatus =
+  "open" | "contacted" | "quoted" | "closed" | "canceled";
 
 export interface LessonRequest {
   id: string;

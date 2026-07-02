@@ -18,10 +18,17 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ ok: false, error: "잘못된 요청입니다." }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "잘못된 요청입니다." },
+      { status: 400 },
+    );
   }
 
-  if (!body.customer_name?.trim() || !body.customer_phone?.trim() || !body.region?.trim()) {
+  if (
+    !body.customer_name?.trim() ||
+    !body.customer_phone?.trim() ||
+    !body.region?.trim()
+  ) {
     return NextResponse.json(
       { ok: false, error: "이름, 연락처, 지역을 입력해주세요." },
       { status: 400 },

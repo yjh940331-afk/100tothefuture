@@ -14,7 +14,10 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ ok: false, error: "잘못된 요청" }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "잘못된 요청" },
+      { status: 400 },
+    );
   }
 
   const rating = Number(body.rating_total);
@@ -54,8 +57,12 @@ export async function POST(req: Request) {
     student_phone: body.student_phone.trim(),
     student_name_masked: maskName(body.student_name || "익명"),
     rating_total: rating,
-    rating_kindness: body.rating_kindness ? Number(body.rating_kindness) : undefined,
-    rating_explanation: body.rating_explanation ? Number(body.rating_explanation) : undefined,
+    rating_kindness: body.rating_kindness
+      ? Number(body.rating_kindness)
+      : undefined,
+    rating_explanation: body.rating_explanation
+      ? Number(body.rating_explanation)
+      : undefined,
     rating_effect: body.rating_effect ? Number(body.rating_effect) : undefined,
     recommend_for: body.recommend_for || undefined,
     content: body.content.trim(),

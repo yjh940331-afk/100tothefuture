@@ -1,10 +1,4 @@
-export function Stars({
-  value,
-  size = 16,
-}: {
-  value: number;
-  size?: number;
-}) {
+export function Stars({ value, size = 16 }: { value: number; size?: number }) {
   const full = Math.round(value);
   return (
     <span className="inline-flex items-center" aria-label={`별점 ${value}점`}>

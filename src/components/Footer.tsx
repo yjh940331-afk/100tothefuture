@@ -31,7 +31,10 @@ export function Footer() {
               </Link>
             </li>
             <li>
-              <a href="mailto:contact@100tothefuture.com" className="hover:text-white">
+              <a
+                href="mailto:contact@100tothefuture.com"
+                className="hover:text-white"
+              >
                 프로 등록 문의
               </a>
             </li>

@@ -4,18 +4,62 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { LESSON_PLACES, REGIONS, SPECIALTIES } from "@/lib/constants";
 
-const SKILL_LEVELS = ["처음 시작", "입문 1년 미만", "보기 플레이어", "90대", "80대 이하"] as const;
-const SCORE_RANGES = ["아직 모름", "120타 이상", "110~119타", "100~109타", "90~99타", "80대 이하"] as const;
+const SKILL_LEVELS = [
+  "처음 시작",
+  "입문 1년 미만",
+  "보기 플레이어",
+  "90대",
+  "80대 이하",
+] as const;
+const SCORE_RANGES = [
+  "아직 모름",
+  "120타 이상",
+  "110~119타",
+  "100~109타",
+  "90~99타",
+  "80대 이하",
+] as const;
 const DAYS = ["월", "화", "수", "목", "금", "토", "일"] as const;
 const TIME_SLOTS = ["오전", "오후", "저녁", "상관없음"] as const;
-const PACKAGE_OPTIONS = ["1회 체험", "4회 패키지", "8회 이상 집중반", "필드 동반 레슨", "상담 후 결정"] as const;
+const PACKAGE_OPTIONS = [
+  "1회 체험",
+  "4회 패키지",
+  "8회 이상 집중반",
+  "필드 동반 레슨",
+  "상담 후 결정",
+] as const;
 const DIAGNOSIS_OPTIONS = [
-  { key: "driver-ob", title: "OB형", desc: "드라이버가 불안해요", goal: "드라이버" },
-  { key: "iron-contact", title: "컨택형", desc: "아이언이 안 맞아요", goal: "아이언" },
-  { key: "short-game", title: "숏게임형", desc: "그린 주변이 약해요", goal: "숏게임" },
+  {
+    key: "driver-ob",
+    title: "OB형",
+    desc: "드라이버가 불안해요",
+    goal: "드라이버",
+  },
+  {
+    key: "iron-contact",
+    title: "컨택형",
+    desc: "아이언이 안 맞아요",
+    goal: "아이언",
+  },
+  {
+    key: "short-game",
+    title: "숏게임형",
+    desc: "그린 주변이 약해요",
+    goal: "숏게임",
+  },
   { key: "three-putt", title: "3펏형", desc: "퍼팅에서 잃어요", goal: "퍼팅" },
-  { key: "first-field", title: "첫 필드형", desc: "라운드를 준비해요", goal: "필드레슨" },
-  { key: "break-100", title: "100타형", desc: "100타를 깨고 싶어요", goal: "100타 탈출" },
+  {
+    key: "first-field",
+    title: "첫 필드형",
+    desc: "라운드를 준비해요",
+    goal: "필드레슨",
+  },
+  {
+    key: "break-100",
+    title: "100타형",
+    desc: "100타를 깨고 싶어요",
+    goal: "100타 탈출",
+  },
 ] as const;
 
 type FormState = {
@@ -54,24 +98,31 @@ const initialForm: FormState = {
   memo: "",
 };
 
-export function QuoteRequestForm({ initialGoal }: { initialGoal?: string } = {}) {
+export function QuoteRequestForm({
+  initialGoal,
+}: { initialGoal?: string } = {}) {
   const [form, setForm] = useState<FormState>(() => ({
     ...initialForm,
     goals:
-      initialGoal && SPECIALTIES.includes(initialGoal as (typeof SPECIALTIES)[number])
+      initialGoal &&
+      SPECIALTIES.includes(initialGoal as (typeof SPECIALTIES)[number])
         ? [initialGoal]
         : [],
   }));
   const [privacy, setPrivacy] = useState(false);
   const [marketing, setMarketing] = useState(false);
-  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">(
+    "idle",
+  );
   const [error, setError] = useState("");
   const [requestId, setRequestId] = useState("");
   const [demo, setDemo] = useState(false);
   const [showMore, setShowMore] = useState(false);
 
   const selectedSummary = useMemo(() => {
-    const diagnosis = DIAGNOSIS_OPTIONS.find((option) => form.diagnoses.includes(option.key));
+    const diagnosis = DIAGNOSIS_OPTIONS.find((option) =>
+      form.diagnoses.includes(option.key),
+    );
     const chunks = [
       diagnosis?.title,
       form.region,
@@ -85,12 +136,17 @@ export function QuoteRequestForm({ initialGoal }: { initialGoal?: string } = {})
     setForm((current) => ({ ...current, [key]: value }));
   }
 
-  function toggle(key: "lesson_places" | "goals" | "preferred_days", value: string) {
+  function toggle(
+    key: "lesson_places" | "goals" | "preferred_days",
+    value: string,
+  ) {
     setForm((current) => {
       const exists = current[key].includes(value);
       return {
         ...current,
-        [key]: exists ? current[key].filter((item) => item !== value) : [...current[key], value],
+        [key]: exists
+          ? current[key].filter((item) => item !== value)
+          : [...current[key], value],
       };
     });
   }
@@ -137,7 +193,9 @@ export function QuoteRequestForm({ initialGoal }: { initialGoal?: string } = {})
         .map((key) => DIAGNOSIS_OPTIONS.find((item) => item.key === key)?.title)
         .filter(Boolean);
       const memo = [
-        diagnosisLabels.length ? `진단 유형: ${diagnosisLabels.join(", ")}` : "",
+        diagnosisLabels.length
+          ? `진단 유형: ${diagnosisLabels.join(", ")}`
+          : "",
         form.memo.trim(),
       ]
         .filter(Boolean)
@@ -172,9 +230,14 @@ export function QuoteRequestForm({ initialGoal }: { initialGoal?: string } = {})
 
   if (status === "done") {
     return (
-      <div className="rounded-lg border border-fairway-100 bg-white p-8 text-center shadow-sm">
+      <div className="motion-pop-in rounded-lg border border-fairway-100 bg-white p-8 text-center shadow-sm">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-fairway-100 text-fairway-700">
-          <svg viewBox="0 0 20 20" className="h-7 w-7" fill="currentColor" aria-hidden>
+          <svg
+            viewBox="0 0 20 20"
+            className="h-7 w-7"
+            fill="currentColor"
+            aria-hidden
+          >
             <path
               fillRule="evenodd"
               d="M16.7 5.3a1 1 0 010 1.4l-7.5 7.5a1 1 0 01-1.4 0L3.3 9.7a1 1 0 011.4-1.4l3.3 3.3 6.8-6.8a1 1 0 011.4 0z"
@@ -182,14 +245,18 @@ export function QuoteRequestForm({ initialGoal }: { initialGoal?: string } = {})
             />
           </svg>
         </div>
-        <h2 className="mt-4 text-2xl font-black text-fairway-900">요청이 접수됐어요</h2>
+        <h2 className="mt-4 text-2xl font-black text-fairway-900">
+          요청이 접수됐어요
+        </h2>
         <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-fairway-600">
           조건에 맞는 프로 후보를 확인해 연락드릴게요.
         </p>
         {requestId && (
           <div className="mx-auto mt-5 max-w-xl rounded-lg bg-fairway-50 p-4 text-left">
             <p className="text-sm font-bold text-fairway-500">요청번호</p>
-            <p className="mt-1 break-all font-mono text-sm font-black text-fairway-900">{requestId}</p>
+            <p className="mt-1 break-all font-mono text-sm font-black text-fairway-900">
+              {requestId}
+            </p>
           </div>
         )}
         {demo && (
@@ -201,7 +268,11 @@ export function QuoteRequestForm({ initialGoal }: { initialGoal?: string } = {})
           <Link href="/pros" className="btn-primary inline-flex">
             프로 직접 보기
           </Link>
-          <button type="button" onClick={() => setStatus("idle")} className="btn-outline">
+          <button
+            type="button"
+            onClick={() => setStatus("idle")}
+            className="btn-outline"
+          >
             요청서 다시 작성
           </button>
         </div>
@@ -210,15 +281,22 @@ export function QuoteRequestForm({ initialGoal }: { initialGoal?: string } = {})
   }
 
   return (
-    <form onSubmit={submit} className="rounded-lg border border-fairway-100 bg-white p-5 shadow-sm sm:p-6">
+    <form
+      onSubmit={submit}
+      className="motion-fade-up rounded-lg border border-fairway-100 bg-white p-5 shadow-sm sm:p-6"
+    >
       <div className="flex flex-col gap-2 border-b border-fairway-100 pb-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-bold text-gold-700">100타 탈출 진단</p>
-          <h2 className="mt-1 text-2xl font-black text-fairway-900">고민부터 고르세요</h2>
-          <p className="mt-1 text-sm text-fairway-600">선택하면 목표가 자동으로 채워집니다.</p>
+          <h2 className="mt-1 text-2xl font-black text-fairway-900">
+            고민부터 고르세요
+          </h2>
+          <p className="mt-1 text-sm text-fairway-600">
+            선택하면 목표가 자동으로 채워집니다.
+          </p>
         </div>
         {selectedSummary && (
-          <p className="max-w-full rounded-full bg-fairway-50 px-3 py-1.5 text-xs font-bold text-fairway-700 sm:max-w-xs sm:truncate">
+          <p className="motion-pop-in max-w-full rounded-full bg-fairway-50 px-3 py-1.5 text-xs font-bold text-fairway-700 sm:max-w-xs sm:truncate">
             {selectedSummary}
           </p>
         )}
@@ -226,7 +304,9 @@ export function QuoteRequestForm({ initialGoal }: { initialGoal?: string } = {})
 
       <section className="mt-5">
         <div className="mb-2 flex items-center justify-between gap-3">
-          <h3 className="text-sm font-black text-fairway-900">나와 가까운 유형</h3>
+          <h3 className="text-sm font-black text-fairway-900">
+            나와 가까운 유형
+          </h3>
           <span className="text-xs font-bold text-fairway-400">복수 선택</span>
         </div>
         <div className="grid grid-cols-2 gap-2 lg:grid-cols-3">
@@ -277,7 +357,11 @@ export function QuoteRequestForm({ initialGoal }: { initialGoal?: string } = {})
           />
         </Field>
         <Field label="레슨 희망 지역 *">
-          <select className="input" value={form.region} onChange={(event) => set("region", event.target.value)}>
+          <select
+            className="input"
+            value={form.region}
+            onChange={(event) => set("region", event.target.value)}
+          >
             {REGIONS.map((region) => (
               <option key={region} value={region}>
                 {region}
@@ -286,7 +370,11 @@ export function QuoteRequestForm({ initialGoal }: { initialGoal?: string } = {})
           </select>
         </Field>
         <Field label="현재 실력">
-          <select className="input" value={form.skill_level} onChange={(event) => set("skill_level", event.target.value)}>
+          <select
+            className="input"
+            value={form.skill_level}
+            onChange={(event) => set("skill_level", event.target.value)}
+          >
             <option value="">선택 안 함</option>
             {SKILL_LEVELS.map((level) => (
               <option key={level} value={level}>
@@ -296,7 +384,11 @@ export function QuoteRequestForm({ initialGoal }: { initialGoal?: string } = {})
           </select>
         </Field>
         <Field label="평균 스코어">
-          <select className="input" value={form.score_range} onChange={(event) => set("score_range", event.target.value)}>
+          <select
+            className="input"
+            value={form.score_range}
+            onChange={(event) => set("score_range", event.target.value)}
+          >
             <option value="">선택 안 함</option>
             {SCORE_RANGES.map((score) => (
               <option key={score} value={score}>
@@ -335,14 +427,16 @@ export function QuoteRequestForm({ initialGoal }: { initialGoal?: string } = {})
       <button
         type="button"
         onClick={() => setShowMore((value) => !value)}
-        className="mt-4 flex w-full items-center justify-between rounded-lg border border-fairway-100 bg-cream px-3 py-2.5 text-sm font-black text-fairway-800"
+        className="mt-4 flex w-full items-center justify-between rounded-lg border border-fairway-100 bg-cream px-3 py-2.5 text-sm font-black text-fairway-800 transition-all duration-200 hover:-translate-y-0.5 hover:border-fairway-200 hover:shadow-card"
       >
         <span>세부 조건</span>
-        <span className="text-xs text-fairway-500">{showMore ? "접기" : "선택"}</span>
+        <span className="text-xs text-fairway-500">
+          {showMore ? "접기" : "선택"}
+        </span>
       </button>
 
       {showMore && (
-        <div className="mt-4 rounded-lg border border-fairway-100 bg-fairway-50/50 p-3">
+        <div className="motion-reveal mt-4 rounded-lg border border-fairway-100 bg-fairway-50/50 p-3">
           <ChoiceGroup title="레슨 장소">
             {LESSON_PLACES.map((place) => (
               <Choice
@@ -367,7 +461,11 @@ export function QuoteRequestForm({ initialGoal }: { initialGoal?: string } = {})
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <Field label="현재 구력">
-              <select className="input" value={form.skill_level} onChange={(event) => set("skill_level", event.target.value)}>
+              <select
+                className="input"
+                value={form.skill_level}
+                onChange={(event) => set("skill_level", event.target.value)}
+              >
                 <option value="">선택 안 함</option>
                 {SKILL_LEVELS.map((level) => (
                   <option key={level} value={level}>
@@ -391,7 +489,9 @@ export function QuoteRequestForm({ initialGoal }: { initialGoal?: string } = {})
               <select
                 className="input"
                 value={form.instructor_gender_preference}
-                onChange={(event) => set("instructor_gender_preference", event.target.value)}
+                onChange={(event) =>
+                  set("instructor_gender_preference", event.target.value)
+                }
               >
                 <option value="">상관없음</option>
                 <option value="male">남성 프로</option>
@@ -402,7 +502,9 @@ export function QuoteRequestForm({ initialGoal }: { initialGoal?: string } = {})
               <select
                 className="input"
                 value={form.package_preference}
-                onChange={(event) => set("package_preference", event.target.value)}
+                onChange={(event) =>
+                  set("package_preference", event.target.value)
+                }
               >
                 <option value="">선택 안 함</option>
                 {PACKAGE_OPTIONS.map((option) => (
@@ -424,7 +526,9 @@ export function QuoteRequestForm({ initialGoal }: { initialGoal?: string } = {})
           maxLength={800}
           placeholder="예: 주말 오전, 수원 근처 희망"
         />
-        <div className="mt-1 text-right text-xs text-fairway-400">{form.memo.length}/800</div>
+        <div className="mt-1 text-right text-xs text-fairway-400">
+          {form.memo.length}/800
+        </div>
       </Field>
 
       <div className="mt-5 space-y-2 rounded-lg bg-cream p-4">
@@ -440,19 +544,32 @@ export function QuoteRequestForm({ initialGoal }: { initialGoal?: string } = {})
       </div>
 
       {error && (
-        <p className="mt-4 rounded-lg bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-600" aria-live="polite">
+        <p
+          className="mt-4 rounded-lg bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-600"
+          aria-live="polite"
+        >
           {error}
         </p>
       )}
 
-      <button type="submit" disabled={status === "loading"} className="btn-primary mt-5 w-full text-base">
+      <button
+        type="submit"
+        disabled={status === "loading"}
+        className="btn-primary mt-5 w-full text-base"
+      >
         {status === "loading" ? "요청 저장 중..." : "맞춤 견적 요청하기"}
       </button>
     </form>
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <label className="block">
       <span className="label">{label}</span>
@@ -461,7 +578,13 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function ChoiceGroup({ title, children }: { title: string; children: React.ReactNode }) {
+function ChoiceGroup({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <fieldset className="mt-4">
       <legend className="label">{title}</legend>
@@ -485,16 +608,20 @@ function DiagnosisCard({
     <button
       type="button"
       onClick={onClick}
-      className={`min-h-[74px] rounded-lg border p-3 text-left transition-colors ${
+      className={`min-h-[74px] rounded-lg border p-3 text-left transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] ${
         active
-          ? "border-fairway-800 bg-fairway-900 text-white"
-          : "border-fairway-100 bg-cream text-fairway-900 hover:border-fairway-300"
+          ? "border-fairway-800 bg-fairway-900 text-white shadow-card"
+          : "border-fairway-100 bg-cream text-fairway-900 hover:border-fairway-300 hover:shadow-card"
       }`}
     >
-      <span className={`text-xs font-black ${active ? "text-gold-200" : "text-gold-700"}`}>
+      <span
+        className={`text-xs font-black ${active ? "text-gold-200" : "text-gold-700"}`}
+      >
         {title}
       </span>
-      <span className={`mt-1 block line-clamp-1 text-[13px] font-semibold ${active ? "text-fairway-50" : "text-fairway-600"}`}>
+      <span
+        className={`mt-1 block line-clamp-1 text-[13px] font-semibold ${active ? "text-fairway-50" : "text-fairway-600"}`}
+      >
         {desc}
       </span>
     </button>
@@ -512,13 +639,18 @@ function Choice({
 }) {
   return (
     <label
-      className={`inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-[13px] font-bold transition-colors ${
+      className={`inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-[13px] font-bold transition-all duration-200 hover:-translate-y-0.5 ${
         checked
-          ? "border-fairway-700 bg-fairway-700 text-white"
-          : "border-fairway-100 bg-white text-fairway-600 hover:bg-fairway-50"
+          ? "border-fairway-700 bg-fairway-700 text-white shadow-card"
+          : "border-fairway-100 bg-white text-fairway-600 hover:bg-fairway-50 hover:shadow-card"
       }`}
     >
-      <input type="checkbox" checked={checked} onChange={onChange} className="sr-only" />
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className="sr-only"
+      />
       {label}
     </label>
   );

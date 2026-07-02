@@ -30,8 +30,8 @@ export function AdminLogin({ configured }: { configured: boolean }) {
         <h1 className="text-xl font-black text-fairway-900">관리자 로그인</h1>
         {!configured && (
           <p className="rounded-lg bg-gold-100 p-3 text-sm text-gold-900">
-            아직 <code>ADMIN_PASSWORD</code> 환경변수가 설정되지 않았습니다. 배포 환경변수에
-            추가한 뒤 로그인하세요.
+            아직 <code>ADMIN_PASSWORD</code> 환경변수가 설정되지 않았습니다.
+            배포 환경변수에 추가한 뒤 로그인하세요.
           </p>
         )}
         <div>

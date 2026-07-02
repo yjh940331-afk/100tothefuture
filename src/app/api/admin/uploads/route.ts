@@ -21,7 +21,10 @@ function cleanKind(value: unknown) {
 
 export async function POST(req: Request) {
   if (!(await isAdminAuthed())) {
-    return NextResponse.json({ ok: false, error: "권한이 없습니다." }, { status: 401 });
+    return NextResponse.json(
+      { ok: false, error: "권한이 없습니다." },
+      { status: 401 },
+    );
   }
 
   const form = await req.formData().catch(() => null);
@@ -37,11 +40,18 @@ export async function POST(req: Request) {
     );
   }
   if (!(file instanceof File)) {
-    return NextResponse.json({ ok: false, error: "업로드할 사진을 선택해주세요." }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "업로드할 사진을 선택해주세요." },
+      { status: 400 },
+    );
   }
   if (!cropped) {
     return NextResponse.json(
-      { ok: false, error: "사진은 편집 화면을 거쳐 업로드해주세요. 페이지를 새로고침한 뒤 다시 시도해주세요." },
+      {
+        ok: false,
+        error:
+          "사진은 편집 화면을 거쳐 업로드해주세요. 페이지를 새로고침한 뒤 다시 시도해주세요.",
+      },
       { status: 400 },
     );
   }
@@ -81,5 +91,10 @@ export async function POST(req: Request) {
     },
   });
 
-  return NextResponse.json({ ok: true, url: publicMediaUrl(path), path, storage: "r2" });
+  return NextResponse.json({
+    ok: true,
+    url: publicMediaUrl(path),
+    path,
+    storage: "r2",
+  });
 }

@@ -14,15 +14,15 @@
 
 ## ✅ 지금까지 구현된 것 (P0)
 
-| 화면 | 경로 | 내용 |
-|---|---|---|
-| 메인 랜딩 | `/` | 히어로, 추천 프로, 신뢰 장치, 진행 흐름, CTA |
-| 레슨프로 목록 | `/pros` | 지역·전문분야·장소·시간·가격 필터 + 정렬 |
-| 레슨프로 상세 | `/pros/[slug]` | 갤러리, 약력, 검증 배지, 자격, 커리큘럼, 가능 시간, 후기, 후기 작성 |
-| 상담·예약 요청 | `/pros/[slug]/booking` | 이름/연락처/희망일정/상품/고민 + 개인정보·제3자 제공 동의 |
-| 골프 정보 | `/info` `/info/[slug]` | 골프웨어·장비·이야기·위키 정보 허브 |
-| 관리자 | `/admin` | 예약 상태 관리, 리뷰 승인/숨김, 프로 등록·수정, 프로 사진 업로드 (비밀번호 로그인) |
-| 약관/정책 | `/terms` `/privacy` `/policy/reviews` | 표준 예시 (실제 정보로 수정 필요) |
+| 화면           | 경로                                  | 내용                                                                               |
+| -------------- | ------------------------------------- | ---------------------------------------------------------------------------------- |
+| 메인 랜딩      | `/`                                   | 히어로, 추천 프로, 신뢰 장치, 진행 흐름, CTA                                       |
+| 레슨프로 목록  | `/pros`                               | 지역·전문분야·장소·시간·가격 필터 + 정렬                                           |
+| 레슨프로 상세  | `/pros/[slug]`                        | 갤러리, 약력, 검증 배지, 자격, 커리큘럼, 가능 시간, 후기, 후기 작성                |
+| 상담·예약 요청 | `/pros/[slug]/booking`                | 이름/연락처/희망일정/상품/고민 + 개인정보·제3자 제공 동의                          |
+| 골프 정보      | `/info` `/info/[slug]`                | 골프웨어·장비·이야기·위키 정보 허브                                                |
+| 관리자         | `/admin`                              | 예약 상태 관리, 리뷰 승인/숨김, 프로 등록·수정, 프로 사진 업로드 (비밀번호 로그인) |
+| 약관/정책      | `/terms` `/privacy` `/policy/reviews` | 표준 예시 (실제 정보로 수정 필요)                                                  |
 
 - 후기: **예약 완료 수강생 대상** 작성 → **관리자 승인 후 노출**, 이름 자동 마스킹(김\*\*)
 - 검증 배지: 관리자가 증빙 확인 후 부여하는 구조 (검증 안 한 내용 표시 안 함)
@@ -67,6 +67,7 @@ ADMIN_SESSION_SECRET=긴_랜덤_세션_서명_문자열
    업로드된 이미지는 사이트의 `/media/...` 경로로 서빙됩니다.
 
 ### 데이터 모델 요약
+
 `instructors` · `instructor_certifications` · `lesson_packages` ·
 `availability_rules` / `availability_exceptions` · `bookings` · `reviews` ·
 `review_reports` · `consent_logs`
@@ -95,6 +96,7 @@ npm run cf:deploy     # 빌드 + Cloudflare 배포 (wrangler 로그인 필요)
 ```
 
 **배포 전 준비:**
+
 1. `wrangler login`
 2. Cloudflare Workers 환경변수/secret 등록:
    - `NEXT_PUBLIC_SUPABASE_URL`
@@ -106,6 +108,7 @@ npm run cf:deploy     # 빌드 + Cloudflare 배포 (wrangler 로그인 필요)
 3. `wrangler.jsonc` 의 `name`, `compatibility_date` 확인
 
 ### 도메인 연결 (가비아에서 구매한 `100tothefuture.com`)
+
 1. Cloudflare Workers → **Custom domains** 에 `www.100tothefuture.com` 추가
 2. 가비아 DNS 또는 네임서버를 Cloudflare로 이전 후:
    - `www` → Pages (CNAME)
@@ -145,4 +148,5 @@ supabase/schema.sql · seed.sql  DB 스키마/시드
 - **P2**: 결제·예약금, 정산, 채팅, 스윙 영상 피드백, 수강생 스코어 관리, AI 추천
 
 ---
+
 🤖 초기 스캐폴딩 및 P0 구현: Claude Code
