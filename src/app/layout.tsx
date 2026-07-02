@@ -7,32 +7,33 @@ import { SITE_URL } from "@/lib/site";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "100 to the Future | 100타 탈출 골프레슨 중개 플랫폼",
+    default: "100 to the Future | 골프 레슨 매칭 플랫폼",
     template: "%s | 100 to the Future",
   },
   description:
-    "100타 탈출을 원하는 골퍼와 검증된 레슨프로를 연결하는 레슨 중개 플랫폼. 프로필·약력·자격을 검증하고, 가능한 시간에 바로 상담·예약하세요.",
+    "목표, 지역, 시간, 예산에 맞는 골프 레슨 프로를 비교하고 상담·예약할 수 있는 골프 레슨 매칭 플랫폼.",
   keywords: [
     "골프레슨",
-    "100타 탈출",
-    "골프 레슨프로",
+    "골프 프로",
     "골프 레슨 예약",
-    "강남 골프레슨",
-    "골프 원포인트 레슨",
+    "100타 탈출",
+    "드라이버 레슨",
+    "비거리 레슨",
+    "골프 레슨 견적",
   ],
   openGraph: {
     type: "website",
     locale: "ko_KR",
     url: SITE_URL,
     siteName: "100 to the Future",
-    title: "100타 탈출, 혼자 고민하지 말고 검증된 프로와 시작하세요.",
+    title: "내 조건에 맞는 골프 프로를 비교하세요",
     description:
-      "내 스윙 문제에 맞는 검증된 레슨프로를 찾고, 가능한 시간에 바로 상담·예약하세요.",
+      "지역, 목표, 가능 시간, 예산을 기준으로 검증된 골프 레슨 프로를 연결합니다.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "100 to the Future | 100타 탈출 골프레슨",
-    description: "검증된 레슨프로와 함께하는 100타 탈출.",
+    title: "100 to the Future | 골프 레슨 매칭",
+    description: "검증된 골프 프로와 함께하는 맞춤 레슨 매칭.",
   },
   robots: { index: true, follow: true },
 };

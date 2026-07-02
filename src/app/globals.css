@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 :root {
-  --background: #f7f4ec;
+  --background: #f6f5f1;
   --foreground: #183526;
 }
 
@@ -15,7 +15,9 @@ html {
 
 body {
   color: var(--foreground);
-  background: var(--background);
+  background:
+    radial-gradient(circle at top left, rgba(200, 150, 74, 0.08), transparent 28rem),
+    linear-gradient(180deg, #faf9f5 0%, var(--background) 36rem);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -31,22 +33,22 @@ body {
 
 @layer components {
   .btn {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-5 py-3 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-fairway-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-5 py-3 text-sm font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-fairway-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
   }
   .btn-primary {
-    @apply btn bg-fairway-700 text-white hover:bg-fairway-800;
+    @apply btn bg-fairway-900 text-white shadow-sm shadow-fairway-950/10 hover:-translate-y-0.5 hover:bg-fairway-800;
   }
   .btn-gold {
-    @apply btn bg-gold-500 text-fairway-950 hover:bg-gold-600 hover:text-white;
+    @apply btn bg-gold-400 text-fairway-950 shadow-sm shadow-gold-900/10 hover:-translate-y-0.5 hover:bg-gold-500;
   }
   .btn-outline {
-    @apply btn border border-fairway-300 bg-white text-fairway-800 hover:border-fairway-500 hover:bg-fairway-50;
+    @apply btn border border-fairway-200 bg-white/80 text-fairway-800 shadow-sm shadow-fairway-950/5 hover:-translate-y-0.5 hover:border-fairway-400 hover:bg-white;
   }
   .card {
-    @apply rounded-lg border border-fairway-100 bg-white shadow-card;
+    @apply rounded-lg border border-fairway-100/80 bg-white/95 shadow-card backdrop-blur;
   }
   .input {
-    @apply w-full rounded-lg border border-fairway-200 bg-white px-4 py-3 text-sm text-fairway-900 placeholder:text-fairway-400 focus:border-fairway-500 focus:outline-none focus:ring-2 focus:ring-fairway-500/30;
+    @apply w-full rounded-lg border border-fairway-200 bg-white/95 px-4 py-3 text-sm text-fairway-900 placeholder:text-fairway-400 focus:border-fairway-500 focus:outline-none focus:ring-2 focus:ring-fairway-500/20;
   }
   .label {
     @apply mb-1.5 block text-sm font-semibold text-fairway-800;

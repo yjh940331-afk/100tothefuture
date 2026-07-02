@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getInstructorBySlug, getReviews } from "@/lib/data";
+import { getPortfolioForSlug } from "@/lib/portfolio";
 import { BadgeList } from "@/components/Badge";
 import { Stars, RatingInline } from "@/components/Stars";
 import { AvailabilityTable } from "@/components/AvailabilityTable";
@@ -39,13 +40,14 @@ export default async function ProDetailPage({
 
   const reviews = await getReviews(pro.id);
   const coverImage = pro.gallery[0] ?? pro.profile_image;
+  const portfolio = getPortfolioForSlug(pro.slug);
 
   return (
     <>
       <DemoBanner />
 
       {/* 헤더 */}
-      <div className="relative overflow-hidden bg-fairway-950 text-white">
+      <div className="relative overflow-hidden bg-[#101712] text-white">
         <Image
           src={coverImage}
           alt=""
@@ -54,7 +56,7 @@ export default async function ProDetailPage({
           className="object-cover opacity-40"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-fairway-950 via-fairway-950/86 to-fairway-950/35" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#101712] via-[#101712]/88 to-[#101712]/42" />
         <div className="container-page relative py-8 sm:py-12">
           <Link href="/pros" className="text-sm font-semibold text-fairway-100 hover:text-white">
             ← 레슨프로 목록
@@ -86,7 +88,7 @@ export default async function ProDetailPage({
               </div>
             </div>
 
-            <div className="rounded-lg border border-white/15 bg-white/10 p-5 backdrop-blur">
+            <div className="rounded-lg border border-white/15 bg-white/10 p-5 shadow-2xl shadow-black/10 backdrop-blur">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold text-white">
                   {pro.specialties[0] ?? "골프 레슨"}
@@ -135,6 +137,46 @@ export default async function ProDetailPage({
               ))}
             </div>
           </Section>
+
+          {portfolio.length > 0 && (
+            <Section title="포트폴리오">
+              <div className="grid gap-4 md:grid-cols-2">
+                {portfolio.map((item) => (
+                  <a
+                    key={`${item.platform}-${item.title}`}
+                    href={item.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group overflow-hidden rounded-lg border border-fairway-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-fairway-200 hover:shadow-card"
+                  >
+                    <div className="relative aspect-video overflow-hidden bg-fairway-100">
+                      <Image
+                        src={item.image}
+                        alt={item.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 40vw"
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/70 to-transparent" />
+                      <div className="absolute left-3 top-3 flex gap-1.5">
+                        <span className="rounded-full bg-white/90 px-2.5 py-1 text-xs font-black text-fairway-900">
+                          {item.platform}
+                        </span>
+                        <span className="rounded-full bg-fairway-950/75 px-2.5 py-1 text-xs font-bold text-white">
+                          {item.type}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <p className="text-xs font-bold uppercase tracking-wide text-gold-700">{item.eyebrow}</p>
+                      <h3 className="mt-1 text-lg font-black text-fairway-900">{item.title}</h3>
+                      <p className="mt-2 text-sm leading-6 text-fairway-600">{item.description}</p>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </Section>
+          )}
 
           <Section title="전문 분야 · 레슨 장소">
             <div className="flex flex-wrap gap-2">

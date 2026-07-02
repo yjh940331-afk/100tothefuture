@@ -27,7 +27,7 @@ export function InstructorCard({ pro }: { pro: Instructor }) {
   return (
     <Link
       href={`/pros/${pro.slug}`}
-      className="card group flex h-full flex-col overflow-hidden transition hover:-translate-y-0.5 hover:border-fairway-200 hover:shadow-card-hover"
+      className="card group flex h-full flex-col overflow-hidden transition hover:-translate-y-1 hover:border-fairway-200 hover:shadow-card-hover"
     >
       <div className="relative aspect-[16/10] overflow-hidden bg-fairway-100">
         <Image
@@ -37,13 +37,13 @@ export function InstructorCard({ pro }: { pro: Instructor }) {
           sizes="(max-width: 768px) 100vw, 33vw"
           className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
-        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-fairway-950/60 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-fairway-950/70 via-fairway-950/20 to-transparent" />
         {pro.verification_status === "verified" && (
-          <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-fairway-950/85 px-2.5 py-1 text-xs font-bold text-gold-300">
+          <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-xs font-bold text-fairway-950 backdrop-blur">
             검증완료
           </span>
         )}
-        <span className="absolute bottom-3 left-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-bold text-fairway-800">
+        <span className="absolute bottom-3 left-3 rounded-full bg-fairway-950/75 px-2.5 py-1 text-xs font-bold text-white backdrop-blur">
           {pro.region} · {pro.career_years > 0 ? `경력 ${pro.career_years}년` : "경력 확인 중"}
         </span>
       </div>
@@ -53,7 +53,7 @@ export function InstructorCard({ pro }: { pro: Instructor }) {
           <h3 className="text-base font-extrabold text-fairway-900">
             {pro.display_name}
           </h3>
-          <span className="shrink-0 text-sm font-extrabold text-fairway-800">
+          <span className="shrink-0 text-sm font-extrabold text-fairway-950">
             {priceFmt(pro.price_from)}
           </span>
         </div>
@@ -81,7 +81,7 @@ export function InstructorCard({ pro }: { pro: Instructor }) {
               </span>
             ))}
           </div>
-          <span className="shrink-0 text-xs font-bold text-fairway-600 group-hover:text-fairway-800">
+          <span className="shrink-0 text-xs font-bold text-fairway-500 group-hover:text-fairway-900">
             자세히 보기
           </span>
         </div>
