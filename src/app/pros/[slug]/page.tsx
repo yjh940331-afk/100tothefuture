@@ -12,6 +12,8 @@ import { DemoBanner } from "@/components/DemoBanner";
 import { ReviewForm } from "@/components/ReviewForm";
 import { ProTabBar, type ProTab } from "@/components/ProTabBar";
 import { MobileBookingBar } from "@/components/MobileBookingBar";
+import { JsonLd } from "@/components/JsonLd";
+import { DEFAULT_OG_IMAGE, SITE_NAME, absoluteUrl, pageSeo, truncateMeta } from "@/lib/seo";
 
 const won = (n: number) => (n > 0 ? `${n.toLocaleString("ko-KR")}원` : "상담 후 안내");
 const wonFrom = (n: number) => (n > 0 ? `${n.toLocaleString("ko-KR")}원~` : "상담 후 안내");
@@ -24,12 +26,25 @@ export async function generateMetadata({
   const { slug } = await params;
   const pro = await getInstructorBySlug(slug);
   if (!pro) return { title: "프로를 찾을 수 없습니다" };
-  const title = `${pro.region} 골프레슨 | ${pro.display_name}`;
-  return {
+  const title = `${pro.display_name} ${pro.region} 골프레슨`;
+  const price = pro.price_from > 0 ? ` ${pro.price_from.toLocaleString("ko-KR")}원부터.` : "";
+  const rating =
+    pro.review_count > 0 ? ` 후기 ${pro.review_count}개, 평점 ${pro.rating_avg.toFixed(1)}.` : "";
+
+  return pageSeo({
     title,
-    description: `${pro.display_name} · ${pro.bio}. ${pro.specialties.join(", ")} 전문. 약력·자격·후기를 확인하고 상담·예약하세요.`,
-    openGraph: { title, images: [pro.profile_image] },
-  };
+    description: `${pro.bio}.${price}${rating} ${pro.specialties.join(", ")} 전문. 약력, 자격, 후기와 가능 시간을 확인하고 상담·예약하세요.`,
+    path: `/pros/${pro.slug}`,
+    image: pro.profile_image || pro.gallery[0],
+    imageAlt: `${pro.display_name} 골프 레슨 프로필`,
+    keywords: [
+      `${pro.region} 골프레슨`,
+      `${pro.display_name} 프로`,
+      ...pro.specialties,
+      ...pro.lesson_places,
+    ],
+    type: "profile",
+  });
 }
 
 export default async function ProDetailPage({
@@ -43,6 +58,7 @@ export default async function ProDetailPage({
 
   const reviews = await getReviews(pro.id);
   const portfolio = getPortfolioForSlug(pro.slug);
+  const sameAs = portfolio.map((item) => item.href).filter((href) => href.startsWith("https://"));
 
   const hasPortfolio =
     portfolio.length > 0 ||
@@ -65,9 +81,66 @@ export default async function ProDetailPage({
     ? `${days.map((d) => DAYS_KO[d]).join("·")} 가능`
     : "상담 시 안내";
 
+  const personJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: pro.display_name,
+    image: absoluteUrl(pro.profile_image || pro.gallery[0] || DEFAULT_OG_IMAGE),
+    description: truncateMeta(pro.bio, 180),
+    jobTitle: "골프 레슨 프로",
+    url: absoluteUrl(`/pros/${pro.slug}`),
+    worksFor: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: absoluteUrl("/"),
+    },
+    knowsAbout: pro.specialties,
+    areaServed: pro.region,
+    sameAs,
+  };
+
+  const lessonServiceJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: `${pro.display_name} 골프 레슨`,
+    serviceType: "Golf lesson",
+    description: truncateMeta(pro.about || pro.bio, 220),
+    url: absoluteUrl(`/pros/${pro.slug}`),
+    image: absoluteUrl(pro.profile_image || pro.gallery[0] || DEFAULT_OG_IMAGE),
+    provider: {
+      "@type": "Person",
+      name: pro.display_name,
+    },
+    areaServed: {
+      "@type": "AdministrativeArea",
+      name: pro.region,
+    },
+    offers:
+      pro.price_from > 0
+        ? {
+            "@type": "Offer",
+            priceCurrency: "KRW",
+            price: pro.price_from,
+            url: absoluteUrl(`/pros/${pro.slug}/booking`),
+            availability: "https://schema.org/InStock",
+          }
+        : undefined,
+    aggregateRating:
+      pro.review_count > 0
+        ? {
+            "@type": "AggregateRating",
+            ratingValue: pro.rating_avg,
+            reviewCount: pro.review_count,
+            bestRating: 5,
+            worstRating: 1,
+          }
+        : undefined,
+  };
+
   return (
     <>
       <DemoBanner />
+      <JsonLd data={[personJsonLd, lessonServiceJsonLd]} />
 
       {/* 헤더 (라이트·컴팩트) */}
       <div className="border-b border-fairway-100 bg-white">

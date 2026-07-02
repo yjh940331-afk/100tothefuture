@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getInstructorBySlug } from "@/lib/data";
+import { pageSeo } from "@/lib/seo";
 import { BookingForm } from "@/components/BookingForm";
 import { DemoBanner } from "@/components/DemoBanner";
 
@@ -13,7 +14,16 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const pro = await getInstructorBySlug(slug);
-  return { title: pro ? `${pro.display_name} 상담·예약 요청` : "예약 요청" };
+  if (!pro) return { title: "예약 요청" };
+  return pageSeo({
+    title: `${pro.display_name} 상담·예약 요청`,
+    description: `${pro.display_name} 프로에게 원하는 일정과 골프 고민을 남기고 상담·예약을 요청하세요.`,
+    path: `/pros/${pro.slug}/booking`,
+    image: pro.profile_image || pro.gallery[0],
+    imageAlt: `${pro.display_name} 상담·예약`,
+    keywords: [`${pro.display_name} 예약`, `${pro.region} 골프레슨 예약`, ...pro.specialties],
+    noIndex: true,
+  });
 }
 
 export default async function BookingPage({

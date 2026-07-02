@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { GOLF_INFO_CATEGORIES, getGolfInfoCategory, getSponsorBanners } from "@/lib/golf-info";
+import { pageSeo } from "@/lib/seo";
 import { SponsorAdCard } from "@/components/SponsorAdCard";
 
 export function generateStaticParams() {
@@ -17,11 +18,15 @@ export async function generateMetadata({
   const { slug } = await params;
   const category = getGolfInfoCategory(slug);
   if (!category) return { title: "골프 정보" };
-  return {
+  return pageSeo({
     title: category.title,
     description: category.description,
-    openGraph: { title: category.title, images: [category.image] },
-  };
+    path: `/info/${category.slug}`,
+    image: category.image,
+    imageAlt: `${category.title} 골프 정보`,
+    keywords: [category.title, category.eyebrow, ...category.highlights],
+    type: "article",
+  });
 }
 
 export default async function GolfInfoCategoryPage({

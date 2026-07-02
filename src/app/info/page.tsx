@@ -2,12 +2,16 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { GOLF_INFO_CATEGORIES, getSponsorBanners } from "@/lib/golf-info";
+import { pageSeo } from "@/lib/seo";
 import { SponsorAdCard } from "@/components/SponsorAdCard";
 
-export const metadata: Metadata = {
-  title: "골프 정보",
-  description: "골프웨어, 장비, 골프 이야기, 골프위키를 한곳에서 확인하는 골프 정보 허브.",
-};
+export const metadata: Metadata = pageSeo({
+  title: "골프 정보 허브",
+  description:
+    "골프웨어, 장비, 프로 이야기, 골프위키까지 레슨 전후에 필요한 정보를 한곳에서 확인하세요.",
+  path: "/info",
+  keywords: ["골프 정보", "골프웨어", "골프장비", "골프 초보 정보", "골프위키"],
+});
 
 export default function GolfInfoPage() {
   const featured = GOLF_INFO_CATEGORIES[0];

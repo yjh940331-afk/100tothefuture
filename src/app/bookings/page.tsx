@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import { pageSeo } from "@/lib/seo";
 import { BookingLookup } from "@/components/BookingLookup";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageSeo({
   title: "내 예약 조회",
   description: "100 to the Future에서 신청한 골프 레슨 예약을 조회하고 취소할 수 있습니다.",
-};
+  path: "/bookings",
+  noIndex: true,
+});
 
 export default function BookingsPage() {
   return (
@@ -20,4 +23,3 @@ export default function BookingsPage() {
     </div>
   );
 }
-

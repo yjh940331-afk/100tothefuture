@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { pageSeo } from "@/lib/seo";
 import { QuoteRequestForm } from "@/components/QuoteRequestForm";
 
-export const metadata: Metadata = {
-  title: "골프 레슨 견적 요청",
+export const metadata: Metadata = pageSeo({
+  title: "맞춤 골프 레슨 견적 요청",
   description:
-    "지역, 목표, 시간, 예산을 남기면 100 to the Future가 조건에 맞는 검증 골프 레슨 프로를 연결합니다.",
-};
+    "지역, 목표, 가능 시간, 예산만 남기면 100 to the Future가 조건에 맞는 검증 골프 레슨 프로 후보를 찾아드립니다.",
+  path: "/request",
+  keywords: ["골프 레슨 견적", "골프 레슨 매칭", "숨고 골프 레슨", "맞춤 골프 레슨"],
+});
 
 const HERO_IMAGE =
   "https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&w=1800&q=75";

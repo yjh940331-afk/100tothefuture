@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
 import { listInstructors, type InstructorFilters as Filters } from "@/lib/data";
+import { pageSeo } from "@/lib/seo";
 import { InstructorCard } from "@/components/InstructorCard";
 import { InstructorFilters } from "@/components/InstructorFilters";
 import { DemoBanner } from "@/components/DemoBanner";
 
-export const metadata: Metadata = {
-  title: "레슨프로 찾기",
+export const metadata: Metadata = pageSeo({
+  title: "골프 레슨프로 찾기",
   description:
-    "지역·전문분야·가격·가능 시간으로 검증된 골프 레슨프로를 찾아보세요. 100타 탈출 전문 프로 매칭.",
-};
+    "지역, 전문분야, 가격, 가능 시간으로 검증된 골프 레슨프로를 비교하세요. 100타 탈출부터 비거리, 숏게임까지 내 조건에 맞는 프로를 찾을 수 있습니다.",
+  path: "/pros",
+  keywords: ["골프 레슨프로 찾기", "골프 프로 비교", "지역별 골프 레슨", "골프 레슨 추천"],
+});
 
 type SP = Record<string, string | string[] | undefined>;
 
