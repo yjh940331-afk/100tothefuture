@@ -19,7 +19,7 @@
 | 레슨프로 목록 | `/pros` | 지역·전문분야·장소·시간·가격 필터 + 정렬 |
 | 레슨프로 상세 | `/pros/[slug]` | 갤러리, 약력, 검증 배지, 자격, 커리큘럼, 가능 시간, 후기, 후기 작성 |
 | 상담·예약 요청 | `/pros/[slug]/booking` | 이름/연락처/희망일정/상품/고민 + 개인정보·제3자 제공 동의 |
-| 관리자 | `/admin` | 예약 상태 관리, 리뷰 승인/숨김, 프로 목록 (비밀번호 로그인) |
+| 관리자 | `/admin` | 예약 상태 관리, 리뷰 승인/숨김, 프로 등록·수정, 프로 사진 업로드 (비밀번호 로그인) |
 | 약관/정책 | `/terms` `/privacy` `/policy/reviews` | 표준 예시 (실제 정보로 수정 필요) |
 
 - 후기: **예약 완료 수강생 대상** 작성 → **관리자 승인 후 노출**, 이름 자동 마스킹(김\*\*)
@@ -60,8 +60,9 @@ ADMIN_PASSWORD=강력한_비밀번호
 ADMIN_SESSION_SECRET=긴_랜덤_세션_서명_문자열
 ```
 
-4. (프로필/자격증 이미지 업로드용) Storage에 공개 버킷을 만들고 `next.config.mjs` 의
-   `remotePatterns` 가 `*.supabase.co` 를 허용하는지 확인.
+4. (프로필/갤러리 이미지 업로드용) 관리자 업로드 API가 Supabase Storage 공개 버킷을 사용합니다.
+   기본 버킷명은 `pro-images` 이며, 필요하면 `SUPABASE_STORAGE_BUCKET` 환경변수로 바꿀 수 있습니다.
+   `next.config.mjs` 의 `remotePatterns` 는 `*.supabase.co` 이미지를 허용합니다.
 
 ### 데이터 모델 요약
 `instructors` · `instructor_certifications` · `lesson_packages` ·
@@ -76,10 +77,10 @@ ADMIN_SESSION_SECRET=긴_랜덤_세션_서명_문자열
 
 - 접속: `/admin`
 - 로그인: `ADMIN_PASSWORD` 환경변수 값
-- 기능: 예약 상태 변경(확정/완료/취소/거절/노쇼), 리뷰 승인·숨김, 프로 목록 확인
+- 기능: 예약 상태 변경(확정/완료/취소/거절/노쇼), 리뷰 승인·숨김, 프로 등록·수정, 프로필/갤러리 사진 업로드
 - 로그인 쿠키는 `ADMIN_SESSION_SECRET`으로 서명된 세션 토큰이며, 반복 실패 시 일시 제한됩니다.
 - 운영 규모가 커지면 Supabase Auth + role 기반으로 교체 권장.
-- 프로 등록/수정, 자격증 증빙 확인, 배지 부여는 현재 **Supabase 대시보드**에서 진행합니다. (전용 편집 UI는 다음 단계)
+- 사진 업로드는 JPG/PNG/WebP, 8MB 이하만 허용합니다. 업로드 후 `프로 저장`을 눌러야 사이트 데이터에 반영됩니다.
 
 ---
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import type {
   Booking,
@@ -194,6 +194,53 @@ export function AdminDashboard({
     value: InstructorFormState[K],
   ) {
     setInstructorForm((current) => (current ? { ...current, [key]: value } : current));
+  }
+
+  async function uploadInstructorImage(
+    event: ChangeEvent<HTMLInputElement>,
+    target: "profile_image" | "gallery",
+  ) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || !instructorForm) return;
+
+    if (!instructorForm.slug.trim()) {
+      setMessage("사진 업로드 전에 슬러그를 먼저 입력해주세요.");
+      return;
+    }
+
+    const busyKey = target === "profile_image" ? "instructor-profile-upload" : "instructor-gallery-upload";
+    setBusy(busyKey);
+    setMessage("");
+
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      body.append("slug", instructorForm.slug);
+      body.append("kind", target === "gallery" ? "gallery" : "profile");
+
+      const res = await fetch("/api/admin/uploads", {
+        method: "POST",
+        body,
+      });
+      const data = await res.json().catch(() => ({ ok: false, error: "응답을 확인하지 못했습니다." }));
+
+      if (!data.ok || !data.url) {
+        setMessage(data.error || "사진을 업로드하지 못했습니다.");
+        return;
+      }
+
+      setInstructorForm((current) => {
+        if (!current) return current;
+        if (target === "profile_image") {
+          return { ...current, profile_image: data.url };
+        }
+        return { ...current, gallery: appendImageUrl(current.gallery, data.url) };
+      });
+      setMessage("사진을 업로드했습니다. 프로 저장을 누르면 사이트에 반영됩니다.");
+    } finally {
+      setBusy(null);
+    }
   }
 
   const openRequests = lessonRequests.filter((request) => request.status === "open").length;
@@ -519,8 +566,24 @@ export function AdminDashboard({
                   <TextInput label="최소가" type="number" value={instructorForm.price_from} onChange={(value) => updateInstructorForm("price_from", value)} />
                   <TextInput label="경력 연차" type="number" value={instructorForm.career_years} onChange={(value) => updateInstructorForm("career_years", value)} />
                   <TextInput label="응답 시간" value={instructorForm.response_time} onChange={(value) => updateInstructorForm("response_time", value)} placeholder="평균 1시간 이내" />
-                  <TextInput label="프로필 이미지 URL" value={instructorForm.profile_image} onChange={(value) => updateInstructorForm("profile_image", value)} />
-                  <TextInput label="갤러리 URL" value={instructorForm.gallery} onChange={(value) => updateInstructorForm("gallery", value)} placeholder="쉼표 또는 줄바꿈으로 구분" />
+                  <ImageUrlField
+                    label="프로필 이미지 URL"
+                    value={instructorForm.profile_image}
+                    onChange={(value) => updateInstructorForm("profile_image", value)}
+                    onUpload={(event) => uploadInstructorImage(event, "profile_image")}
+                    uploading={busy === "instructor-profile-upload"}
+                    uploadLabel="프로필 사진 업로드"
+                  />
+                  <ImageUrlField
+                    label="갤러리 URL"
+                    value={instructorForm.gallery}
+                    onChange={(value) => updateInstructorForm("gallery", value)}
+                    onUpload={(event) => uploadInstructorImage(event, "gallery")}
+                    uploading={busy === "instructor-gallery-upload"}
+                    uploadLabel="갤러리 사진 추가"
+                    multiple
+                    placeholder="쉼표 또는 줄바꿈으로 구분"
+                  />
                   <TextInput label="전문 분야" value={instructorForm.specialties} onChange={(value) => updateInstructorForm("specialties", value)} placeholder="입문, 드라이버, 숏게임" />
                   <TextInput label="레슨 장소" value={instructorForm.lesson_places} onChange={(value) => updateInstructorForm("lesson_places", value)} placeholder="실내연습장, 스크린골프" />
                   <TextInput label="뱃지" value={instructorForm.badges} onChange={(value) => updateInstructorForm("badges", value)} placeholder="profile_verified, fast_response" />
@@ -617,6 +680,19 @@ function formFromInstructor(instructor: Instructor): InstructorFormState {
     is_active: instructor.is_active,
     verification_status: instructor.verification_status,
   };
+}
+
+function imageUrlList(value: string) {
+  return value
+    .split(/\r?\n|,/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function appendImageUrl(value: string, url: string) {
+  const urls = imageUrlList(value);
+  if (!urls.includes(url)) urls.push(url);
+  return urls.join("\n");
 }
 
 function listText(values?: string[] | null) {
@@ -758,6 +834,77 @@ function TextInput({
         onChange={(event) => onChange(event.target.value)}
       />
     </label>
+  );
+}
+
+function ImageUrlField({
+  label,
+  value,
+  onChange,
+  onUpload,
+  uploading,
+  uploadLabel,
+  multiple = false,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  onUpload: (event: ChangeEvent<HTMLInputElement>) => void;
+  uploading: boolean;
+  uploadLabel: string;
+  multiple?: boolean;
+  placeholder?: string;
+}) {
+  const urls = imageUrlList(value).slice(0, multiple ? 4 : 1);
+
+  return (
+    <div>
+      <span className="label">{label}</span>
+      {multiple ? (
+        <textarea
+          className="input min-h-[92px]"
+          value={value}
+          placeholder={placeholder}
+          onChange={(event) => onChange(event.target.value)}
+        />
+      ) : (
+        <input
+          className="input"
+          type="text"
+          value={value}
+          placeholder={placeholder}
+          onChange={(event) => onChange(event.target.value)}
+        />
+      )}
+
+      {urls.length > 0 && (
+        <div className="mt-2 grid grid-cols-4 gap-1.5">
+          {urls.map((url, index) => (
+            <div key={`${url}-${index}`} className="relative aspect-square overflow-hidden rounded-lg bg-fairway-100">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt={`${label} 미리보기 ${index + 1}`} className="h-full w-full object-cover" />
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <span className="relative inline-flex">
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            disabled={uploading}
+            onChange={onUpload}
+            className="absolute inset-0 cursor-pointer opacity-0 disabled:cursor-not-allowed"
+          />
+          <span className="rounded-lg border border-fairway-200 bg-white px-3 py-1.5 text-xs font-bold text-fairway-700 shadow-sm">
+            {uploading ? "업로드 중..." : uploadLabel}
+          </span>
+        </span>
+        <span className="text-xs text-fairway-400">JPG, PNG, WebP · 8MB 이하</span>
+      </div>
+    </div>
   );
 }
 
