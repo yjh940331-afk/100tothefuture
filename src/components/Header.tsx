@@ -76,11 +76,11 @@ export function Header() {
       {open && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
-            className="absolute inset-0 bg-fairway-950/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-fairway-950"
             onClick={() => setOpen(false)}
             aria-hidden
           />
-          <div className="absolute right-0 top-0 flex h-full w-72 max-w-[80%] flex-col bg-white shadow-2xl">
+          <div className="absolute right-0 top-0 flex h-full w-72 max-w-[80%] flex-col bg-white shadow-2xl ring-1 ring-black/5">
             <div className="flex h-14 items-center justify-between border-b border-fairway-100 px-5 sm:h-16">
               <BrandLogo compact />
               <button
