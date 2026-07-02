@@ -11,6 +11,7 @@ import type {
   ReviewSummary,
 } from "@/lib/types";
 import { Stars } from "@/components/Stars";
+import { ProfileImageCropper } from "@/components/admin/ProfileImageCropper";
 
 type Tab = "requests" | "bookings" | "reviews" | "instructors";
 type BookingFilter = "all" | BookingStatus;
@@ -129,6 +130,7 @@ export function AdminDashboard({
     Object.fromEntries(reviews.map((review) => [review.id, review.instructor_reply ?? ""])),
   );
   const [instructorForm, setInstructorForm] = useState<InstructorFormState | null>(null);
+  const [profileCropFile, setProfileCropFile] = useState<File | null>(null);
 
   const filteredBookings = useMemo(
     () =>
@@ -196,18 +198,22 @@ export function AdminDashboard({
     setInstructorForm((current) => (current ? { ...current, [key]: value } : current));
   }
 
-  async function uploadInstructorImage(
-    event: ChangeEvent<HTMLInputElement>,
-    target: "profile_image" | "gallery",
-  ) {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file || !instructorForm) return;
-
-    if (!instructorForm.slug.trim()) {
+  function getUploadSlug() {
+    const slug = instructorForm?.slug.trim();
+    if (!slug) {
       setMessage("사진 업로드 전에 슬러그를 먼저 입력해주세요.");
-      return;
+      return null;
     }
+    return slug;
+  }
+
+  async function uploadInstructorImageFile(
+    file: File,
+    target: "profile_image" | "gallery",
+    options: { cropped?: boolean } = {},
+  ) {
+    const slug = getUploadSlug();
+    if (!slug) return false;
 
     const busyKey = target === "profile_image" ? "instructor-profile-upload" : "instructor-gallery-upload";
     setBusy(busyKey);
@@ -216,8 +222,9 @@ export function AdminDashboard({
     try {
       const body = new FormData();
       body.append("file", file);
-      body.append("slug", instructorForm.slug);
+      body.append("slug", slug);
       body.append("kind", target === "gallery" ? "gallery" : "profile");
+      if (options.cropped) body.append("cropped", "true");
 
       const res = await fetch("/api/admin/uploads", {
         method: "POST",
@@ -227,7 +234,7 @@ export function AdminDashboard({
 
       if (!data.ok || !data.url) {
         setMessage(data.error || "사진을 업로드하지 못했습니다.");
-        return;
+        return false;
       }
 
       setInstructorForm((current) => {
@@ -238,9 +245,36 @@ export function AdminDashboard({
         return { ...current, gallery: appendImageUrl(current.gallery, data.url) };
       });
       setMessage("사진을 업로드했습니다. 프로 저장을 누르면 사이트에 반영됩니다.");
+      return true;
+    } catch {
+      setMessage("사진을 업로드하지 못했습니다. 네트워크 상태를 확인해주세요.");
+      return false;
     } finally {
       setBusy(null);
     }
+  }
+
+  async function uploadInstructorImage(
+    event: ChangeEvent<HTMLInputElement>,
+    target: "profile_image" | "gallery",
+  ) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || !instructorForm || !getUploadSlug()) return;
+
+    if (target === "profile_image") {
+      setProfileCropFile(file);
+      setMessage("프로필 사진에서 얼굴 위치를 맞춘 뒤 업로드해주세요.");
+      return;
+    }
+
+    await uploadInstructorImageFile(file, target);
+  }
+
+  async function confirmProfileCrop(file: File) {
+    const uploaded = await uploadInstructorImageFile(file, "profile_image", { cropped: true });
+    if (uploaded) setProfileCropFile(null);
+    return uploaded;
   }
 
   const openRequests = lessonRequests.filter((request) => request.status === "open").length;
@@ -249,6 +283,14 @@ export function AdminDashboard({
 
   return (
     <div className="container-page py-10">
+      {profileCropFile && (
+        <ProfileImageCropper
+          file={profileCropFile}
+          uploading={busy === "instructor-profile-upload"}
+          onCancel={() => setProfileCropFile(null)}
+          onConfirm={confirmProfileCrop}
+        />
+      )}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm font-bold text-gold-600">Operations</p>

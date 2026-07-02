@@ -28,6 +28,7 @@ export async function POST(req: Request) {
   const file = form?.get("file");
   const slug = cleanSlug(form?.get("slug"));
   const kind = cleanKind(form?.get("kind"));
+  const cropped = form?.get("cropped") === "true";
 
   if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
     return NextResponse.json(
@@ -37,6 +38,12 @@ export async function POST(req: Request) {
   }
   if (!(file instanceof File)) {
     return NextResponse.json({ ok: false, error: "업로드할 사진을 선택해주세요." }, { status: 400 });
+  }
+  if (kind === "profile" && !cropped) {
+    return NextResponse.json(
+      { ok: false, error: "프로필 사진은 위치 지정 화면을 거쳐 업로드해주세요. 페이지를 새로고침한 뒤 다시 시도해주세요." },
+      { status: 400 },
+    );
   }
   const extension = ALLOWED_IMAGE_TYPES[file.type];
   if (!extension) {
