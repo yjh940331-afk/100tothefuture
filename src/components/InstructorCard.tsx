@@ -50,40 +50,40 @@ export function InstructorCard({ pro }: { pro: Instructor }) {
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col space-y-3 p-4">
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="text-base font-extrabold text-fairway-900">
+      <div className="flex flex-1 flex-col space-y-2 p-3">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="text-sm font-extrabold text-fairway-900">
             {pro.display_name}
           </h3>
-          <span className="shrink-0 text-sm font-extrabold text-fairway-950">
+          <span className="shrink-0 text-[13px] font-extrabold text-fairway-950">
             {priceFmt(pro.price_from)}
           </span>
         </div>
 
-        <p className="line-clamp-2 min-h-10 text-sm leading-relaxed text-fairway-600">
+        <p className="line-clamp-2 text-[13px] leading-snug text-fairway-600">
           {pro.bio}
         </p>
 
         <RatingInline value={pro.rating_avg} count={pro.review_count} />
 
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1">
           {topBadges(pro.badges).map((b) => (
             <Badge key={b} badgeKey={b} />
           ))}
         </div>
 
-        <div className="mt-auto flex items-end justify-between gap-3 border-t border-fairway-100 pt-3">
+        <div className="mt-auto flex items-end justify-between gap-2 border-t border-fairway-100 pt-2.5">
           <div className="flex flex-wrap gap-1">
             {pro.specialties.slice(0, 3).map((s) => (
               <span
                 key={s}
-                className="rounded-md bg-fairway-50 px-2 py-0.5 text-xs font-medium text-fairway-600"
+                className="rounded-md bg-fairway-50 px-1.5 py-0.5 text-[11px] font-medium text-fairway-600"
               >
                 #{s}
               </span>
             ))}
           </div>
-          <span className="shrink-0 text-xs font-bold text-fairway-500 group-hover:text-fairway-900">
+          <span className="shrink-0 text-[11px] font-bold text-fairway-500 group-hover:text-fairway-900">
             자세히 보기
           </span>
         </div>
