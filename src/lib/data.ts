@@ -112,6 +112,18 @@ function matchesTimeSlot(rules: AvailabilityRule[], slot?: string): boolean {
   });
 }
 
+function isFoundingInstructor(instructor: Instructor): boolean {
+  return instructor.slug === "lee-hyun" || instructor.badges.includes("founding_pro");
+}
+
+function foundingFirst(a: Instructor, b: Instructor): number {
+  return Number(isFoundingInstructor(b)) - Number(isFoundingInstructor(a));
+}
+
+function sortablePrice(instructor: Instructor): number {
+  return instructor.price_from > 0 ? instructor.price_from : Number.MAX_SAFE_INTEGER;
+}
+
 function applyFilters(list: Instructor[], f: InstructorFilters): Instructor[] {
   let out = list.filter((i) => i.is_active);
   if (f.region) out = out.filter((i) => i.region === f.region);
@@ -123,19 +135,19 @@ function applyFilters(list: Instructor[], f: InstructorFilters): Instructor[] {
 
   switch (f.sort) {
     case "rating":
-      out.sort((a, b) => b.rating_avg - a.rating_avg);
+      out.sort((a, b) => foundingFirst(a, b) || b.rating_avg - a.rating_avg);
       break;
     case "reviews":
-      out.sort((a, b) => b.review_count - a.review_count);
+      out.sort((a, b) => foundingFirst(a, b) || b.review_count - a.review_count);
       break;
     case "price":
-      out.sort((a, b) => a.price_from - b.price_from);
+      out.sort((a, b) => foundingFirst(a, b) || sortablePrice(a) - sortablePrice(b));
       break;
     default: // recommended: featured 먼저, 그다음 평점
       out.sort(
         (a, b) =>
+          foundingFirst(a, b) ||
           Number(b.is_featured) - Number(a.is_featured) ||
-          Number(b.badges.includes("founding_pro")) - Number(a.badges.includes("founding_pro")) ||
           b.rating_avg - a.rating_avg,
       );
   }
