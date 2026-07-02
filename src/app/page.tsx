@@ -1,15 +1,18 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getFeaturedInstructors } from "@/lib/data";
 import { SPECIALTIES } from "@/lib/constants";
-import { GOLF_INFO_CATEGORIES } from "@/lib/golf-info";
+import { GOLF_INFO_CATEGORIES, getSponsorBanners } from "@/lib/golf-info";
 import { DemoBanner } from "@/components/DemoBanner";
 import { InstructorCard } from "@/components/InstructorCard";
+import { SponsorAdCard } from "@/components/SponsorAdCard";
 
 const HERO_IMAGE =
   "https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&w=2200&q=75";
 
 export default async function HomePage() {
   const featured = await getFeaturedInstructors(3);
+  const sponsorBanners = getSponsorBanners("home");
 
   return (
     <>
@@ -111,12 +114,48 @@ export default async function HomePage() {
               <Link
                 key={category.slug}
                 href={`/info/${category.slug}`}
-                className="rounded-lg border border-fairway-100 bg-cream p-3 shadow-sm transition hover:-translate-y-0.5 hover:border-fairway-200 hover:bg-white"
+                className="group overflow-hidden rounded-lg border border-fairway-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-fairway-200 hover:shadow-card"
               >
-                <p className="text-[11px] font-black uppercase text-gold-700">{category.eyebrow}</p>
-                <h3 className="mt-1 text-base font-black text-fairway-900">{category.title}</h3>
-                <p className="mt-1 line-clamp-2 text-[13px] leading-5 text-fairway-600">{category.description}</p>
+                <div className="relative aspect-[16/10] overflow-hidden bg-fairway-100">
+                  <Image
+                    src={category.image}
+                    alt={category.title}
+                    fill
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                </div>
+                <div className="p-3">
+                  <p className="text-[11px] font-black uppercase text-gold-700">{category.eyebrow}</p>
+                  <h3 className="mt-1 text-base font-black text-fairway-900">{category.title}</h3>
+                  <p className="mt-1 line-clamp-2 text-[13px] leading-5 text-fairway-600">{category.description}</p>
+                </div>
               </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-fairway-100 bg-cream">
+        <div className="container-page py-8 sm:py-10">
+          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[13px] font-bold text-gold-700">스폰서 배너</p>
+              <h2 className="mt-1 text-xl font-extrabold text-fairway-900">골프장비와 브랜드 광고가 들어갈 자리</h2>
+              <p className="mt-1 text-sm text-fairway-600">
+                장비, 웨어, 라운드 준비물처럼 구매 전환이 쉬운 영역을 사진 배너로 노출합니다.
+              </p>
+            </div>
+            <a
+              href="mailto:contact@100tothefuture.com?subject=100tothefuture 광고 문의"
+              className="text-sm font-bold text-fairway-700 hover:underline"
+            >
+              광고 문의
+            </a>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3">
+            {sponsorBanners.map((banner) => (
+              <SponsorAdCard key={banner.id} banner={banner} />
             ))}
           </div>
         </div>

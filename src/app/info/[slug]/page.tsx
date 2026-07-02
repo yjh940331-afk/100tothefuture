@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { GOLF_INFO_CATEGORIES, getGolfInfoCategory } from "@/lib/golf-info";
+import { GOLF_INFO_CATEGORIES, getGolfInfoCategory, getSponsorBanners } from "@/lib/golf-info";
+import { SponsorAdCard } from "@/components/SponsorAdCard";
 
 export function generateStaticParams() {
   return GOLF_INFO_CATEGORIES.map((category) => ({ slug: category.slug }));
@@ -31,6 +32,7 @@ export default async function GolfInfoCategoryPage({
   const { slug } = await params;
   const category = getGolfInfoCategory(slug);
   if (!category) notFound();
+  const sponsorBanners = getSponsorBanners(category.slug);
 
   return (
     <main>
@@ -74,6 +76,33 @@ export default async function GolfInfoCategoryPage({
           </article>
         ))}
       </section>
+
+      {sponsorBanners.length > 0 && (
+        <section className="border-y border-fairway-100 bg-cream">
+          <div className="container-page py-8 sm:py-10">
+            <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-[13px] font-bold text-gold-700">Sponsor</p>
+                <h2 className="mt-1 text-xl font-extrabold text-fairway-900">{category.title} 광고 배너</h2>
+                <p className="mt-1 text-sm text-fairway-600">
+                  이 주제를 보는 골퍼에게 어울리는 브랜드와 상품을 사진 배너로 연결합니다.
+                </p>
+              </div>
+              <a
+                href="mailto:contact@100tothefuture.com?subject=골프정보 상세 광고 문의"
+                className="text-sm font-bold text-fairway-700 hover:underline"
+              >
+                광고 문의
+              </a>
+            </div>
+            <div className="grid gap-3 md:grid-cols-3">
+              {sponsorBanners.map((banner) => (
+                <SponsorAdCard key={banner.id} banner={banner} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="container-page pb-8">
         <div className="rounded-lg border border-fairway-100 bg-white p-4 sm:flex sm:items-center sm:justify-between">

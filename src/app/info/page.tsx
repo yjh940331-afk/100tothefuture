@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { GOLF_INFO_CATEGORIES } from "@/lib/golf-info";
+import { GOLF_INFO_CATEGORIES, getSponsorBanners } from "@/lib/golf-info";
+import { SponsorAdCard } from "@/components/SponsorAdCard";
 
 export const metadata: Metadata = {
   title: "골프 정보",
@@ -10,6 +11,7 @@ export const metadata: Metadata = {
 
 export default function GolfInfoPage() {
   const featured = GOLF_INFO_CATEGORIES[0];
+  const sponsorBanners = getSponsorBanners("info");
 
   return (
     <main>
@@ -63,6 +65,29 @@ export default function GolfInfoPage() {
           {GOLF_INFO_CATEGORIES.map((category) => (
             <InfoCard key={category.slug} category={category} />
           ))}
+        </div>
+      </section>
+
+      <section className="border-t border-fairway-100 bg-cream">
+        <div className="container-page py-8 sm:py-10">
+          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[13px] font-bold text-gold-700">Ad Partner</p>
+              <h2 className="mt-1 text-xl font-extrabold text-fairway-900">골프용품 광고 배너</h2>
+              <p className="mt-1 text-sm text-fairway-600">콘텐츠를 보는 골퍼에게 장비, 웨어, 필드 준비물 배너를 함께 노출합니다.</p>
+            </div>
+            <a
+              href="mailto:contact@100tothefuture.com?subject=골프정보 광고 문의"
+              className="text-sm font-bold text-fairway-700 hover:underline"
+            >
+              광고 문의
+            </a>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3">
+            {sponsorBanners.map((banner) => (
+              <SponsorAdCard key={banner.id} banner={banner} />
+            ))}
+          </div>
         </div>
       </section>
     </main>

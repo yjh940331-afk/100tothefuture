@@ -12,6 +12,18 @@ export type GolfInfoCategory = {
   }[];
 };
 
+export type SponsorBanner = {
+  id: string;
+  title: string;
+  eyebrow: string;
+  description: string;
+  image: string;
+  href: string;
+  cta: string;
+  tags: string[];
+  placements: string[];
+};
+
 const unsplash = (id: string) =>
   `https://images.unsplash.com/${id}?auto=format&fit=crop&w=1400&q=75`;
 
@@ -120,4 +132,44 @@ export const GOLF_INFO_CATEGORIES: GolfInfoCategory[] = [
 
 export function getGolfInfoCategory(slug: string) {
   return GOLF_INFO_CATEGORIES.find((category) => category.slug === slug) ?? null;
+}
+
+export const SPONSOR_BANNERS: SponsorBanner[] = [
+  {
+    id: "gear-fitting",
+    title: "클럽 피팅 파트너",
+    eyebrow: "Equipment Ad",
+    description: "드라이버, 아이언, 웨지 피팅 업체를 위한 골프장비 콘텐츠 배너 슬롯.",
+    image: unsplash("photo-1592919505780-303950717480"),
+    href: "mailto:contact@100tothefuture.com?subject=골프장비 광고 문의",
+    cta: "광고 문의",
+    tags: ["클럽", "피팅", "장비"],
+    placements: ["home", "info", "equipment"],
+  },
+  {
+    id: "field-package",
+    title: "필드 준비 패키지",
+    eyebrow: "Sponsor Slot",
+    description: "볼, 장갑, 거리측정기처럼 라운드 전 구매가 많은 상품을 자연스럽게 노출합니다.",
+    image: unsplash("photo-1587174486073-ae5e5cff23aa"),
+    href: "mailto:contact@100tothefuture.com?subject=골프용품 스폰서 문의",
+    cta: "스폰서 문의",
+    tags: ["볼", "장갑", "거리측정기"],
+    placements: ["home", "info", "equipment", "wiki"],
+  },
+  {
+    id: "wear-campaign",
+    title: "골프웨어 캠페인",
+    eyebrow: "Brand Ad",
+    description: "프로 착장, 시즌 룩북, 레슨 현장 콘텐츠와 연결되는 웨어 브랜드 배너.",
+    image: "/pros/lee-hyun-hero.jpg",
+    href: "mailto:contact@100tothefuture.com?subject=골프웨어 광고 문의",
+    cta: "캠페인 문의",
+    tags: ["웨어", "착장", "브랜드"],
+    placements: ["home", "info", "wear", "story"],
+  },
+];
+
+export function getSponsorBanners(placement: string) {
+  return SPONSOR_BANNERS.filter((banner) => banner.placements.includes(placement));
 }
