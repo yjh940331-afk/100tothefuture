@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { MobileNav } from "@/components/MobileNav";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -47,6 +48,9 @@ export default function RootLayout({
         <Header />
         <main className="min-h-[60vh]">{children}</main>
         <Footer />
+        {/* 모바일 하단 네비게이션이 콘텐츠를 가리지 않도록 여백 */}
+        <div aria-hidden className="h-14 sm:hidden" />
+        <MobileNav />
       </body>
     </html>
   );
