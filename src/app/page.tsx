@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getFeaturedInstructors } from "@/lib/data";
 import { SPECIALTIES } from "@/lib/constants";
+import { GOLF_INFO_CATEGORIES } from "@/lib/golf-info";
 import { DemoBanner } from "@/components/DemoBanner";
 import { InstructorCard } from "@/components/InstructorCard";
 
@@ -94,6 +95,34 @@ export default async function HomePage() {
       </section>
 
       <section className="border-y border-fairway-100 bg-white">
+        <div className="container-page py-8 sm:py-10">
+          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[13px] font-bold text-gold-700">골프정보</p>
+              <h2 className="mt-1 text-xl font-extrabold text-fairway-900">레슨 밖의 골프 고민도 함께 봅니다</h2>
+              <p className="mt-1 text-sm text-fairway-600">웨어, 장비, 이야기, 위키까지 초보 골퍼가 자주 찾는 정보를 모읍니다.</p>
+            </div>
+            <Link href="/info" className="text-sm font-bold text-fairway-700 hover:underline">
+              정보 전체 보기
+            </Link>
+          </div>
+          <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+            {GOLF_INFO_CATEGORIES.map((category) => (
+              <Link
+                key={category.slug}
+                href={`/info/${category.slug}`}
+                className="rounded-lg border border-fairway-100 bg-cream p-3 shadow-sm transition hover:-translate-y-0.5 hover:border-fairway-200 hover:bg-white"
+              >
+                <p className="text-[11px] font-black uppercase text-gold-700">{category.eyebrow}</p>
+                <h3 className="mt-1 text-base font-black text-fairway-900">{category.title}</h3>
+                <p className="mt-1 line-clamp-2 text-[13px] leading-5 text-fairway-600">{category.description}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white">
         <div className="container-page py-8 sm:py-10">
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-[13px] font-bold text-gold-700">브로커형 레슨 매칭</p>

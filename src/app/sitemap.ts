@@ -1,16 +1,22 @@
 import type { MetadataRoute } from "next";
 import { getAllSlugs } from "@/lib/data";
+import { GOLF_INFO_CATEGORIES } from "@/lib/golf-info";
 import { SITE_URL } from "@/lib/site";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const slugs = await getAllSlugs();
-  const staticPages = ["", "/request", "/bookings", "/pros", "/terms", "/privacy", "/policy/reviews"].map(
+  const staticPages = ["", "/request", "/bookings", "/pros", "/info", "/terms", "/privacy", "/policy/reviews"].map(
     (p) => ({ url: `${SITE_URL}${p}`, changeFrequency: "weekly" as const, priority: p === "" ? 1 : 0.7 }),
   );
+  const infoPages = GOLF_INFO_CATEGORIES.map((category) => ({
+    url: `${SITE_URL}/info/${category.slug}`,
+    changeFrequency: "weekly" as const,
+    priority: 0.65,
+  }));
   const proPages = slugs.map((s) => ({
     url: `${SITE_URL}/pros/${s}`,
     changeFrequency: "weekly" as const,
     priority: 0.8,
   }));
-  return [...staticPages, ...proPages];
+  return [...staticPages, ...infoPages, ...proPages];
 }

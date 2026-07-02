@@ -30,6 +30,11 @@ export function Footer() {
               </Link>
             </li>
             <li>
+              <Link href="/info" className="hover:text-white">
+                골프정보
+              </Link>
+            </li>
+            <li>
               <a href="mailto:contact@100tothefuture.com" className="hover:text-white">
                 프로 등록 문의
               </a>

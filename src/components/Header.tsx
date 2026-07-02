@@ -27,6 +27,12 @@ export function Header() {
             프로 찾기
           </Link>
           <Link
+            href="/info"
+            className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-fairway-600 hover:bg-fairway-50 hover:text-fairway-950 md:inline-flex"
+          >
+            골프정보
+          </Link>
+          <Link
             href="/bookings"
             className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-fairway-600 hover:bg-fairway-50 hover:text-fairway-950 md:inline-flex"
           >

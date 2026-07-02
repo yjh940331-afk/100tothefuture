@@ -4,8 +4,8 @@ export type PortfolioItem = {
   description: string;
   image: string;
   href: string;
-  platform: "YouTube" | "Instagram";
-  type: "레슨 영상" | "소셜 포트폴리오" | "프로필";
+  platform: "YouTube" | "Instagram" | "Brand";
+  type: "레슨 영상" | "소셜 포트폴리오" | "프로필" | "브랜드 협업";
 };
 
 const youtubeSearch = (query: string) =>
@@ -39,6 +39,15 @@ export const PORTFOLIO_BY_SLUG: Record<string, PortfolioItem[]> = {
       href: "https://www.instagram.com/leehyun_golf/",
       platform: "Instagram",
       type: "프로필",
+    },
+    {
+      title: "Malbon 골프웨어 브랜드 활동",
+      eyebrow: "Golf Wear · Brand Portfolio",
+      description: "이현 프로님의 필드 스타일과 브랜드 협업 활동을 함께 보여주는 골프웨어 포트폴리오.",
+      image: "/pros/lee-hyun-hero.jpg",
+      href: "https://www.instagram.com/leehyun_golf/",
+      platform: "Brand",
+      type: "브랜드 협업",
     },
     {
       title: "필드 스윙 포트폴리오",
