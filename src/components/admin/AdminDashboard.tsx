@@ -11,10 +11,16 @@ import type {
   ReviewSummary,
 } from "@/lib/types";
 import { Stars } from "@/components/Stars";
-import { ProfileImageCropper } from "@/components/admin/ProfileImageCropper";
+import { ProfileImageCropper, type ImageCropPresetId } from "@/components/admin/ProfileImageCropper";
 
 type Tab = "requests" | "bookings" | "reviews" | "instructors";
 type BookingFilter = "all" | BookingStatus;
+type ImageUploadTarget = "profile_image" | "gallery";
+type ImageCropRequest = {
+  file: File;
+  target: ImageUploadTarget;
+  initialPreset: ImageCropPresetId;
+};
 
 const lessonRequestStatusLabels: Record<LessonRequestStatus, string> = {
   open: "신규",
@@ -130,7 +136,7 @@ export function AdminDashboard({
     Object.fromEntries(reviews.map((review) => [review.id, review.instructor_reply ?? ""])),
   );
   const [instructorForm, setInstructorForm] = useState<InstructorFormState | null>(null);
-  const [profileCropFile, setProfileCropFile] = useState<File | null>(null);
+  const [imageCropRequest, setImageCropRequest] = useState<ImageCropRequest | null>(null);
 
   const filteredBookings = useMemo(
     () =>
@@ -209,7 +215,7 @@ export function AdminDashboard({
 
   async function uploadInstructorImageFile(
     file: File,
-    target: "profile_image" | "gallery",
+    target: ImageUploadTarget,
     options: { cropped?: boolean } = {},
   ) {
     const slug = getUploadSlug();
@@ -256,24 +262,30 @@ export function AdminDashboard({
 
   async function uploadInstructorImage(
     event: ChangeEvent<HTMLInputElement>,
-    target: "profile_image" | "gallery",
+    target: ImageUploadTarget,
   ) {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file || !instructorForm || !getUploadSlug()) return;
 
     if (target === "profile_image") {
-      setProfileCropFile(file);
+      setImageCropRequest({ file, target, initialPreset: "profile" });
       setMessage("프로필 사진에서 얼굴 위치를 맞춘 뒤 업로드해주세요.");
       return;
     }
 
-    await uploadInstructorImageFile(file, target);
+    setImageCropRequest({
+      file,
+      target,
+      initialPreset: imageUrlList(instructorForm.gallery).length === 0 ? "galleryCover" : "galleryPhoto",
+    });
+    setMessage("갤러리 사진의 표시 영역을 맞춘 뒤 업로드해주세요.");
   }
 
-  async function confirmProfileCrop(file: File) {
-    const uploaded = await uploadInstructorImageFile(file, "profile_image", { cropped: true });
-    if (uploaded) setProfileCropFile(null);
+  async function confirmImageCrop(file: File) {
+    if (!imageCropRequest) return false;
+    const uploaded = await uploadInstructorImageFile(file, imageCropRequest.target, { cropped: true });
+    if (uploaded) setImageCropRequest(null);
     return uploaded;
   }
 
@@ -283,12 +295,14 @@ export function AdminDashboard({
 
   return (
     <div className="container-page py-10">
-      {profileCropFile && (
+      {imageCropRequest && (
         <ProfileImageCropper
-          file={profileCropFile}
-          uploading={busy === "instructor-profile-upload"}
-          onCancel={() => setProfileCropFile(null)}
-          onConfirm={confirmProfileCrop}
+          file={imageCropRequest.file}
+          uploading={busy === (imageCropRequest.target === "profile_image" ? "instructor-profile-upload" : "instructor-gallery-upload")}
+          mode={imageCropRequest.target === "profile_image" ? "profile" : "gallery"}
+          initialPreset={imageCropRequest.initialPreset}
+          onCancel={() => setImageCropRequest(null)}
+          onConfirm={confirmImageCrop}
         />
       )}
       <div className="flex flex-wrap items-center justify-between gap-3">
