@@ -5,7 +5,8 @@
 > "100타 탈출, 혼자 고민하지 말고 검증된 프로와 시작하세요."
 
 - 프론트/백엔드: **Next.js 15 (App Router, TypeScript)**
-- 데이터베이스/인증/스토리지: **Supabase (PostgreSQL)**
+- 데이터베이스/인증: **Supabase (PostgreSQL)**
+- 이미지 스토리지: **Cloudflare R2**
 - 배포: **Cloudflare Workers** (`@opennextjs/cloudflare`, Wrangler)
 - 도메인: `www.100tothefuture.com`
 
@@ -61,9 +62,9 @@ ADMIN_PASSWORD=강력한_비밀번호
 ADMIN_SESSION_SECRET=긴_랜덤_세션_서명_문자열
 ```
 
-4. (프로필/갤러리 이미지 업로드용) 관리자 업로드 API가 Supabase Storage 공개 버킷을 사용합니다.
-   기본 버킷명은 `pro-images` 이며, 필요하면 `SUPABASE_STORAGE_BUCKET` 환경변수로 바꿀 수 있습니다.
-   `next.config.mjs` 의 `remotePatterns` 는 `*.supabase.co` 이미지를 허용합니다.
+4. (프로필/갤러리 이미지 업로드용) 관리자 업로드 API는 Cloudflare R2 버킷을 사용합니다.
+   기본 버킷명은 `100tothefuture-pro-images` 이며, Worker에는 `PRO_IMAGES` 바인딩으로 연결합니다.
+   업로드된 이미지는 사이트의 `/media/...` 경로로 서빙됩니다.
 
 ### 데이터 모델 요약
 `instructors` · `instructor_certifications` · `lesson_packages` ·
@@ -81,7 +82,7 @@ ADMIN_SESSION_SECRET=긴_랜덤_세션_서명_문자열
 - 기능: 예약 상태 변경(확정/완료/취소/거절/노쇼), 리뷰 승인·숨김, 프로 등록·수정, 프로필/갤러리 사진 업로드
 - 로그인 쿠키는 `ADMIN_SESSION_SECRET`으로 서명된 세션 토큰이며, 반복 실패 시 일시 제한됩니다.
 - 운영 규모가 커지면 Supabase Auth + role 기반으로 교체 권장.
-- 사진 업로드는 JPG/PNG/WebP, 8MB 이하만 허용합니다. 업로드 후 `프로 저장`을 눌러야 사이트 데이터에 반영됩니다.
+- 사진 업로드는 R2에 저장되며 JPG/PNG/WebP, 25MB 이하만 허용합니다. 업로드 후 `프로 저장`을 눌러야 사이트 데이터에 반영됩니다.
 
 ---
 
@@ -101,6 +102,7 @@ npm run cf:deploy     # 빌드 + Cloudflare 배포 (wrangler 로그인 필요)
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `ADMIN_PASSWORD`
    - `ADMIN_SESSION_SECRET`
+   - R2 bucket binding: `PRO_IMAGES` → `100tothefuture-pro-images`
 3. `wrangler.jsonc` 의 `name`, `compatibility_date` 확인
 
 ### 도메인 연결 (가비아에서 구매한 `100tothefuture.com`)

@@ -902,7 +902,7 @@ function ImageUrlField({
             {uploading ? "업로드 중..." : uploadLabel}
           </span>
         </span>
-        <span className="text-xs text-fairway-400">JPG, PNG, WebP · 8MB 이하</span>
+        <span className="text-xs text-fairway-400">R2 저장 · JPG, PNG, WebP · 25MB 이하</span>
       </div>
     </div>
   );

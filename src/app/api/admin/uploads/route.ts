@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthed } from "@/lib/admin-auth";
-import { getSupabaseAdmin } from "@/lib/supabase";
+import { getProImagesBucket, publicMediaUrl } from "@/lib/r2";
 
-const BUCKET = process.env.SUPABASE_STORAGE_BUCKET || "pro-images";
-const MAX_FILE_SIZE = 8 * 1024 * 1024;
+const MAX_FILE_SIZE = 25 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
@@ -18,25 +17,6 @@ function cleanSlug(value: unknown) {
 
 function cleanKind(value: unknown) {
   return value === "gallery" ? "gallery" : "profile";
-}
-
-async function ensurePublicBucket() {
-  const sb = getSupabaseAdmin();
-  if (!sb) return { ok: false as const, error: "DB 미설정" };
-
-  const { data: buckets, error: listError } = await sb.storage.listBuckets();
-  if (listError) return { ok: false as const, error: listError.message };
-  if (buckets?.some((bucket) => bucket.name === BUCKET)) {
-    return { ok: true as const, sb };
-  }
-
-  const { error } = await sb.storage.createBucket(BUCKET, {
-    public: true,
-    fileSizeLimit: MAX_FILE_SIZE,
-    allowedMimeTypes: Object.keys(ALLOWED_IMAGE_TYPES),
-  });
-  if (error) return { ok: false as const, error: error.message };
-  return { ok: true as const, sb };
 }
 
 export async function POST(req: Request) {
@@ -67,27 +47,31 @@ export async function POST(req: Request) {
   }
   if (file.size > MAX_FILE_SIZE) {
     return NextResponse.json(
-      { ok: false, error: "이미지는 8MB 이하로 업로드해주세요." },
+      { ok: false, error: "이미지는 25MB 이하로 업로드해주세요." },
       { status: 400 },
     );
   }
 
-  const ready = await ensurePublicBucket();
-  if (!ready.ok) {
-    return NextResponse.json({ ok: false, error: ready.error }, { status: 500 });
+  const bucket = getProImagesBucket();
+  if (!bucket) {
+    return NextResponse.json(
+      { ok: false, error: "R2 이미지 저장소가 연결되지 않았습니다." },
+      { status: 500 },
+    );
   }
 
   const path = `instructors/${slug}/${kind}-${Date.now()}-${crypto.randomUUID()}.${extension}`;
-  const { error } = await ready.sb.storage.from(BUCKET).upload(path, file, {
-    cacheControl: "31536000",
-    contentType: file.type,
-    upsert: false,
+  await bucket.put(path, file, {
+    httpMetadata: {
+      contentType: file.type,
+      cacheControl: "public, max-age=31536000, immutable",
+    },
+    customMetadata: {
+      uploadedBy: "admin",
+      slug,
+      kind,
+    },
   });
 
-  if (error) {
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
-  }
-
-  const { data } = ready.sb.storage.from(BUCKET).getPublicUrl(path);
-  return NextResponse.json({ ok: true, url: data.publicUrl, path });
+  return NextResponse.json({ ok: true, url: publicMediaUrl(path), path, storage: "r2" });
 }

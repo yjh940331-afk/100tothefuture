@@ -8,6 +8,12 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
+  "r2_buckets": [
+    {
+      "binding": "PRO_IMAGES",
+      "bucket_name": "100tothefuture-pro-images"
+    }
+  ],
   "observability": {
     "enabled": true
   }
