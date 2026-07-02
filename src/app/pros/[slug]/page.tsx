@@ -216,34 +216,64 @@ export default async function ProDetailPage({
 
               {portfolio.length > 0 && (
                 <div className="grid gap-3 md:grid-cols-2">
-                  {portfolio.map((item) => (
-                    <a
-                      key={`${item.platform}-${item.title}`}
-                      href={item.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="group overflow-hidden rounded-lg border border-fairway-100 bg-white transition hover:border-fairway-200 hover:shadow-card"
-                    >
-                      <div className="relative aspect-video overflow-hidden bg-fairway-100">
-                        <Image
-                          src={item.image}
-                          alt={item.title}
-                          fill
-                          sizes="(max-width: 768px) 100vw, 40vw"
-                          className="object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                        <div className="absolute left-2.5 top-2.5 flex gap-1.5">
-                          <span className="rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-black text-fairway-900">
-                            {item.platform}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="p-3">
-                        <h3 className="text-sm font-black text-fairway-900">{item.title}</h3>
-                        <p className="mt-1 text-[13px] leading-relaxed text-fairway-600">{item.description}</p>
-                      </div>
-                    </a>
-                  ))}
+                  {portfolio.map((item) => {
+                    const imageMode = item.imageMode ?? "cover";
+                    return (
+                      <a
+                        key={`${item.platform}-${item.title}`}
+                        href={item.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={`group overflow-hidden rounded-lg border border-fairway-100 bg-white transition hover:border-fairway-200 hover:shadow-card ${
+                          imageMode === "cover" ? "" : "flex min-h-[132px] items-center gap-3 p-3"
+                        }`}
+                      >
+                        {imageMode === "cover" ? (
+                          <>
+                            <div className="relative aspect-video overflow-hidden bg-fairway-100">
+                              <Image
+                                src={item.image}
+                                alt={item.title}
+                                fill
+                                sizes="(max-width: 768px) 100vw, 40vw"
+                                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                              />
+                              <div className="absolute left-2.5 top-2.5 flex gap-1.5">
+                                <span className="rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-black text-fairway-900">
+                                  {item.platform}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="p-3">
+                              <h3 className="text-sm font-black text-fairway-900">{item.title}</h3>
+                              <p className="mt-1 text-[13px] leading-relaxed text-fairway-600">{item.description}</p>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            {imageMode === "thumbnail" && (
+                              <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-fairway-100 sm:h-24 sm:w-24">
+                                <Image
+                                  src={item.image}
+                                  alt={item.title}
+                                  fill
+                                  sizes="96px"
+                                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                />
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <span className="rounded-full bg-fairway-50 px-2 py-0.5 text-[11px] font-black text-fairway-700">
+                                {item.platform}
+                              </span>
+                              <h3 className="mt-2 text-sm font-black text-fairway-900">{item.title}</h3>
+                              <p className="mt-1 text-[13px] leading-relaxed text-fairway-600">{item.description}</p>
+                            </div>
+                          </>
+                        )}
+                      </a>
+                    );
+                  })}
                 </div>
               )}
             </Section>
