@@ -94,17 +94,17 @@ export default async function HomePage() {
       </section>
 
       <section className="border-y border-fairway-100 bg-white">
-        <div className="container-page py-10">
+        <div className="container-page py-8 sm:py-10">
           <div className="mx-auto max-w-2xl text-center">
-            <p className="text-sm font-bold text-gold-700">브로커형 레슨 매칭</p>
-            <h2 className="mt-2 text-xl font-extrabold text-fairway-900">
+            <p className="text-[13px] font-bold text-gold-700">브로커형 레슨 매칭</p>
+            <h2 className="mt-1.5 text-lg font-extrabold text-fairway-900 sm:text-xl">
               골프 레슨은 프로보다 조건이 먼저인 경우가 많습니다
             </h2>
-            <p className="mt-2 text-fairway-600">
+            <p className="mt-1.5 text-sm leading-6 text-fairway-600">
               숨고식 요청서 흐름을 골프에 맞춰 바꾸고, 운영자가 검증과 매칭 품질을 관리합니다.
             </p>
           </div>
-          <div className="mt-8 grid gap-6 md:grid-cols-3">
+          <div className="mt-5 grid gap-2.5 md:grid-cols-3">
             <Feature
               title="요청서 기반 매칭"
               desc="지역, 목표, 가능 시간, 예산을 기준으로 후보 프로를 좁혀 고객의 선택 피로를 줄입니다."
@@ -121,19 +121,21 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="container-page py-10">
-        <h2 className="text-center text-xl font-extrabold text-fairway-900">이렇게 진행돼요</h2>
-        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="container-page py-8 sm:py-10">
+        <h2 className="text-center text-lg font-extrabold text-fairway-900 sm:text-xl">이렇게 진행돼요</h2>
+        <div className="mt-5 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
           {[
             ["01", "요청서 작성", "목표, 지역, 시간, 예산을 1분 안에 남깁니다."],
             ["02", "후보 확인", "운영자가 조건이 맞는 검증 프로를 추립니다."],
             ["03", "제안 비교", "가격, 경력, 후기, 가능 시간을 보고 상담합니다."],
             ["04", "예약 진행", "직접 예약하거나 패키지 상담 후 확정합니다."],
           ].map(([step, title, desc]) => (
-            <div key={step} className="rounded-lg border border-fairway-100 bg-white p-4 shadow-sm">
-              <span className="text-2xl font-black text-gold-400">{step}</span>
-              <h3 className="mt-3 font-bold text-fairway-900">{title}</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-fairway-600">{desc}</p>
+            <div key={step} className="flex items-start gap-3 rounded-lg border border-fairway-100 bg-white p-3 shadow-sm">
+              <span className="w-10 shrink-0 text-lg font-black leading-none text-gold-500">{step}</span>
+              <div className="min-w-0">
+                <h3 className="text-[15px] font-bold text-fairway-900">{title}</h3>
+                <p className="mt-1 text-[13px] leading-5 text-fairway-600">{desc}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -175,9 +177,9 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 function Feature({ title, desc }: { title: string; desc: string }) {
   return (
-    <div className="rounded-lg border border-fairway-100 bg-cream p-6">
-      <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-fairway-700 text-gold-300">
-        <svg viewBox="0 0 20 20" className="h-5 w-5" fill="currentColor" aria-hidden>
+    <div className="flex items-start gap-3 rounded-lg border border-fairway-100 bg-cream px-3.5 py-3 shadow-sm">
+      <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-fairway-700 text-gold-300">
+        <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor" aria-hidden>
           <path
             fillRule="evenodd"
             d="M16.7 5.3a1 1 0 010 1.4l-7.5 7.5a1 1 0 01-1.4 0L3.3 9.7a1 1 0 011.4-1.4l3.3 3.3 6.8-6.8a1 1 0 011.4 0z"
@@ -185,8 +187,10 @@ function Feature({ title, desc }: { title: string; desc: string }) {
           />
         </svg>
       </div>
-      <h3 className="mt-4 text-lg font-bold text-fairway-900">{title}</h3>
-      <p className="mt-2 text-sm leading-relaxed text-fairway-600">{desc}</p>
+      <div className="min-w-0">
+        <h3 className="text-[15px] font-bold text-fairway-900">{title}</h3>
+        <p className="mt-1 text-[13px] leading-5 text-fairway-600">{desc}</p>
+      </div>
     </div>
   );
 }
