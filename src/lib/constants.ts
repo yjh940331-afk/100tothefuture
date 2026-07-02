@@ -24,6 +24,7 @@ export type LessonPlace = (typeof LESSON_PLACES)[number];
 export const SPECIALTIES = [
   "입문",
   "100타 탈출",
+  "비거리",
   "드라이버",
   "아이언",
   "숏게임",
@@ -47,6 +48,8 @@ export const BADGES: Record<
   { label: string; tone: "green" | "gold" | "blue" | "pink" }
 > = {
   profile_verified: { label: "프로필 검수 완료", tone: "green" },
+  founding_pro: { label: "첫 입점 프로", tone: "gold" },
+  media_featured: { label: "JTBC 레슨 출연", tone: "blue" },
   cert_verified: { label: "자격증 확인", tone: "green" },
   career_verified: { label: "경력 확인", tone: "green" },
   breakout_expert: { label: "100타 탈출 전문", tone: "gold" },

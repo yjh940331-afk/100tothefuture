@@ -135,6 +135,7 @@ function applyFilters(list: Instructor[], f: InstructorFilters): Instructor[] {
       out.sort(
         (a, b) =>
           Number(b.is_featured) - Number(a.is_featured) ||
+          Number(b.badges.includes("founding_pro")) - Number(a.badges.includes("founding_pro")) ||
           b.rating_avg - a.rating_avg,
       );
   }

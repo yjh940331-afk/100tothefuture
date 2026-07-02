@@ -4,11 +4,13 @@ import type { Instructor } from "@/lib/types";
 import { RatingInline } from "./Stars";
 import { Badge } from "./Badge";
 
-const priceFmt = (n: number) => `${n.toLocaleString("ko-KR")}원~`;
+const priceFmt = (n: number) => (n > 0 ? `${n.toLocaleString("ko-KR")}원~` : "상담 후 안내");
 
 // 대표 뱃지 2개만 카드에 노출 (검증 우선)
 function topBadges(badges: string[]): string[] {
   const priority = [
+    "founding_pro",
+    "media_featured",
     "breakout_expert",
     "cert_verified",
     "beginner_friendly",
@@ -42,7 +44,7 @@ export function InstructorCard({ pro }: { pro: Instructor }) {
           </span>
         )}
         <span className="absolute bottom-3 left-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-bold text-fairway-800">
-          {pro.region} · 경력 {pro.career_years}년
+          {pro.region} · {pro.career_years > 0 ? `경력 ${pro.career_years}년` : "경력 확인 중"}
         </span>
       </div>
 

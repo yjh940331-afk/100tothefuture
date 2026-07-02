@@ -71,6 +71,22 @@ supabase/notifications.sql
 
 현재 SMS가 꺼져 있어도 이 테이블은 미리 만들어두는 것이 좋다. 알림 실패/스킵 기록과 앱 확장에 필요하다.
 
+### 1-3. 첫 입점 프로: 이현 프로
+
+파일:
+
+```txt
+supabase/lee-hyun.sql
+```
+
+이 파일이 하는 것:
+
+- `instructors`에 `lee-hyun` 프로필 upsert
+- 이현 프로를 추천/첫 입점 프로로 표시
+- `lesson_packages`에 프라이빗 1:1 개인레슨 상품 추가
+
+가격, 지역, 경력 연차는 아직 확정 정보가 부족하므로 `상담 후 안내`, `지역 상담`, `경력 확인 중` 기준으로 저장한다. 확정되면 관리자 화면에서 바로 수정한다.
+
 ## 2. SQL 실행 후 확인 쿼리
 
 SQL Editor에서 아래를 실행해 테이블이 생겼는지 확인한다.
@@ -84,6 +100,14 @@ select
 ```
 
 모두 `public.table_name` 형태로 나오면 정상이다.
+
+이현 프로가 들어갔는지 확인:
+
+```sql
+select slug, display_name, region, is_featured, is_active, badges
+from instructors
+where slug = 'lee-hyun';
+```
 
 RLS가 켜졌는지 확인:
 

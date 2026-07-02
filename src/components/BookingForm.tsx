@@ -5,6 +5,9 @@ import Link from "next/link";
 import type { Instructor } from "@/lib/types";
 import { REGIONS } from "@/lib/constants";
 
+const priceLabel = (price: number) =>
+  price > 0 ? `${price.toLocaleString("ko-KR")}원` : "상담 후 안내";
+
 export function BookingForm({ pro }: { pro: Instructor }) {
   const [form, setForm] = useState({
     student_name: "",
@@ -187,14 +190,14 @@ export function BookingForm({ pro }: { pro: Instructor }) {
               <option value="">선택 안 함 / 상담 후 결정</option>
               {pro.packages.map((lessonPackage) => (
                 <option key={lessonPackage.id} value={lessonPackage.id}>
-                  {lessonPackage.title} ({lessonPackage.price.toLocaleString("ko-KR")}원)
+                  {lessonPackage.title} ({priceLabel(lessonPackage.price)})
                 </option>
               ))}
             </select>
             {selectedPackage && (
               <p className="mt-1.5 text-xs font-medium text-fairway-500">
                 {selectedPackage.session_count}회 · 회당 {selectedPackage.duration_minutes}분 ·{" "}
-                {selectedPackage.price.toLocaleString("ko-KR")}원
+                {priceLabel(selectedPackage.price)}
               </p>
             )}
           </div>
@@ -253,4 +256,3 @@ export function BookingForm({ pro }: { pro: Instructor }) {
     </form>
   );
 }
-

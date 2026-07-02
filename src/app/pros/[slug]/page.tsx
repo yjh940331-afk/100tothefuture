@@ -9,7 +9,8 @@ import { AvailabilityTable } from "@/components/AvailabilityTable";
 import { DemoBanner } from "@/components/DemoBanner";
 import { ReviewForm } from "@/components/ReviewForm";
 
-const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
+const won = (n: number) => (n > 0 ? `${n.toLocaleString("ko-KR")}원` : "상담 후 안내");
+const wonFrom = (n: number) => (n > 0 ? `${n.toLocaleString("ko-KR")}원~` : "상담 후 안내");
 
 export async function generateMetadata({
   params,
@@ -75,7 +76,7 @@ export default async function ProDetailPage({
                 <p className="mt-2 max-w-2xl text-lg leading-relaxed text-fairway-100">{pro.bio}</p>
                 <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-fairway-100">
                   <span>지역 {pro.region}</span>
-                  <span>경력 {pro.career_years}년</span>
+                  <span>{pro.career_years > 0 ? `경력 ${pro.career_years}년` : "경력 확인 중"}</span>
                   {pro.response_time && <span>{pro.response_time}</span>}
                   <RatingInline value={pro.rating_avg} count={pro.review_count} />
                 </div>
@@ -95,7 +96,7 @@ export default async function ProDetailPage({
                 </span>
               </div>
               <div className="mt-4 text-sm text-fairway-100">레슨 시작가</div>
-              <div className="mt-1 text-3xl font-black text-gold-200">{won(pro.price_from)}~</div>
+              <div className="mt-1 text-3xl font-black text-gold-200">{wonFrom(pro.price_from)}</div>
               <Link href={`/pros/${pro.slug}/booking`} className="btn-gold mt-5 w-full">
                 상담 · 예약 요청하기
               </Link>
@@ -255,7 +256,7 @@ export default async function ProDetailPage({
             <div>
               <div className="text-sm text-fairway-500">레슨 가격</div>
               <div className="text-2xl font-black text-fairway-900">
-                {won(pro.price_from)}~
+                {wonFrom(pro.price_from)}
               </div>
             </div>
 
