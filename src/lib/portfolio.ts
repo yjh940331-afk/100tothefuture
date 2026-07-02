@@ -35,7 +35,7 @@ export const PORTFOLIO_BY_SLUG: Record<string, PortfolioItem[]> = {
       title: "Instagram @leehyun_golf",
       eyebrow: "프로골퍼 이현",
       description: "필드 스윙, 레슨 현장, 골프 라이프를 확인할 수 있는 공식 인스타그램.",
-      image: "/pros/lee-hyun-profile.jpg",
+      image: "/pros/lee-hyun-hero.jpg",
       href: "https://www.instagram.com/leehyun_golf/",
       platform: "Instagram",
       type: "프로필",

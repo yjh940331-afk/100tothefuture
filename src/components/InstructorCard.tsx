@@ -24,6 +24,8 @@ function topBadges(badges: string[]): string[] {
 }
 
 export function InstructorCard({ pro }: { pro: Instructor }) {
+  const coverImage = pro.gallery[0] ?? pro.profile_image;
+
   return (
     <Link
       href={`/pros/${pro.slug}`}
@@ -31,7 +33,7 @@ export function InstructorCard({ pro }: { pro: Instructor }) {
     >
       <div className="relative aspect-[16/10] overflow-hidden bg-fairway-100">
         <Image
-          src={pro.profile_image}
+          src={coverImage}
           alt={pro.display_name}
           fill
           sizes="(max-width: 768px) 100vw, 33vw"

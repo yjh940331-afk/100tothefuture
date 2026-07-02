@@ -11,12 +11,11 @@ values
 (
   'lee-hyun',
   '이현 프로',
-  '/pros/lee-hyun-swing.jpg',
+  '/pros/lee-hyun-avatar.jpg',
   array[
-    '/pros/lee-hyun-swing.jpg',
+    '/pros/lee-hyun-hero.jpg',
     '/pros/lee-hyun-field.jpg',
-    '/pros/lee-hyun-bunker.jpg',
-    '/pros/lee-hyun-profile.jpg'
+    '/pros/lee-hyun-bunker.jpg'
   ],
   '프로골퍼 · JTBC 레슨 스튜디오 출연 · 프라이빗 1:1 레슨',
   '안녕하세요, 이현 프로입니다. JTBC 레슨 스튜디오와 JTBC GOLF 레슨 콘텐츠에서 비거리, 캐스팅, 체중이동, 상체 움직임 등 아마추어 골퍼가 자주 겪는 스윙 고민을 다뤘습니다. 자연스러운 스윙을 만들 수 있도록 현재 움직임을 먼저 확인하고, 필요한 동작만 단계적으로 교정하는 1:1 프라이빗 레슨을 준비하고 있습니다.',
