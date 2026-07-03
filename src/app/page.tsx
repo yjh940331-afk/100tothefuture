@@ -12,6 +12,7 @@ import { SEED_INSTRUCTORS, seedReviewsFor } from "@/lib/seed-data";
 import { GOLF_IMAGES } from "@/lib/golf-images";
 import type { Instructor, ReviewSummary } from "@/lib/types";
 import { DemoBanner } from "@/components/DemoBanner";
+import { LoginPopup } from "@/components/LoginPopup";
 import { Break100Carousel } from "@/components/Break100Carousel";
 import { CompactAdSlider } from "@/components/CompactAdSlider";
 import { InstructorCard } from "@/components/InstructorCard";
@@ -125,6 +126,7 @@ export default async function HomePage() {
   return (
     <>
       <DemoBanner />
+      <LoginPopup />
 
       <section className="relative overflow-hidden bg-fairway-950 text-white">
         <div
