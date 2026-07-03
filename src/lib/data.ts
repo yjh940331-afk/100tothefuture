@@ -107,6 +107,12 @@ function mapInstructor(row: any, extra: Partial<Instructor> = {}): Instructor {
   };
 }
 
+function hasPublicInstructorImage(
+  instructor: Pick<Instructor, "profile_image">,
+) {
+  return instructor.profile_image.trim().length > 0;
+}
+
 // ---------- 시간대 필터 ----------
 function matchesTimeSlot(rules: AvailabilityRule[], slot?: string): boolean {
   if (!slot) return true;
@@ -142,7 +148,7 @@ function sortablePrice(instructor: Instructor): number {
 }
 
 function applyFilters(list: Instructor[], f: InstructorFilters): Instructor[] {
-  let out = list.filter((i) => i.is_active);
+  let out = list.filter((i) => i.is_active && hasPublicInstructorImage(i));
   if (f.region) out = out.filter((i) => i.region === f.region);
   if (f.specialty)
     out = out.filter((i) => i.specialties.includes(f.specialty!));
@@ -298,23 +304,18 @@ export async function getInstructorBySlug(
       .maybeSingle(),
   ]);
 
-  return mapInstructor(row, {
+  const instructor = mapInstructor(row, {
     certifications: certs ?? [],
     packages: packages ?? [],
     availability: (availability ?? []) as AvailabilityRule[],
     rating_avg: Number(stat?.rating_avg ?? 0),
     review_count: Number(stat?.review_count ?? 0),
   });
+  return hasPublicInstructorImage(instructor) ? instructor : null;
 }
 
 export async function getAllSlugs(): Promise<string[]> {
-  const sb = getSupabase();
-  if (!sb) return SEED_INSTRUCTORS.map((i) => i.slug);
-  const { data } = await sb
-    .from("instructors")
-    .select("slug")
-    .eq("is_active", true);
-  return (data ?? []).map((r: any) => r.slug);
+  return (await listInstructors()).map((instructor) => instructor.slug);
 }
 
 export async function getReviews(
@@ -1216,7 +1217,7 @@ export async function adminReviewInstructorApplication(
       response_time: "상담 후 안내",
       badges: ["profile_verified"],
       is_featured: false,
-      is_active: true,
+      is_active: false,
       verification_status: "verified",
     });
     if (!saved.ok) return saved;
