@@ -17,49 +17,49 @@ const SHORTCUTS = [
     label: "견적요청",
     href: "/request",
     icon: "quote",
-    tone: "bg-gold-300 text-fairway-950",
+    tone: "from-gold-100 via-gold-300 to-gold-500 text-fairway-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_10px_20px_rgba(200,150,74,0.24)]",
   },
   {
     label: "프로찾기",
     href: "/pros",
     icon: "search",
-    tone: "bg-fairway-700 text-white",
+    tone: "from-fairway-400 via-fairway-600 to-fairway-900 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_10px_20px_rgba(34,80,52,0.24)]",
   },
   {
     label: "100타진단",
     href: "/request?goal=100%ED%83%80%20%ED%83%88%EC%B6%9C",
     icon: "target",
-    tone: "bg-rose-500 text-white",
+    tone: "from-[#e8d6a8] via-gold-400 to-[#8f6830] text-fairway-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_10px_20px_rgba(146,94,48,0.22)]",
   },
   {
     label: "드라이버",
     href: "/request?goal=%EB%93%9C%EB%9D%BC%EC%9D%B4%EB%B2%84",
     icon: "driver",
-    tone: "bg-sky-500 text-white",
+    tone: "from-[#5ea476] via-fairway-500 to-fairway-800 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.24),0_10px_20px_rgba(58,127,82,0.22)]",
   },
   {
     label: "아이언",
     href: "/request?goal=%EC%95%84%EC%9D%B4%EC%96%B8",
     icon: "iron",
-    tone: "bg-violet-500 text-white",
+    tone: "from-[#d8c993] via-[#9d8b55] to-fairway-800 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_10px_20px_rgba(120,75,46,0.18)]",
   },
   {
     label: "숏게임",
     href: "/request?goal=%EC%88%8F%EA%B2%8C%EC%9E%84",
     icon: "flag",
-    tone: "bg-emerald-500 text-white",
+    tone: "from-[#73b58b] via-[#2f7b50] to-fairway-900 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.24),0_10px_20px_rgba(42,101,64,0.22)]",
   },
   {
     label: "골프정보",
     href: "/info",
     icon: "book",
-    tone: "bg-amber-400 text-fairway-950",
+    tone: "from-gold-50 via-gold-200 to-gold-500 text-fairway-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.75),0_10px_20px_rgba(212,169,78,0.22)]",
   },
   {
     label: "내예약",
     href: "/bookings",
     icon: "calendar",
-    tone: "bg-slate-700 text-white",
+    tone: "from-[#516457] via-fairway-800 to-fairway-950 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_10px_20px_rgba(12,30,21,0.2)]",
   },
 ] as const;
 
@@ -162,11 +162,19 @@ export default async function HomePage() {
               <Link
                 key={item.label}
                 href={item.href}
-                className="group flex min-w-0 flex-col items-center gap-1.5 rounded-lg px-1.5 py-2 text-center transition hover:-translate-y-0.5 hover:bg-fairway-50"
+                className="group flex min-w-0 flex-col items-center gap-1.5 rounded-lg px-1 py-2 text-center transition duration-300 hover:-translate-y-0.5 hover:bg-fairway-50/70"
               >
                 <span
-                  className={`flex h-10 w-10 items-center justify-center rounded-lg ${item.tone} shadow-sm transition group-hover:shadow-card sm:h-11 sm:w-11`}
+                  className={`relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br ${item.tone} ring-1 ring-white/60 transition duration-300 group-hover:scale-[1.04] sm:h-12 sm:w-12`}
                 >
+                  <span
+                    className="absolute inset-px rounded-[11px] bg-[radial-gradient(circle_at_28%_18%,rgba(255,255,255,0.58),transparent_34%)]"
+                    aria-hidden
+                  />
+                  <span
+                    className="absolute -bottom-3 -right-2 h-8 w-8 rounded-full bg-white/10 blur-sm"
+                    aria-hidden
+                  />
                   <ShortcutIcon name={item.icon} />
                 </span>
                 <span className="truncate text-[11px] font-bold leading-4 text-fairway-800 sm:text-[12px]">
@@ -592,7 +600,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 function ShortcutIcon({ name }: { name: (typeof SHORTCUTS)[number]["icon"] }) {
   const common = {
-    className: "h-5 w-5",
+    className: "relative z-10 h-5 w-5 drop-shadow-[0_1px_1px_rgba(0,0,0,0.24)]",
     fill: "none",
     stroke: "currentColor",
     strokeWidth: 2,
