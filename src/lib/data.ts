@@ -122,14 +122,17 @@ function matchesTimeSlot(rules: AvailabilityRule[], slot?: string): boolean {
   });
 }
 
-function isFoundingInstructor(instructor: Instructor): boolean {
-  return (
-    instructor.slug === "lee-hyun" || instructor.badges.includes("founding_pro")
-  );
+function isPinnedInstructor(instructor: Pick<Instructor, "slug" | "badges">) {
+  return instructor.slug === "lee-hyun";
 }
 
 function foundingFirst(a: Instructor, b: Instructor): number {
-  return Number(isFoundingInstructor(b)) - Number(isFoundingInstructor(a));
+  const rank = (instructor: Instructor) => {
+    if (isPinnedInstructor(instructor)) return 0;
+    if (instructor.badges.includes("founding_pro")) return 1;
+    return 2;
+  };
+  return rank(a) - rank(b);
 }
 
 function sortablePrice(instructor: Instructor): number {
@@ -208,8 +211,10 @@ export async function listInstructors(
 
 export async function getFeaturedInstructors(limit = 3): Promise<Instructor[]> {
   const list = await listInstructors({ sort: "recommended" });
-  const featured = list.filter((i) => i.is_featured);
-  return (featured.length ? featured : list).slice(0, limit);
+  const pinned = list.filter(isPinnedInstructor);
+  const featured = list.filter((i) => i.is_featured && !isPinnedInstructor(i));
+  const rest = list.filter((i) => !i.is_featured && !isPinnedInstructor(i));
+  return [...pinned, ...featured, ...rest].slice(0, limit);
 }
 
 export async function getRecommendedInstructorsForMember(
@@ -234,6 +239,7 @@ export async function getRecommendedInstructorsForMember(
   return [...list]
     .sort(
       (a, b) =>
+        foundingFirst(a, b) ||
         scoreInstructorForMember(b, {
           region: profile?.region,
           goal: student?.goal,
@@ -245,7 +251,7 @@ export async function getRecommendedInstructorsForMember(
             goal: student?.goal,
             current_avg_score: student?.current_avg_score,
             target_score: student?.target_score,
-          }) || foundingFirst(a, b),
+          }),
     )
     .slice(0, limit);
 }
@@ -569,11 +575,15 @@ async function autoMatchLessonRequest(
     const candidates = await listInstructors({ sort: "recommended" });
     const matchedIds = candidates
       .map((instructor) => ({
+        instructor,
         id: instructor.id,
         score: scoreInstructorForRequest(instructor, input),
       }))
-      .filter((item) => item.score > 0)
-      .sort((a, b) => b.score - a.score)
+      .filter((item) => item.score > 0 || isPinnedInstructor(item.instructor))
+      .sort(
+        (a, b) =>
+          foundingFirst(a.instructor, b.instructor) || b.score - a.score,
+      )
       .slice(0, 5)
       .map((item) => item.id);
 
