@@ -31,18 +31,19 @@ export function CompactAdSlider({ banners }: { banners: SponsorBanner[] }) {
             href={banner.href}
             className="relative min-w-full overflow-hidden text-white"
           >
-            {/* 사진이 잘리지 않도록 넓은 비율 + 전체 노출 */}
-            <div className="relative aspect-[16/6] sm:aspect-[16/5]">
+            {/* 얇은 와이드 배너에서도 주요 피사체가 보이도록 이미지 포지션을 허용 */}
+            <div className="relative aspect-[16/5] sm:aspect-[7/2] lg:aspect-[4/1]">
               <Image
                 src={banner.image}
                 alt={banner.title}
                 fill
                 sizes="(max-width: 768px) 100vw, 1200px"
                 className="object-cover"
+                style={{ objectPosition: banner.imagePosition ?? "center" }}
               />
               {/* 왼쪽만 어둡게 → 오른쪽 사진은 그대로 보이고 텍스트는 읽힘 */}
-              <div className="absolute inset-0 bg-gradient-to-r from-fairway-950/85 via-fairway-950/45 to-transparent" />
-              <div className="absolute inset-0 flex items-center justify-between gap-3 px-4 sm:px-5">
+              <div className="absolute inset-0 bg-gradient-to-r from-fairway-950/82 via-fairway-950/38 to-transparent" />
+              <div className="absolute inset-0 flex items-center justify-between gap-3 px-3 sm:px-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-black uppercase text-gold-200 backdrop-blur">
@@ -52,14 +53,14 @@ export function CompactAdSlider({ banners }: { banners: SponsorBanner[] }) {
                       {index + 1}/{banners.length}
                     </span>
                   </div>
-                  <h2 className="mt-1.5 line-clamp-1 text-base font-black leading-tight drop-shadow sm:text-xl">
+                  <h2 className="mt-1 line-clamp-1 text-sm font-black leading-tight drop-shadow sm:text-base lg:text-lg">
                     {banner.title}
                   </h2>
-                  <p className="mt-0.5 line-clamp-1 text-[12px] font-medium text-fairway-100 drop-shadow sm:text-[13px]">
+                  <p className="mt-0.5 line-clamp-1 text-[11px] font-medium text-fairway-100 drop-shadow sm:text-[12px]">
                     {banner.tags.slice(0, 3).join(" · ")}
                   </p>
                 </div>
-                <span className="shrink-0 rounded-full bg-gold-300 px-3 py-1.5 text-[12px] font-black text-fairway-950 shadow">
+                <span className="shrink-0 rounded-full bg-gold-300 px-2.5 py-1 text-[11px] font-black text-fairway-950 shadow sm:px-3 sm:py-1.5 sm:text-[12px]">
                   {banner.cta}
                 </span>
               </div>

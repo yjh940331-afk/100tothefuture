@@ -41,7 +41,7 @@ export const GOLF_IMAGES = {
     },
   },
   info: {
-    wear: "/pros/lee-hyun-swing.jpg",
+    wear: "/ads/golf-wear-campaign.jpg",
     equipment: unsplash("photo-1562204320-8f3cbd731632"),
     story: unsplash("photo-1633597468433-fdb200b73f62"),
     wiki: unsplash("photo-1605144884374-ecbb643615f6"),
@@ -49,6 +49,6 @@ export const GOLF_IMAGES = {
   sponsor: {
     gearFitting: unsplash("photo-1591491640784-3232eb748d4b"),
     fieldPackage: unsplash("photo-1532508583690-538a1436f423"),
-    wearCampaign: "/pros/lee-hyun-profile.jpg",
+    wearCampaign: "/ads/golf-wear-campaign.jpg",
   },
 } as const;

@@ -14,6 +14,7 @@ export function SponsorAdCard({ banner }: { banner: SponsorBanner }) {
           fill
           sizes="(max-width: 768px) 100vw, 33vw"
           className="object-cover transition-transform duration-300 group-hover:scale-105"
+          style={{ objectPosition: banner.imagePosition ?? "center" }}
         />
         <span className="absolute left-2 top-2 rounded-md bg-white/90 px-2 py-1 text-[10px] font-black uppercase text-fairway-800 shadow-sm">
           AD

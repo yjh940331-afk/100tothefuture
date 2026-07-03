@@ -20,6 +20,7 @@ export type SponsorBanner = {
   eyebrow: string;
   description: string;
   image: string;
+  imagePosition?: string;
   href: string;
   cta: string;
   tags: string[];
@@ -182,6 +183,7 @@ export const SPONSOR_BANNERS: SponsorBanner[] = [
     description:
       "프로 착장, 시즌 룩북, 레슨 현장 콘텐츠와 연결되는 웨어 브랜드 배너.",
     image: GOLF_IMAGES.sponsor.wearCampaign,
+    imagePosition: "62% 24%",
     href: "mailto:contact@100tothefuture.com?subject=골프웨어 광고 문의",
     cta: "캠페인 문의",
     tags: ["웨어", "착장", "브랜드"],
