@@ -416,6 +416,7 @@ export interface CreateBookingInput {
   goal?: string | null;
   privacy_agreed: boolean;
   third_party_agreed: boolean;
+  student_user_id?: string | null; // 로그인 계정 연결 (게스트는 null)
 }
 
 export async function createBooking(

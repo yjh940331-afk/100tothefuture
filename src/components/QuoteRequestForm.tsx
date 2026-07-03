@@ -105,9 +105,16 @@ const initialForm: FormState = {
 
 export function QuoteRequestForm({
   initialGoal,
-}: { initialGoal?: string } = {}) {
+  member,
+}: {
+  initialGoal?: string;
+  member?: { name?: string | null; phone?: string | null; region?: string | null } | null;
+} = {}) {
   const [form, setForm] = useState<FormState>(() => ({
     ...initialForm,
+    customer_name: member?.name ?? "",
+    customer_phone: member?.phone ?? "",
+    region: member?.region ?? initialForm.region,
     goals:
       initialGoal &&
       SPECIALTIES.includes(initialGoal as (typeof SPECIALTIES)[number])
@@ -338,6 +345,13 @@ export function QuoteRequestForm({
           />
         ))}
       </ChoiceGroup>
+
+      {member?.name && (
+        <p className="mt-5 flex items-center gap-1.5 rounded-lg bg-fairway-50 px-3 py-2 text-[13px] font-medium text-fairway-700">
+          <span aria-hidden>✓</span>
+          {member.name}님 회원정보로 자동 입력했어요. 필요하면 수정하세요.
+        </p>
+      )}
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <Field label="이름 *">

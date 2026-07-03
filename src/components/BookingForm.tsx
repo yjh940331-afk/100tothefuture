@@ -9,15 +9,21 @@ import { CONTACT_METHODS, contactMemo } from "@/lib/contact";
 const priceLabel = (price: number) =>
   price > 0 ? `${price.toLocaleString("ko-KR")}원` : "상담 후 안내";
 
-export function BookingForm({ pro }: { pro: Instructor }) {
+export function BookingForm({
+  pro,
+  member,
+}: {
+  pro: Instructor;
+  member?: { name?: string | null; phone?: string | null; region?: string | null } | null;
+}) {
   const [form, setForm] = useState({
-    student_name: "",
-    student_phone: "",
+    student_name: member?.name ?? "",
+    student_phone: member?.phone ?? "",
     contact_method: "sms",
     contact_detail: "",
     preferred_date: "",
     preferred_time: "",
-    region: pro.region,
+    region: member?.region ?? pro.region,
     lesson_package_id: "",
     goal: "",
   });
@@ -146,6 +152,12 @@ export function BookingForm({ pro }: { pro: Instructor }) {
         <p className="mt-1 text-sm text-fairway-600">
           프로가 바로 이해할 수 있도록 목표와 현재 고민을 간단히 적어주세요.
         </p>
+        {member?.name && (
+          <p className="mt-3 flex items-center gap-1.5 rounded-lg bg-fairway-50 px-3 py-2 text-[13px] font-medium text-fairway-700">
+            <span aria-hidden>✓</span>
+            {member.name}님 회원정보로 자동 입력했어요. 필요하면 수정하세요.
+          </p>
+        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">

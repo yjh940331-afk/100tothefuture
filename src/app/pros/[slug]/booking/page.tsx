@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getInstructorBySlug } from "@/lib/data";
+import { getCurrentProfile } from "@/lib/auth";
 import { pageSeo } from "@/lib/seo";
 import { BookingForm } from "@/components/BookingForm";
 import { DemoBanner } from "@/components/DemoBanner";
@@ -38,6 +39,11 @@ export default async function BookingPage({
   const { slug } = await params;
   const pro = await getInstructorBySlug(slug);
   if (!pro) notFound();
+
+  const profile = await getCurrentProfile();
+  const member = profile
+    ? { name: profile.name, phone: profile.phone, region: profile.region }
+    : null;
 
   return (
     <>
@@ -78,7 +84,7 @@ export default async function BookingPage({
 
       <div className="container-page grid gap-8 py-10 lg:grid-cols-[1fr_360px]">
         <div>
-          <BookingForm pro={pro} />
+          <BookingForm pro={pro} member={member} />
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-20 lg:h-fit">

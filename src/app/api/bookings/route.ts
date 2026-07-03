@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createBooking } from "@/lib/data";
+import { getSessionUser } from "@/lib/auth";
 
 export async function POST(req: Request) {
   let body: any;
@@ -42,6 +43,9 @@ export async function POST(req: Request) {
     );
   }
 
+  // 로그인 상태면 계정에 연결 → 마이페이지 "내 예약"에 표시됨
+  const user = await getSessionUser();
+
   const result = await createBooking({
     instructor_id: body.instructor_id,
     lesson_package_id: body.lesson_package_id || null,
@@ -53,6 +57,7 @@ export async function POST(req: Request) {
     goal: body.goal || null,
     privacy_agreed: !!body.privacy_agreed,
     third_party_agreed: !!body.third_party_agreed,
+    student_user_id: user?.id ?? null,
   });
 
   if (!result.ok) {

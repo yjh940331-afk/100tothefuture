@@ -4,6 +4,7 @@ import { pageSeo } from "@/lib/seo";
 import { GOLF_IMAGES } from "@/lib/golf-images";
 import { Break100Carousel } from "@/components/Break100Carousel";
 import { QuoteRequestForm } from "@/components/QuoteRequestForm";
+import { getCurrentProfile } from "@/lib/auth";
 
 export const metadata: Metadata = pageSeo({
   title: "100타 탈출 진단 요청",
@@ -29,6 +30,11 @@ export default async function RequestPage({
 }) {
   const sp = await searchParams;
   const initialGoal = typeof sp.goal === "string" ? sp.goal : undefined;
+
+  const profile = await getCurrentProfile();
+  const member = profile
+    ? { name: profile.name, phone: profile.phone, region: profile.region }
+    : null;
 
   return (
     <>
@@ -69,7 +75,7 @@ export default async function RequestPage({
 
       <main className="container-page grid gap-8 py-10 lg:grid-cols-[minmax(0,1fr)_320px]">
         <section id="request-form">
-          <QuoteRequestForm initialGoal={initialGoal} />
+          <QuoteRequestForm initialGoal={initialGoal} member={member} />
         </section>
         <aside className="space-y-4 lg:sticky lg:top-24 lg:h-fit">
           <div className="motion-fade-up motion-delay-1 rounded-lg border border-fairway-100 bg-white p-4 shadow-sm">
