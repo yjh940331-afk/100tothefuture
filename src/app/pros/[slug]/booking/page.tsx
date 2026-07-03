@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getInstructorBySlug } from "@/lib/data";
 import { getCurrentProfile } from "@/lib/auth";
-import { LEE_HYUN_OG_IMAGE, pageSeo } from "@/lib/seo";
+import { DEFAULT_OG_IMAGE, pageSeo } from "@/lib/seo";
 import { BookingForm } from "@/components/BookingForm";
 import { LoginPrompt } from "@/components/LoginPrompt";
 import { DemoBanner } from "@/components/DemoBanner";
@@ -23,7 +23,7 @@ export async function generateMetadata({
     path: `/pros/${pro.slug}/booking`,
     image:
       pro.slug === "lee-hyun"
-        ? LEE_HYUN_OG_IMAGE
+        ? DEFAULT_OG_IMAGE
         : pro.gallery[0] || pro.profile_image,
     imageAlt: `${pro.display_name} 상담·예약`,
     keywords: [

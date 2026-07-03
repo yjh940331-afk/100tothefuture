@@ -18,7 +18,6 @@ import { getCurrentProfile } from "@/lib/auth";
 import { getSupabaseServer } from "@/lib/supabase-server";
 import {
   DEFAULT_OG_IMAGE,
-  LEE_HYUN_OG_IMAGE,
   SITE_NAME,
   absoluteUrl,
   pageSeo,
@@ -35,7 +34,7 @@ const ogImageForPro = (pro: {
   profile_image: string;
 }) =>
   pro.slug === "lee-hyun"
-    ? LEE_HYUN_OG_IMAGE
+    ? DEFAULT_OG_IMAGE
     : pro.gallery[0] || pro.profile_image;
 
 export async function generateMetadata({
