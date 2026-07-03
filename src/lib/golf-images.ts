@@ -41,14 +41,14 @@ export const GOLF_IMAGES = {
     },
   },
   info: {
-    wear: "/ads/golf-wear-campaign.jpg",
+    wear: "/ads/golf-wear-info-premium.jpg",
     equipment: unsplash("photo-1562204320-8f3cbd731632"),
     story: unsplash("photo-1633597468433-fdb200b73f62"),
     wiki: unsplash("photo-1605144884374-ecbb643615f6"),
   },
   sponsor: {
-    gearFitting: unsplash("photo-1591491640784-3232eb748d4b"),
-    fieldPackage: unsplash("photo-1532508583690-538a1436f423"),
-    wearCampaign: "/ads/golf-wear-campaign.jpg",
+    gearFitting: "/ads/golf-gear-fitting-premium.jpg",
+    fieldPackage: "/ads/golf-field-package-premium.jpg",
+    wearCampaign: "/ads/golf-wear-brand-premium.jpg",
   },
 } as const;
