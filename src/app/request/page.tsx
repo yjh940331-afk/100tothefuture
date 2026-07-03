@@ -4,6 +4,7 @@ import { pageSeo } from "@/lib/seo";
 import { GOLF_IMAGES } from "@/lib/golf-images";
 import { Break100Carousel } from "@/components/Break100Carousel";
 import { QuoteRequestForm } from "@/components/QuoteRequestForm";
+import { LoginPrompt } from "@/components/LoginPrompt";
 import { getCurrentProfile } from "@/lib/auth";
 
 export const metadata: Metadata = pageSeo({
@@ -74,7 +75,8 @@ export default async function RequestPage({
       </section>
 
       <main className="container-page grid gap-8 py-10 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <section id="request-form">
+        <section id="request-form" className="space-y-4">
+          {!member && <LoginPrompt next="/request" />}
           <QuoteRequestForm initialGoal={initialGoal} member={member} />
         </section>
         <aside className="space-y-4 lg:sticky lg:top-24 lg:h-fit">

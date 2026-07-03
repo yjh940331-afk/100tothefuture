@@ -6,6 +6,7 @@ import { getInstructorBySlug } from "@/lib/data";
 import { getCurrentProfile } from "@/lib/auth";
 import { pageSeo } from "@/lib/seo";
 import { BookingForm } from "@/components/BookingForm";
+import { LoginPrompt } from "@/components/LoginPrompt";
 import { DemoBanner } from "@/components/DemoBanner";
 
 export async function generateMetadata({
@@ -83,7 +84,8 @@ export default async function BookingPage({
       </div>
 
       <div className="container-page grid gap-8 py-10 lg:grid-cols-[1fr_360px]">
-        <div>
+        <div className="space-y-4">
+          {!member && <LoginPrompt next={`/pros/${pro.slug}/booking`} />}
           <BookingForm pro={pro} member={member} />
         </div>
 

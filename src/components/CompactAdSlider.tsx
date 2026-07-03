@@ -20,7 +20,7 @@ export function CompactAdSlider({ banners }: { banners: SponsorBanner[] }) {
   if (banners.length === 0) return null;
 
   return (
-    <div className="overflow-hidden rounded-lg bg-fairway-900 shadow-card">
+    <div className="relative overflow-hidden rounded-lg shadow-card">
       <div
         className="flex transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)]"
         style={{ transform: `translateX(-${active * 100}%)` }}
@@ -29,44 +29,47 @@ export function CompactAdSlider({ banners }: { banners: SponsorBanner[] }) {
           <a
             key={banner.id}
             href={banner.href}
-            className="relative min-w-full overflow-hidden px-4 py-3 text-white sm:px-5 sm:py-4"
+            className="relative min-w-full overflow-hidden text-white"
           >
-            <Image
-              src={banner.image}
-              alt=""
-              fill
-              sizes="(max-width: 768px) 100vw, 1200px"
-              className="object-cover opacity-45"
-              aria-hidden
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-fairway-950 via-fairway-950/85 to-fairway-950/20" />
-            <div className="relative flex min-h-[76px] items-center justify-between gap-3 sm:min-h-[84px]">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-black uppercase text-gold-200">
-                    AD
-                  </span>
-                  <span className="text-[11px] font-bold text-fairway-100">
-                    {index + 1}/{banners.length}
-                  </span>
+            {/* 사진이 잘리지 않도록 넓은 비율 + 전체 노출 */}
+            <div className="relative aspect-[16/6] sm:aspect-[16/5]">
+              <Image
+                src={banner.image}
+                alt={banner.title}
+                fill
+                sizes="(max-width: 768px) 100vw, 1200px"
+                className="object-cover"
+              />
+              {/* 왼쪽만 어둡게 → 오른쪽 사진은 그대로 보이고 텍스트는 읽힘 */}
+              <div className="absolute inset-0 bg-gradient-to-r from-fairway-950/85 via-fairway-950/45 to-transparent" />
+              <div className="absolute inset-0 flex items-center justify-between gap-3 px-4 sm:px-5">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-black uppercase text-gold-200 backdrop-blur">
+                      AD
+                    </span>
+                    <span className="text-[11px] font-bold text-fairway-100">
+                      {index + 1}/{banners.length}
+                    </span>
+                  </div>
+                  <h2 className="mt-1.5 line-clamp-1 text-base font-black leading-tight drop-shadow sm:text-xl">
+                    {banner.title}
+                  </h2>
+                  <p className="mt-0.5 line-clamp-1 text-[12px] font-medium text-fairway-100 drop-shadow sm:text-[13px]">
+                    {banner.tags.slice(0, 3).join(" · ")}
+                  </p>
                 </div>
-                <h2 className="mt-2 line-clamp-1 text-lg font-black leading-tight sm:text-xl">
-                  {banner.title}
-                </h2>
-                <p className="mt-1 line-clamp-1 text-[12px] font-medium text-fairway-100 sm:text-[13px]">
-                  {banner.tags.slice(0, 3).join(" · ")}
-                </p>
+                <span className="shrink-0 rounded-full bg-gold-300 px-3 py-1.5 text-[12px] font-black text-fairway-950 shadow">
+                  {banner.cta}
+                </span>
               </div>
-              <span className="shrink-0 rounded-full bg-gold-300 px-3 py-1.5 text-[12px] font-black text-fairway-950">
-                {banner.cta}
-              </span>
             </div>
           </a>
         ))}
       </div>
 
       {banners.length > 1 && (
-        <div className="flex gap-1.5 bg-fairway-950 px-4 pb-2">
+        <div className="pointer-events-none absolute inset-x-0 bottom-2 flex justify-center gap-1.5">
           {banners.map((banner, index) => (
             <button
               key={banner.id}
@@ -74,8 +77,8 @@ export function CompactAdSlider({ banners }: { banners: SponsorBanner[] }) {
               aria-label={`${banner.title} 보기`}
               aria-current={active === index}
               onClick={() => setActive(index)}
-              className={`h-1.5 rounded-full transition-all ${
-                active === index ? "w-5 bg-gold-300" : "w-1.5 bg-white/30"
+              className={`pointer-events-auto h-1.5 rounded-full transition-all ${
+                active === index ? "w-5 bg-gold-300" : "w-1.5 bg-white/60"
               }`}
             />
           ))}

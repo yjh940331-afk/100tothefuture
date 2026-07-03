@@ -604,6 +604,44 @@ export async function customerLookupBooking(input: {
   };
 }
 
+// 연락처만으로 내 예약 목록 조회 (예약번호 없이도)
+export async function customerListBookingsByPhone(
+  phoneInput: string,
+): Promise<{ ok: boolean; bookings?: Booking[]; error?: string }> {
+  const sb = getSupabaseAdmin();
+  if (!sb) return { ok: false, error: "예약 조회를 위한 서버 설정이 필요합니다." };
+
+  const compact = normalizePhone(phoneInput);
+  if (compact.length < 8) {
+    return { ok: false, error: "연락처를 정확히 입력해주세요." };
+  }
+  const dashed =
+    compact.length === 11
+      ? `${compact.slice(0, 3)}-${compact.slice(3, 7)}-${compact.slice(7)}`
+      : compact;
+
+  const { data, error } = await sb
+    .from("bookings")
+    .select("*, instructors(display_name, slug), lesson_packages(title)")
+    .or(`student_phone.eq.${compact},student_phone.eq.${dashed}`)
+    .order("created_at", { ascending: false })
+    .limit(50);
+  if (error) return { ok: false, error: error.message };
+
+  const bookings = (data ?? [])
+    .filter((b: any) => normalizePhone(b.student_phone ?? "") === compact)
+    .map((b: any) => ({
+      ...b,
+      instructor_name: b.instructors?.display_name,
+      package_title: b.lesson_packages?.title,
+    })) as Booking[];
+
+  if (bookings.length === 0) {
+    return { ok: false, error: "해당 연락처로 접수된 예약이 없어요." };
+  }
+  return { ok: true, bookings };
+}
+
 export async function customerCancelBooking(input: {
   booking_id: string;
   student_phone: string;

@@ -95,15 +95,18 @@ export function ProfileForm({
       </div>
 
       <div className="rounded-xl bg-cream p-4">
-        <p className="mb-3 text-[13px] font-bold text-fairway-800">골프 정보 (선택 — 맞춤 추천에 사용)</p>
+        <p className="text-[13px] font-bold text-fairway-800">골프 정보 (선택 — 맞춤 추천에 사용)</p>
+        <p className="mb-3 mt-0.5 text-[11px] text-fairway-500">
+          * 골프는 타수가 낮을수록 잘 치는 거예요. 100타 탈출이 목표라면 목표 타수를 100 미만으로 적어주세요.
+        </p>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="label">현재 평균 타수</label>
-            <input type="number" className="input" value={form.current_avg_score} onChange={(e) => set("current_avg_score", e.target.value)} placeholder="예: 108" />
+            <input type="number" className="input" value={form.current_avg_score} onChange={(e) => set("current_avg_score", e.target.value)} placeholder="예: 105 (지금 스코어)" />
           </div>
           <div>
             <label className="label">목표 타수</label>
-            <input type="number" className="input" value={form.target_score} onChange={(e) => set("target_score", e.target.value)} placeholder="예: 90" />
+            <input type="number" className="input" value={form.target_score} onChange={(e) => set("target_score", e.target.value)} placeholder="예: 95 (도달할 스코어)" />
           </div>
         </div>
         <div className="mt-3">
