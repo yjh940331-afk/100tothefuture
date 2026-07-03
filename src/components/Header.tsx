@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
+import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 const NAV = [
   { href: "/pros", label: "프로 찾기" },
@@ -30,10 +31,20 @@ const MOBILE_GROUPS = [
 export function Header() {
   const pathname = usePathname() ?? "/";
   const [open, setOpen] = useState(false);
+  const [authed, setAuthed] = useState<boolean | null>(null);
 
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowser();
+    supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) =>
+      setAuthed(!!session?.user),
+    );
+    return () => sub.subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -91,6 +102,12 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-2">
+            <Link
+              href={authed ? "/mypage" : "/login"}
+              className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-fairway-600 hover:bg-fairway-50 hover:text-fairway-950 sm:inline-flex"
+            >
+              {authed ? "마이페이지" : "로그인"}
+            </Link>
             <Link
               href="/request"
               className="btn-primary hidden !min-h-9 !px-4 sm:inline-flex"
@@ -232,7 +249,10 @@ export function Header() {
               </nav>
             </div>
 
-            <div className="shrink-0 border-t border-fairway-100 bg-white px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-3">
+            <div className="shrink-0 space-y-2 border-t border-fairway-100 bg-white px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-3">
+              <Link href={authed ? "/mypage" : "/login"} className="btn-outline w-full">
+                {authed ? "마이페이지" : "로그인 / 회원가입"}
+              </Link>
               <Link href="/request" className="btn-primary w-full">
                 맞춤 견적 요청
               </Link>

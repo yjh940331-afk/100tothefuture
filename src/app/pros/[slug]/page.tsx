@@ -13,6 +13,8 @@ import { ReviewForm } from "@/components/ReviewForm";
 import { ProTabBar, type ProTab } from "@/components/ProTabBar";
 import { MobileBookingBar } from "@/components/MobileBookingBar";
 import { JsonLd } from "@/components/JsonLd";
+import { FavoriteButton } from "@/components/FavoriteButton";
+import { getSupabaseServer } from "@/lib/supabase-server";
 import {
   DEFAULT_OG_IMAGE,
   SITE_NAME,
@@ -71,6 +73,30 @@ export default async function ProDetailPage({
 
   const reviews = await getReviews(pro.id);
   const portfolio = getPortfolioForSlug(pro.slug);
+
+  // 찜 상태/개수 (로그인 시 본인 찜 여부)
+  let favorited = false;
+  let likeCount = 0;
+  try {
+    const sb = await getSupabaseServer();
+    const [{ count }, { data: authData }] = await Promise.all([
+      sb.from("favorites").select("id", { count: "exact", head: true }).eq("instructor_id", pro.id),
+      sb.auth.getUser(),
+    ]);
+    likeCount = count ?? 0;
+    const uid = authData.user?.id;
+    if (uid) {
+      const { data: fav } = await sb
+        .from("favorites")
+        .select("id")
+        .eq("instructor_id", pro.id)
+        .eq("student_user_id", uid)
+        .maybeSingle();
+      favorited = !!fav;
+    }
+  } catch {
+    /* 로그인/테이블 미구성 시 무시 */
+  }
   const sameAs = portfolio
     .map((item) => item.href)
     .filter((href) => href.startsWith("https://"));
@@ -205,8 +231,15 @@ export default async function ProDetailPage({
               </p>
             </div>
           </div>
-          <div className="mt-3">
+          <div className="mt-3 flex items-center justify-between gap-3">
             <BadgeList badges={pro.badges} />
+            <div className="shrink-0">
+              <FavoriteButton
+                instructorId={pro.id}
+                initialActive={favorited}
+                initialCount={likeCount}
+              />
+            </div>
           </div>
         </div>
       </div>
