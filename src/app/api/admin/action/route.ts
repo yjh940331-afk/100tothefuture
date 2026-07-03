@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isAdminAuthed } from "@/lib/admin-auth";
 import {
   adminUpdateLessonRequest,
+  adminReviewInstructorApplication,
   adminUpdateBookingDetails,
   adminUpdateBookingStatus,
   adminUpdateReviewReply,
@@ -23,6 +24,11 @@ const LESSON_REQUEST_STATUSES = new Set([
   "quoted",
   "closed",
   "canceled",
+]);
+const INSTRUCTOR_APPLICATION_STATUSES = new Set([
+  "submitted",
+  "approved",
+  "rejected",
 ]);
 
 export async function POST(req: Request) {
@@ -90,6 +96,18 @@ export async function POST(req: Request) {
       matched_instructor_ids: Array.isArray(body.matched_instructor_ids)
         ? body.matched_instructor_ids
         : undefined,
+    });
+  } else if (type === "instructor_application") {
+    if (!INSTRUCTOR_APPLICATION_STATUSES.has(status)) {
+      return NextResponse.json(
+        { ok: false, error: "허용되지 않는 프로 신청 상태입니다." },
+        { status: 400 },
+      );
+    }
+    result = await adminReviewInstructorApplication(id, {
+      status,
+      admin_memo:
+        typeof body.admin_memo === "string" ? body.admin_memo : undefined,
     });
   } else {
     return NextResponse.json(

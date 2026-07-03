@@ -93,12 +93,12 @@ export function Header() {
                 {n.label}
               </Link>
             ))}
-            <a
-              href="mailto:contact@100tothefuture.com?subject=골프 레슨 프로 등록 문의"
+            <Link
+              href="/pro/apply"
               className="rounded-lg px-3 py-2 text-sm font-semibold text-fairway-500 hover:bg-fairway-50 hover:text-fairway-950"
             >
               프로 등록
-            </a>
+            </Link>
           </nav>
 
           <div className="flex items-center gap-2">
@@ -229,8 +229,8 @@ export function Header() {
                   <h2 className="px-1 text-[11px] font-black uppercase text-gold-700">
                     운영
                   </h2>
-                  <a
-                    href="mailto:contact@100tothefuture.com?subject=골프 레슨 프로 등록 문의"
+                  <Link
+                    href="/pro/apply"
                     className="mt-2 flex items-center justify-between gap-3 rounded-lg px-3 py-3 text-fairway-800 hover:bg-fairway-50"
                   >
                     <span>
@@ -244,13 +244,16 @@ export function Header() {
                     <span aria-hidden className="text-lg leading-none">
                       ›
                     </span>
-                  </a>
+                  </Link>
                 </section>
               </nav>
             </div>
 
             <div className="shrink-0 space-y-2 border-t border-fairway-100 bg-white px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-3">
-              <Link href={authed ? "/mypage" : "/login"} className="btn-outline w-full">
+              <Link
+                href={authed ? "/mypage" : "/login"}
+                className="btn-outline w-full"
+              >
                 {authed ? "마이페이지" : "로그인 / 회원가입"}
               </Link>
               <Link href="/request" className="btn-primary w-full">

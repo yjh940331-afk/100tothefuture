@@ -6,7 +6,10 @@ import { getSupabaseServer } from "@/lib/supabase-server";
 import { ProfileForm } from "@/components/ProfileForm";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "정보 수정", robots: { index: false } };
+export const metadata: Metadata = {
+  title: "정보 수정",
+  robots: { index: false },
+};
 
 export default async function MyPageEdit() {
   const profile = await getCurrentProfile();
@@ -21,7 +24,10 @@ export default async function MyPageEdit() {
 
   return (
     <div className="container-page max-w-lg py-8">
-      <Link href="/mypage" className="text-[13px] font-semibold text-fairway-500 hover:text-fairway-800">
+      <Link
+        href="/mypage"
+        className="text-[13px] font-semibold text-fairway-500 hover:text-fairway-800"
+      >
         ← 마이페이지
       </Link>
       <h1 className="mt-3 text-xl font-black text-fairway-900">정보 수정</h1>
@@ -33,6 +39,7 @@ export default async function MyPageEdit() {
             phone: profile.phone,
             region: profile.region,
             marketing_agreed: profile.marketing_agreed,
+            kakao_channel_agreed: profile.kakao_channel_agreed,
             current_avg_score: student?.current_avg_score,
             target_score: student?.target_score,
             goal: student?.goal,

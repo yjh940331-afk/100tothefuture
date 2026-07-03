@@ -92,12 +92,12 @@ export default async function RequestPage({
             <p className="text-sm font-bold text-fairway-800">
               프로로 활동하시나요?
             </p>
-            <a
-              href="mailto:contact@100tothefuture.com?subject=골프 레슨 프로 등록 문의"
+            <Link
+              href="/pro/apply"
               className="btn-primary mt-3 inline-flex w-full justify-center"
             >
-              프로 등록 문의
-            </a>
+              프로 신청하기
+            </Link>
           </div>
         </aside>
       </main>

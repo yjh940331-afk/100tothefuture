@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createReview } from "@/lib/data";
+import { getCurrentProfile } from "@/lib/auth";
 
 // 이름 마스킹: "홍길동" -> "홍**"
 function maskName(name: string): string {
@@ -33,13 +34,16 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
-  if (!body.student_phone?.trim()) {
+  const profile = await getCurrentProfile().catch(() => null);
+  const studentPhone =
+    body.student_phone?.trim() || profile?.phone?.trim() || "";
+  if (!studentPhone) {
     return NextResponse.json(
       { ok: false, error: "예약 시 사용한 연락처를 입력해주세요." },
       { status: 400 },
     );
   }
-  if (!/^[0-9+\-\s()]{8,20}$/.test(body.student_phone.trim())) {
+  if (!/^[0-9+\-\s()]{8,20}$/.test(studentPhone)) {
     return NextResponse.json(
       { ok: false, error: "연락처 형식을 확인해주세요." },
       { status: 400 },
@@ -54,8 +58,9 @@ export async function POST(req: Request) {
 
   const result = await createReview({
     instructor_id: body.instructor_id,
-    student_phone: body.student_phone.trim(),
-    student_name_masked: maskName(body.student_name || "익명"),
+    student_user_id: profile?.id ?? null,
+    student_phone: studentPhone,
+    student_name_masked: maskName(body.student_name || profile?.name || "익명"),
     rating_total: rating,
     rating_kindness: body.rating_kindness
       ? Number(body.rating_kindness)

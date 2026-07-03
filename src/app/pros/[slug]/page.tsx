@@ -14,6 +14,7 @@ import { ProTabBar, type ProTab } from "@/components/ProTabBar";
 import { MobileBookingBar } from "@/components/MobileBookingBar";
 import { JsonLd } from "@/components/JsonLd";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { getCurrentProfile } from "@/lib/auth";
 import { getSupabaseServer } from "@/lib/supabase-server";
 import {
   DEFAULT_OG_IMAGE,
@@ -77,10 +78,15 @@ export default async function ProDetailPage({
   // 찜 상태/개수 (로그인 시 본인 찜 여부)
   let favorited = false;
   let likeCount = 0;
+  let currentProfile: Awaited<ReturnType<typeof getCurrentProfile>> = null;
   try {
+    currentProfile = await getCurrentProfile();
     const sb = await getSupabaseServer();
     const [{ count }, { data: authData }] = await Promise.all([
-      sb.from("favorites").select("id", { count: "exact", head: true }).eq("instructor_id", pro.id),
+      sb
+        .from("favorites")
+        .select("id", { count: "exact", head: true })
+        .eq("instructor_id", pro.id),
       sb.auth.getUser(),
     ]);
     likeCount = count ?? 0;
@@ -548,7 +554,11 @@ export default async function ProDetailPage({
               </div>
             )}
             <div className="mt-4">
-              <ReviewForm instructorId={pro.id} />
+              <ReviewForm
+                instructorId={pro.id}
+                defaultName={currentProfile?.name ?? currentProfile?.nickname}
+                defaultPhone={currentProfile?.phone}
+              />
             </div>
           </Section>
 

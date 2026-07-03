@@ -10,6 +10,7 @@ export interface Profile {
   avatar_url: string | null;
   region: string | null;
   marketing_agreed: boolean;
+  kakao_channel_agreed?: boolean;
   onboarded: boolean;
 }
 

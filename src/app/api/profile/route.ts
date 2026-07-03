@@ -11,27 +11,49 @@ export async function POST(req: Request) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.json({ ok: false, error: "로그인이 필요합니다." }, { status: 401 });
+    return NextResponse.json(
+      { ok: false, error: "로그인이 필요합니다." },
+      { status: 401 },
+    );
   }
 
   const body = await req.json().catch(() => ({}));
 
   if (!body.name?.trim() || !body.phone?.trim()) {
-    return NextResponse.json({ ok: false, error: "이름과 연락처는 필수입니다." }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "이름과 연락처는 필수입니다." },
+      { status: 400 },
+    );
   }
 
-  const { error } = await supabase
+  const profilePatch = {
+    name: body.name.trim(),
+    nickname: body.nickname?.trim() || body.name.trim(),
+    phone: body.phone.trim(),
+    region: body.region || null,
+    marketing_agreed: !!body.marketing_agreed,
+    kakao_channel_agreed: !!body.kakao_channel_agreed,
+    ...(body.onboarded ? { onboarded: true } : {}),
+  };
+
+  let { error } = await supabase
     .from("profiles")
-    .update({
-      name: body.name.trim(),
-      nickname: body.nickname?.trim() || body.name.trim(),
-      phone: body.phone.trim(),
-      region: body.region || null,
-      marketing_agreed: !!body.marketing_agreed,
-      ...(body.onboarded ? { onboarded: true } : {}),
-    })
+    .update(profilePatch)
     .eq("id", user.id);
-  if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+  if (error && error.message.includes("kakao_channel_agreed")) {
+    const fallbackPatch: Record<string, unknown> = { ...profilePatch };
+    delete fallbackPatch.kakao_channel_agreed;
+    const fallback = await supabase
+      .from("profiles")
+      .update(fallbackPatch)
+      .eq("id", user.id);
+    error = fallback.error;
+  }
+  if (error)
+    return NextResponse.json(
+      { ok: false, error: error.message },
+      { status: 500 },
+    );
 
   // 수강생 골프 정보(선택)
   if (

@@ -8,9 +8,11 @@ export type ReviewStatus = "pending" | "visible" | "hidden" | "reported";
 export type VerificationStatus = "pending" | "verified" | "rejected";
 export type LessonRequestStatus =
   "open" | "contacted" | "quoted" | "closed" | "canceled";
+export type InstructorApplicationStatus = "submitted" | "approved" | "rejected";
 
 export interface LessonRequest {
   id: string;
+  student_user_id?: string | null;
   customer_name: string;
   customer_phone: string;
   region: string;
@@ -84,6 +86,7 @@ export interface CurriculumItem {
 export interface ReviewSummary {
   id: string;
   instructor_id: string;
+  student_user_id?: string | null;
   student_name_masked: string; // "김**"
   rating_total: number; // 1~5
   rating_kindness?: number | null;
@@ -98,6 +101,7 @@ export interface ReviewSummary {
 
 export interface Instructor {
   id: string;
+  user_id?: string | null;
   slug: string; // SEO URL용: "kim-pro"
   display_name: string;
   profile_image: string;
@@ -128,6 +132,33 @@ export interface Instructor {
   // 목록/카드용 집계값
   rating_avg: number;
   review_count: number;
+}
+
+export interface InstructorApplication {
+  id: string;
+  user_id: string;
+  status: InstructorApplicationStatus;
+  display_name: string;
+  phone: string;
+  region: string;
+  lesson_places: string[];
+  specialties: string[];
+  career_years: number;
+  bio?: string | null;
+  about?: string | null;
+  proof_urls: string[];
+  admin_memo?: string | null;
+  instructor_id?: string | null;
+  reviewed_at?: string | null;
+  created_at: string;
+  updated_at?: string | null;
+  profile_name?: string | null;
+  profile_nickname?: string | null;
+  profile_phone?: string | null;
+}
+
+export interface ProLead extends LessonRequest {
+  quote?: LessonQuote | null;
 }
 
 export interface Booking {

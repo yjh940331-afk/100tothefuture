@@ -5,7 +5,10 @@ import { getSupabaseServer } from "@/lib/supabase-server";
 import { ProfileForm } from "@/components/ProfileForm";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "회원정보 입력", robots: { index: false } };
+export const metadata: Metadata = {
+  title: "회원정보 입력",
+  robots: { index: false },
+};
 
 export default async function OnboardingPage({
   searchParams,
@@ -39,6 +42,7 @@ export default async function OnboardingPage({
             phone: profile.phone,
             region: profile.region,
             marketing_agreed: profile.marketing_agreed,
+            kakao_channel_agreed: profile.kakao_channel_agreed,
             current_avg_score: student?.current_avg_score,
             target_score: student?.target_score,
             goal: student?.goal,

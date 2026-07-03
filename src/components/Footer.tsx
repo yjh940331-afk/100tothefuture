@@ -31,12 +31,9 @@ export function Footer() {
               </Link>
             </li>
             <li>
-              <a
-                href="mailto:contact@100tothefuture.com"
-                className="hover:text-white"
-              >
-                프로 등록 문의
-              </a>
+              <Link href="/pro/apply" className="hover:text-white">
+                프로 신청
+              </Link>
             </li>
           </ul>
         </div>

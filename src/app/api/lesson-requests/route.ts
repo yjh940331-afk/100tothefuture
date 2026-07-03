@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createLessonRequest } from "@/lib/data";
+import { getSessionUser } from "@/lib/auth";
 
 function asStringArray(value: unknown) {
   return Array.isArray(value)
@@ -59,7 +60,10 @@ export async function POST(req: Request) {
     );
   }
 
+  const user = await getSessionUser();
+
   const result = await createLessonRequest({
+    student_user_id: user?.id ?? null,
     customer_name: body.customer_name.trim(),
     customer_phone: body.customer_phone.trim(),
     region: body.region.trim(),

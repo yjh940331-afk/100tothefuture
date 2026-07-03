@@ -6,6 +6,7 @@ import type {
   Booking,
   BookingStatus,
   Instructor,
+  InstructorApplication,
   LessonRequest,
   LessonRequestStatus,
   ReviewSummary,
@@ -16,7 +17,7 @@ import {
   type ImageCropPresetId,
 } from "@/components/admin/ProfileImageCropper";
 
-type Tab = "requests" | "bookings" | "reviews" | "instructors";
+type Tab = "requests" | "bookings" | "reviews" | "applications" | "instructors";
 type BookingFilter = "all" | BookingStatus;
 type ImageUploadTarget = "profile_image" | "gallery";
 type ImageCropRequest = {
@@ -115,12 +116,14 @@ export function AdminDashboard({
   lessonRequests,
   bookings,
   reviews,
+  applications,
   instructors,
   demo,
 }: {
   lessonRequests: LessonRequest[];
   bookings: Booking[];
   reviews: (ReviewSummary & { instructor_name?: string })[];
+  applications: InstructorApplication[];
   instructors: Instructor[];
   demo: boolean;
 }) {
@@ -144,6 +147,16 @@ export function AdminDashboard({
       Object.fromEntries(
         reviews.map((review) => [review.id, review.instructor_reply ?? ""]),
       ),
+  );
+  const [applicationMemos, setApplicationMemos] = useState<
+    Record<string, string>
+  >(() =>
+    Object.fromEntries(
+      applications.map((application) => [
+        application.id,
+        application.admin_memo ?? "",
+      ]),
+    ),
   );
   const [instructorForm, setInstructorForm] =
     useState<InstructorFormState | null>(null);
@@ -333,6 +346,9 @@ export function AdminDashboard({
   const pendingReviews = reviews.filter(
     (review) => review.status === "pending",
   ).length;
+  const pendingApplications = applications.filter(
+    (application) => application.status === "submitted",
+  ).length;
   const newBookings = bookings.filter(
     (booking) => booking.status === "requested",
   ).length;
@@ -393,6 +409,13 @@ export function AdminDashboard({
         </TabBtn>
         <TabBtn active={tab === "reviews"} onClick={() => setTab("reviews")}>
           후기 승인 {pendingReviews > 0 && <Count n={pendingReviews} />}
+        </TabBtn>
+        <TabBtn
+          active={tab === "applications"}
+          onClick={() => setTab("applications")}
+        >
+          프로 신청{" "}
+          {pendingApplications > 0 && <Count n={pendingApplications} />}
         </TabBtn>
         <TabBtn
           active={tab === "instructors"}
@@ -814,6 +837,186 @@ export function AdminDashboard({
           </Panel>
         )}
 
+        {tab === "applications" && (
+          <section>
+            <div className="mb-4 grid gap-3 rounded-lg border border-fairway-100 bg-white p-4 sm:grid-cols-3">
+              <MiniMetric
+                label="승인 대기"
+                value={String(pendingApplications)}
+              />
+              <MiniMetric
+                label="승인 완료"
+                value={String(
+                  applications.filter((item) => item.status === "approved")
+                    .length,
+                )}
+              />
+              <MiniMetric label="전체" value={String(applications.length)} />
+            </div>
+            <Panel
+              empty={applications.length === 0}
+              emptyText="아직 접수된 프로 신청이 없습니다."
+            >
+              {applications.map((application) => (
+                <div key={application.id} className="card p-5">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-lg font-black text-fairway-900">
+                          {application.display_name}
+                        </span>
+                        <StatusPill
+                          label={applicationStatusLabel(application.status)}
+                          status={application.status}
+                        />
+                      </div>
+                      <p className="mt-1 text-sm font-semibold text-fairway-600">
+                        {application.profile_name ||
+                          application.profile_nickname ||
+                          "회원"}{" "}
+                        · {application.phone || application.profile_phone}
+                      </p>
+                    </div>
+                    <div className="text-right text-xs text-fairway-400">
+                      {new Date(application.created_at).toLocaleString("ko-KR")}
+                    </div>
+                  </div>
+
+                  <dl className="mt-4 grid gap-3 text-sm md:grid-cols-3">
+                    <Info label="활동 지역" value={application.region} />
+                    <Info
+                      label="전문 분야"
+                      value={listText(application.specialties)}
+                    />
+                    <Info
+                      label="레슨 장소"
+                      value={listText(application.lesson_places)}
+                    />
+                    <Info
+                      label="경력"
+                      value={`${application.career_years || 0}년`}
+                    />
+                    <Info
+                      label="연결 프로"
+                      value={application.instructor_id ?? "-"}
+                    />
+                    <Info
+                      label="증빙"
+                      value={
+                        application.proof_urls.length > 0
+                          ? `${application.proof_urls.length}개`
+                          : "-"
+                      }
+                    />
+                  </dl>
+
+                  {(application.bio || application.about) && (
+                    <div className="mt-4 rounded-lg bg-fairway-50 p-3 text-sm text-fairway-700">
+                      {application.bio && (
+                        <p>
+                          <b>한 줄 소개</b> {application.bio}
+                        </p>
+                      )}
+                      {application.about && (
+                        <p className="mt-2 whitespace-pre-line leading-6">
+                          <b>상세 소개</b>
+                          <br />
+                          {application.about}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {application.proof_urls.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {application.proof_urls.map((url) => (
+                        <a
+                          key={url}
+                          href={url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="rounded-lg border border-fairway-200 px-3 py-1.5 text-xs font-bold text-fairway-700 hover:bg-fairway-50"
+                        >
+                          증빙 보기
+                        </a>
+                      ))}
+                    </div>
+                  )}
+
+                  <label className="mt-4 block">
+                    <span className="label">심사 메모</span>
+                    <textarea
+                      className="input min-h-[88px]"
+                      value={applicationMemos[application.id] ?? ""}
+                      onChange={(event) =>
+                        setApplicationMemos((current) => ({
+                          ...current,
+                          [application.id]: event.target.value,
+                        }))
+                      }
+                      placeholder="확인한 자격, 통화 내용, 반려 사유를 적어두세요."
+                    />
+                  </label>
+
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    <ActionBtn
+                      onClick={() =>
+                        postAdminAction(
+                          {
+                            type: "instructor_application",
+                            id: application.id,
+                            status: "approved",
+                            admin_memo: applicationMemos[application.id] ?? "",
+                          },
+                          application.id + "approved",
+                        )
+                      }
+                      busy={busy === application.id + "approved"}
+                      active={application.status === "approved"}
+                    >
+                      승인
+                    </ActionBtn>
+                    <ActionBtn
+                      onClick={() =>
+                        postAdminAction(
+                          {
+                            type: "instructor_application",
+                            id: application.id,
+                            status: "rejected",
+                            admin_memo: applicationMemos[application.id] ?? "",
+                          },
+                          application.id + "rejected",
+                        )
+                      }
+                      busy={busy === application.id + "rejected"}
+                      active={application.status === "rejected"}
+                    >
+                      반려
+                    </ActionBtn>
+                    <ActionBtn
+                      onClick={() =>
+                        postAdminAction(
+                          {
+                            type: "instructor_application",
+                            id: application.id,
+                            status: "submitted",
+                            admin_memo: applicationMemos[application.id] ?? "",
+                          },
+                          application.id + "submitted",
+                        )
+                      }
+                      busy={busy === application.id + "submitted"}
+                      active={application.status === "submitted"}
+                    >
+                      대기
+                    </ActionBtn>
+                  </div>
+                </div>
+              ))}
+            </Panel>
+          </section>
+        )}
+
         {tab === "instructors" && (
           <section>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -1134,6 +1337,12 @@ function genderPreferenceLabel(value?: string | null) {
   return "상관없음";
 }
 
+function applicationStatusLabel(status: string) {
+  if (status === "approved") return "승인 완료";
+  if (status === "rejected") return "반려";
+  return "승인 대기";
+}
+
 function TabBtn({
   active,
   onClick,
@@ -1235,12 +1444,14 @@ function StatusPill({ label, status }: { label: string; status: string }) {
     status === "confirmed" ||
     status === "visible" ||
     status === "verified" ||
+    status === "approved" ||
     status === "completed" ||
     status === "quoted" ||
     status === "closed"
       ? "bg-fairway-100 text-fairway-800"
       : status === "requested" ||
           status === "pending" ||
+          status === "submitted" ||
           status === "open" ||
           status === "contacted"
         ? "bg-gold-100 text-gold-800"

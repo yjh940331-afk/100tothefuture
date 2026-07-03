@@ -15,8 +15,11 @@ import type {
   AvailabilityRule,
   Booking,
   Instructor,
+  InstructorApplication,
+  InstructorApplicationStatus,
   LessonRequest,
   LessonRequestStatus,
+  ProLead,
   ReviewSummary,
 } from "./types";
 
@@ -74,6 +77,7 @@ export interface InstructorFilters {
 function mapInstructor(row: any, extra: Partial<Instructor> = {}): Instructor {
   return {
     id: row.id,
+    user_id: row.user_id ?? null,
     slug: row.slug,
     display_name: row.display_name,
     profile_image: row.profile_image ?? "",
@@ -208,6 +212,44 @@ export async function getFeaturedInstructors(limit = 3): Promise<Instructor[]> {
   return (featured.length ? featured : list).slice(0, limit);
 }
 
+export async function getRecommendedInstructorsForMember(
+  userId?: string | null,
+  limit = 3,
+): Promise<Instructor[]> {
+  const list = await listInstructors({ sort: "recommended" });
+  if (!userId || list.length === 0) return list.slice(0, limit);
+
+  const sb = getSupabaseAdmin();
+  if (!sb) return list.slice(0, limit);
+
+  const [{ data: profile }, { data: student }] = await Promise.all([
+    sb.from("profiles").select("region").eq("id", userId).maybeSingle(),
+    sb
+      .from("student_profiles")
+      .select("current_avg_score,target_score,goal")
+      .eq("user_id", userId)
+      .maybeSingle(),
+  ]);
+
+  return [...list]
+    .sort(
+      (a, b) =>
+        scoreInstructorForMember(b, {
+          region: profile?.region,
+          goal: student?.goal,
+          current_avg_score: student?.current_avg_score,
+          target_score: student?.target_score,
+        }) -
+          scoreInstructorForMember(a, {
+            region: profile?.region,
+            goal: student?.goal,
+            current_avg_score: student?.current_avg_score,
+            target_score: student?.target_score,
+          }) || foundingFirst(a, b),
+    )
+    .slice(0, limit);
+}
+
 export async function getInstructorBySlug(
   slug: string,
 ): Promise<Instructor | null> {
@@ -284,6 +326,7 @@ export async function getReviews(
 }
 
 export interface CreateLessonRequestInput {
+  student_user_id?: string | null;
   customer_name: string;
   customer_phone: string;
   region: string;
@@ -307,6 +350,9 @@ function marketplaceTableError(error?: string) {
   return (
     error.includes("lesson_requests") ||
     error.includes("lesson_quotes") ||
+    error.includes("instructor_applications") ||
+    error.includes("student_user_id") ||
+    error.includes("kakao_channel_agreed") ||
     error.includes("Could not find the table") ||
     error.includes("does not exist") ||
     error.includes("schema cache")
@@ -316,6 +362,95 @@ function marketplaceTableError(error?: string) {
 function normalizeBudget(value?: number | null) {
   const amount = Number(value ?? 0);
   return Number.isFinite(amount) && amount > 0 ? Math.round(amount) : null;
+}
+
+function makeInstructorSlug(input: {
+  display_name: string;
+  phone?: string;
+  id: string;
+}) {
+  const ascii = input.display_name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  if (ascii) return `${ascii}-${input.id.slice(0, 6)}`;
+  const digits = normalizePhone(input.phone ?? "");
+  return `pro-${digits.slice(-4) || input.id.slice(0, 8)}`;
+}
+
+function textMatches(haystack: string, needles: string[]) {
+  const target = haystack.toLowerCase();
+  return needles.some(
+    (needle) => needle && target.includes(needle.toLowerCase()),
+  );
+}
+
+function scoreInstructorForMember(
+  instructor: Instructor,
+  context: {
+    region?: string | null;
+    goal?: string | null;
+    current_avg_score?: number | null;
+    target_score?: number | null;
+  },
+) {
+  let score = 0;
+  if (instructor.is_featured) score += 2;
+  if (instructor.verification_status === "verified") score += 2;
+  score += Math.min(instructor.rating_avg, 5);
+  score += Math.min(instructor.review_count, 20) / 10;
+
+  if (context.region && instructor.region === context.region) score += 5;
+
+  const goal = context.goal?.trim();
+  if (goal) {
+    const fields = [
+      instructor.bio,
+      instructor.about,
+      ...instructor.specialties,
+      ...instructor.lesson_style,
+    ];
+    if (fields.some((field) => textMatches(field, [goal]))) score += 6;
+    const goalWords = goal
+      .split(/[\s,/·]+/)
+      .map((word) => word.trim())
+      .filter((word) => word.length >= 2);
+    if (fields.some((field) => textMatches(field, goalWords))) score += 3;
+  }
+
+  const current = Number(context.current_avg_score ?? 0);
+  const target = Number(context.target_score ?? 0);
+  if ((current >= 100 || target >= 90) && target > 0 && target < current) {
+    if (instructor.specialties.some((item) => item.includes("100타")))
+      score += 5;
+    if (instructor.specialties.some((item) => item.includes("입문")))
+      score += 2;
+  }
+
+  return score;
+}
+
+function scoreInstructorForRequest(
+  instructor: Instructor,
+  input: {
+    region: string;
+    goals: string[];
+    lessonPlaces: string[];
+  },
+) {
+  let score = 0;
+  if (instructor.region === input.region) score += 6;
+  score +=
+    input.goals.filter((goal) => instructor.specialties.includes(goal)).length *
+    5;
+  score +=
+    input.lessonPlaces.filter((place) =>
+      instructor.lesson_places.includes(place),
+    ).length * 3;
+  if (instructor.verification_status === "verified") score += 2;
+  if (instructor.is_featured) score += 1;
+  score += Math.min(instructor.rating_avg, 5) / 2;
+  return score;
 }
 
 export async function createLessonRequest(
@@ -389,6 +524,25 @@ export async function createLessonRequest(
     return { ok: false, error: `${error.message}${hint}` };
   }
 
+  if (input.student_user_id) {
+    const { error: linkError } = await sb
+      .from("lesson_requests")
+      .update({ student_user_id: input.student_user_id })
+      .eq("id", data.id);
+    if (linkError && !marketplaceTableError(linkError.message)) {
+      console.error(
+        "Failed to link lesson request to member",
+        linkError.message,
+      );
+    }
+  }
+
+  await autoMatchLessonRequest(data.id, {
+    region,
+    goals,
+    lessonPlaces,
+  });
+
   await notifyLessonRequestCreated({
     id: data.id,
     customer_name: name,
@@ -402,6 +556,38 @@ export async function createLessonRequest(
   });
 
   return { ok: true, id: data.id };
+}
+
+async function autoMatchLessonRequest(
+  requestId: string,
+  input: { region: string; goals: string[]; lessonPlaces: string[] },
+) {
+  const sb = getSupabaseAdmin();
+  if (!sb) return;
+
+  try {
+    const candidates = await listInstructors({ sort: "recommended" });
+    const matchedIds = candidates
+      .map((instructor) => ({
+        id: instructor.id,
+        score: scoreInstructorForRequest(instructor, input),
+      }))
+      .filter((item) => item.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5)
+      .map((item) => item.id);
+
+    if (matchedIds.length === 0) return;
+    const { error } = await sb
+      .from("lesson_requests")
+      .update({ matched_instructor_ids: matchedIds })
+      .eq("id", requestId);
+    if (error && !marketplaceTableError(error.message)) {
+      console.error("Failed to auto-match lesson request", error.message);
+    }
+  } catch (error) {
+    console.error("Failed to auto-match lesson request", error);
+  }
 }
 
 // ---------- 쓰기 ----------
@@ -609,7 +795,8 @@ export async function customerListBookingsByPhone(
   phoneInput: string,
 ): Promise<{ ok: boolean; bookings?: Booking[]; error?: string }> {
   const sb = getSupabaseAdmin();
-  if (!sb) return { ok: false, error: "예약 조회를 위한 서버 설정이 필요합니다." };
+  if (!sb)
+    return { ok: false, error: "예약 조회를 위한 서버 설정이 필요합니다." };
 
   const compact = normalizePhone(phoneInput);
   if (compact.length < 8) {
@@ -640,6 +827,61 @@ export async function customerListBookingsByPhone(
     return { ok: false, error: "해당 연락처로 접수된 예약이 없어요." };
   }
   return { ok: true, bookings };
+}
+
+export async function claimBookingsForUser(input: {
+  userId: string;
+  phone: string;
+}): Promise<{ ok: boolean; claimed: number; error?: string }> {
+  const sb = getSupabaseAdmin();
+  if (!sb)
+    return {
+      ok: false,
+      claimed: 0,
+      error: "예약 연결을 위한 서버 설정이 필요합니다.",
+    };
+
+  const compact = normalizePhone(input.phone);
+  if (compact.length < 8) {
+    return {
+      ok: false,
+      claimed: 0,
+      error: "회원 연락처를 먼저 정확히 입력해주세요.",
+    };
+  }
+  const dashed =
+    compact.length === 11
+      ? `${compact.slice(0, 3)}-${compact.slice(3, 7)}-${compact.slice(7)}`
+      : compact;
+
+  const { data, error } = await sb
+    .from("bookings")
+    .select("id, student_phone, student_user_id")
+    .or(`student_phone.eq.${compact},student_phone.eq.${dashed}`)
+    .limit(100);
+  if (error) return { ok: false, claimed: 0, error: error.message };
+
+  const ids = (data ?? [])
+    .filter(
+      (booking: any) => normalizePhone(booking.student_phone ?? "") === compact,
+    )
+    .filter(
+      (booking: any) =>
+        !booking.student_user_id || booking.student_user_id === input.userId,
+    )
+    .map((booking: any) => booking.id);
+
+  if (ids.length === 0) return { ok: true, claimed: 0 };
+
+  const { error: updateError } = await sb
+    .from("bookings")
+    .update({ student_user_id: input.userId })
+    .in("id", ids);
+  if (updateError) {
+    return { ok: false, claimed: 0, error: updateError.message };
+  }
+
+  return { ok: true, claimed: ids.length };
 }
 
 export async function customerCancelBooking(input: {
@@ -676,6 +918,7 @@ export async function customerCancelBooking(input: {
 
 export interface CreateReviewInput {
   instructor_id: string;
+  student_user_id?: string | null;
   student_phone: string;
   student_name_masked: string;
   rating_total: number;
@@ -700,15 +943,24 @@ export async function createReview(
       error: "후기 등록을 위한 서버 권한이 설정되지 않았습니다.",
     };
 
-  const { data: booking } = await sb
+  const compactPhone = normalizePhone(input.student_phone);
+  const { data: completedBookings } = await sb
     .from("bookings")
-    .select("id")
+    .select("id, student_phone, student_user_id")
     .eq("instructor_id", input.instructor_id)
-    .eq("student_phone", input.student_phone.trim())
     .eq("status", "completed")
     .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .limit(100);
+
+  const booking = (completedBookings ?? []).find((item: any) => {
+    if (
+      input.student_user_id &&
+      item.student_user_id === input.student_user_id
+    ) {
+      return true;
+    }
+    return normalizePhone(item.student_phone ?? "") === compactPhone;
+  });
 
   if (!booking) {
     return {
@@ -727,9 +979,10 @@ export async function createReview(
     return { ok: false, error: "이미 해당 예약으로 후기가 등록되었습니다." };
   }
 
-  const { error } = await sb.from("reviews").insert({
+  const reviewPayload = {
     booking_id: booking.id,
     instructor_id: input.instructor_id,
+    student_user_id: input.student_user_id ?? booking.student_user_id ?? null,
     student_name_masked: input.student_name_masked,
     rating_total: input.rating_total,
     rating_kindness: input.rating_kindness,
@@ -738,8 +991,396 @@ export async function createReview(
     recommend_for: input.recommend_for,
     content: input.content,
     status: "pending",
-  });
+  };
+  let { error } = await sb.from("reviews").insert(reviewPayload);
+  if (error && marketplaceTableError(error.message)) {
+    const fallbackPayload: Record<string, unknown> = { ...reviewPayload };
+    delete fallbackPayload.student_user_id;
+    const fallback = await sb.from("reviews").insert(fallbackPayload);
+    error = fallback.error;
+  }
   if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+export interface InstructorApplicationInput {
+  display_name: string;
+  phone: string;
+  region: string;
+  lesson_places?: string[];
+  specialties?: string[];
+  career_years?: number;
+  bio?: string | null;
+  about?: string | null;
+  proof_urls?: string[];
+}
+
+function mapInstructorApplication(
+  row: any,
+  profile?: {
+    name?: string | null;
+    nickname?: string | null;
+    phone?: string | null;
+  },
+): InstructorApplication {
+  return {
+    id: row.id,
+    user_id: row.user_id,
+    status: row.status,
+    display_name: row.display_name,
+    phone: row.phone,
+    region: row.region,
+    lesson_places: row.lesson_places ?? [],
+    specialties: row.specialties ?? [],
+    career_years: row.career_years ?? 0,
+    bio: row.bio ?? null,
+    about: row.about ?? null,
+    proof_urls: row.proof_urls ?? [],
+    admin_memo: row.admin_memo ?? null,
+    instructor_id: row.instructor_id ?? null,
+    reviewed_at: row.reviewed_at ?? null,
+    created_at: row.created_at,
+    updated_at: row.updated_at ?? null,
+    profile_name: profile?.name ?? null,
+    profile_nickname: profile?.nickname ?? null,
+    profile_phone: profile?.phone ?? null,
+  };
+}
+
+export async function getInstructorApplicationForUser(
+  userId: string,
+): Promise<InstructorApplication | null> {
+  const sb = getSupabaseAdmin();
+  if (!sb) return null;
+  const { data, error } = await sb
+    .from("instructor_applications")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) {
+    if (!marketplaceTableError(error.message)) {
+      console.error("Failed to load instructor application", error.message);
+    }
+    return null;
+  }
+  return data ? mapInstructorApplication(data) : null;
+}
+
+export async function submitInstructorApplication(
+  userId: string,
+  input: InstructorApplicationInput,
+): Promise<{ ok: boolean; id?: string; error?: string }> {
+  const sb = getSupabaseAdmin();
+  if (!sb)
+    return {
+      ok: false,
+      error: "프로 신청 저장을 위한 서버 설정이 필요합니다.",
+    };
+
+  const displayName = input.display_name.trim();
+  const phone = input.phone.trim();
+  const region = input.region.trim();
+  const specialties = cleanList(input.specialties);
+  if (!displayName || !phone || !region) {
+    return { ok: false, error: "프로명, 연락처, 활동 지역은 필수입니다." };
+  }
+  if (specialties.length === 0) {
+    return { ok: false, error: "전문 분야를 하나 이상 선택해주세요." };
+  }
+
+  const existing = await getInstructorApplicationForUser(userId);
+  if (existing?.status === "approved") {
+    return { ok: false, error: "이미 승인된 프로 계정입니다." };
+  }
+
+  const payload = {
+    user_id: userId,
+    status: "submitted" as InstructorApplicationStatus,
+    display_name: displayName,
+    phone,
+    region,
+    lesson_places: cleanList(input.lesson_places),
+    specialties,
+    career_years: Math.max(0, Number(input.career_years ?? 0)),
+    bio: input.bio?.trim() || null,
+    about: input.about?.trim() || null,
+    proof_urls: cleanList(input.proof_urls),
+    updated_at: new Date().toISOString(),
+  };
+
+  const { data, error } = await sb
+    .from("instructor_applications")
+    .upsert(payload, { onConflict: "user_id" })
+    .select("id")
+    .single();
+  if (error) {
+    const hint = marketplaceTableError(error.message)
+      ? " Supabase SQL Editor에서 supabase/pro-platform.sql을 먼저 실행해주세요."
+      : "";
+    return { ok: false, error: `${error.message}${hint}` };
+  }
+  return { ok: true, id: data.id };
+}
+
+export async function adminListInstructorApplications(): Promise<
+  InstructorApplication[]
+> {
+  const sb = getSupabaseAdmin();
+  if (!sb) return [];
+  const { data, error } = await sb
+    .from("instructor_applications")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (error) {
+    if (!marketplaceTableError(error.message)) {
+      console.error("Failed to list instructor applications", error.message);
+    }
+    return [];
+  }
+
+  const userIds = [...new Set((data ?? []).map((row: any) => row.user_id))];
+  const { data: profiles } =
+    userIds.length > 0
+      ? await sb
+          .from("profiles")
+          .select("id,name,nickname,phone")
+          .in("id", userIds)
+      : { data: [] };
+  const profileMap = new Map(
+    (profiles ?? []).map((profile: any) => [profile.id, profile]),
+  );
+
+  return (data ?? []).map((row: any) =>
+    mapInstructorApplication(row, profileMap.get(row.user_id)),
+  );
+}
+
+export async function adminReviewInstructorApplication(
+  id: string,
+  input: { status: InstructorApplicationStatus; admin_memo?: string },
+) {
+  const sb = getSupabaseAdmin();
+  if (!sb) return { ok: false, error: "DB 미설정" };
+  if (!["approved", "rejected", "submitted"].includes(input.status)) {
+    return { ok: false, error: "허용되지 않는 신청 상태입니다." };
+  }
+
+  const { data: application, error: loadError } = await sb
+    .from("instructor_applications")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (loadError || !application) {
+    return {
+      ok: false,
+      error: loadError?.message ?? "신청서를 찾을 수 없습니다.",
+    };
+  }
+
+  let instructorId = application.instructor_id as string | null;
+  if (input.status === "approved") {
+    const saved = await adminSaveInstructor({
+      id: instructorId ?? undefined,
+      user_id: application.user_id,
+      slug: makeInstructorSlug({
+        display_name: application.display_name,
+        phone: application.phone,
+        id: application.id,
+      }),
+      display_name: application.display_name,
+      profile_image: "",
+      gallery: [],
+      bio:
+        application.bio ||
+        `${application.region} ${cleanList(application.specialties).join(", ")} 레슨 프로`,
+      about: application.about || application.bio || "",
+      region: application.region,
+      lesson_places: application.lesson_places ?? [],
+      specialties: application.specialties ?? [],
+      career_years: application.career_years ?? 0,
+      career_history: cleanList(application.proof_urls ?? []),
+      lesson_style: [],
+      gender: "male",
+      price_from: 0,
+      response_time: "상담 후 안내",
+      badges: ["profile_verified"],
+      is_featured: false,
+      is_active: true,
+      verification_status: "verified",
+    });
+    if (!saved.ok) return saved;
+    instructorId = saved.id ?? instructorId;
+
+    const { error: profileError } = await sb
+      .from("profiles")
+      .update({ role: "instructor" })
+      .eq("id", application.user_id);
+    if (profileError) return { ok: false, error: profileError.message };
+  }
+
+  const { error } = await sb
+    .from("instructor_applications")
+    .update({
+      status: input.status,
+      admin_memo:
+        typeof input.admin_memo === "string"
+          ? input.admin_memo.trim() || null
+          : application.admin_memo,
+      instructor_id: instructorId,
+      reviewed_at:
+        input.status === "submitted" ? null : new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+  return { ok: !error, error: error?.message };
+}
+
+export async function getInstructorForUser(
+  userId: string,
+): Promise<Instructor | null> {
+  const sb = getSupabaseAdmin();
+  if (!sb) return null;
+  const { data, error } = await sb
+    .from("instructors")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) {
+    if (!marketplaceTableError(error.message)) {
+      console.error("Failed to load instructor for user", error.message);
+    }
+    return null;
+  }
+  return data ? mapInstructor(data) : null;
+}
+
+export async function getProDashboardForUser(userId: string): Promise<{
+  instructor: Instructor | null;
+  bookings: Booking[];
+  leads: ProLead[];
+  setupNeeded?: boolean;
+}> {
+  const sb = getSupabaseAdmin();
+  if (!sb) return { instructor: null, bookings: [], leads: [] };
+  const instructor = await getInstructorForUser(userId);
+  if (!instructor) return { instructor: null, bookings: [], leads: [] };
+
+  const [{ data: bookings }, { data: leads, error: leadsError }] =
+    await Promise.all([
+      sb
+        .from("bookings")
+        .select("*, lesson_packages(title)")
+        .eq("instructor_id", instructor.id)
+        .order("created_at", { ascending: false })
+        .limit(50),
+      sb
+        .from("lesson_requests")
+        .select("*, lesson_quotes(*)")
+        .contains("matched_instructor_ids", [instructor.id])
+        .order("created_at", { ascending: false })
+        .limit(50),
+    ]);
+
+  if (leadsError && marketplaceTableError(leadsError.message)) {
+    return {
+      instructor,
+      bookings: (bookings ?? []).map((booking: any) => ({
+        ...booking,
+        package_title: booking.lesson_packages?.title,
+      })) as Booking[],
+      leads: [],
+      setupNeeded: true,
+    };
+  }
+
+  return {
+    instructor,
+    bookings: (bookings ?? []).map((booking: any) => ({
+      ...booking,
+      package_title: booking.lesson_packages?.title,
+    })) as Booking[],
+    leads: (leads ?? []).map((lead: any) => {
+      const quotes = Array.isArray(lead.lesson_quotes)
+        ? lead.lesson_quotes
+        : [];
+      const quote =
+        quotes.find((item: any) => item.instructor_id === instructor.id) ??
+        null;
+      const request = { ...lead };
+      delete request.lesson_quotes;
+      return {
+        ...request,
+        lesson_places: request.lesson_places ?? [],
+        goals: request.goals ?? [],
+        preferred_days: request.preferred_days ?? [],
+        matched_instructor_ids: request.matched_instructor_ids ?? [],
+        quote_count: quotes.length,
+        quote,
+      } as ProLead;
+    }),
+  };
+}
+
+export async function sendProQuote(
+  userId: string,
+  requestId: string,
+  input: { title?: string; message: string; price?: number | null },
+) {
+  const sb = getSupabaseAdmin();
+  if (!sb) return { ok: false, error: "DB 미설정" };
+  const instructor = await getInstructorForUser(userId);
+  if (!instructor)
+    return { ok: false, error: "승인된 프로 계정을 찾을 수 없습니다." };
+
+  const { data: request, error: requestError } = await sb
+    .from("lesson_requests")
+    .select("id, matched_instructor_ids")
+    .eq("id", requestId)
+    .maybeSingle();
+  if (requestError || !request) {
+    return {
+      ok: false,
+      error: requestError?.message ?? "리드를 찾을 수 없습니다.",
+    };
+  }
+  if (!(request.matched_instructor_ids ?? []).includes(instructor.id)) {
+    return { ok: false, error: "이 프로에게 배정된 리드가 아닙니다." };
+  }
+
+  const message = input.message.trim();
+  if (!message) return { ok: false, error: "견적 메시지를 입력해주세요." };
+
+  const payload = {
+    lesson_request_id: requestId,
+    instructor_id: instructor.id,
+    title: input.title?.trim() || `${instructor.display_name} 견적`,
+    message,
+    price:
+      input.price && Number.isFinite(Number(input.price))
+        ? Math.max(0, Math.round(Number(input.price)))
+        : null,
+    status: "sent",
+    sent_at: new Date().toISOString(),
+  };
+
+  const { data: existing } = await sb
+    .from("lesson_quotes")
+    .select("id")
+    .eq("lesson_request_id", requestId)
+    .eq("instructor_id", instructor.id)
+    .maybeSingle();
+
+  const query = existing?.id
+    ? sb.from("lesson_quotes").update(payload).eq("id", existing.id)
+    : sb.from("lesson_quotes").insert(payload);
+  const { error } = await query;
+  if (error) return { ok: false, error: error.message };
+
+  await sb
+    .from("lesson_requests")
+    .update({ status: "quoted" })
+    .eq("id", requestId);
   return { ok: true };
 }
 
@@ -905,6 +1546,7 @@ export async function adminUpdateReviewReply(
 
 export interface AdminInstructorInput {
   id?: string;
+  user_id?: string | null;
   slug: string;
   display_name: string;
   profile_image?: string;
@@ -947,7 +1589,7 @@ export async function adminSaveInstructor(input: AdminInstructorInput) {
     return { ok: false, error: "프로명과 지역은 필수입니다." };
   }
 
-  const payload = {
+  const payload: Record<string, unknown> = {
     slug,
     display_name: input.display_name.trim(),
     profile_image: input.profile_image?.trim() ?? "",
@@ -970,6 +1612,7 @@ export async function adminSaveInstructor(input: AdminInstructorInput) {
     verification_status: input.verification_status ?? "pending",
     curriculum: input.curriculum ?? [],
   };
+  if (input.user_id !== undefined) payload.user_id = input.user_id;
 
   const query = input.id
     ? sb

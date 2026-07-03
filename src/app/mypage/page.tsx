@@ -4,10 +4,14 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
 import { getSupabaseServer } from "@/lib/supabase-server";
+import { ClaimBookingsButton } from "@/components/ClaimBookingsButton";
 import { LogoutButton } from "@/components/LogoutButton";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "마이페이지", robots: { index: false } };
+export const metadata: Metadata = {
+  title: "마이페이지",
+  robots: { index: false },
+};
 
 const STATUS_LABEL: Record<string, string> = {
   requested: "요청됨",
@@ -17,6 +21,7 @@ const STATUS_LABEL: Record<string, string> = {
   rejected: "거절",
   no_show: "노쇼",
 };
+const KAKAO_CHANNEL_URL = process.env.NEXT_PUBLIC_KAKAO_CHANNEL_URL;
 
 export default async function MyPage() {
   const profile = await getCurrentProfile();
@@ -27,18 +32,24 @@ export default async function MyPage() {
   const [{ data: bookings }, { data: favorites }] = await Promise.all([
     supabase
       .from("bookings")
-      .select("id, status, preferred_date, preferred_time, created_at, instructors(display_name, slug)")
+      .select(
+        "id, status, instructor_id, preferred_date, preferred_time, created_at, instructors(display_name, slug)",
+      )
       .eq("student_user_id", profile.id)
       .order("created_at", { ascending: false }),
     supabase
       .from("favorites")
-      .select("instructor_id, instructors(slug, display_name, profile_image, region, price_from)")
+      .select(
+        "instructor_id, instructors(slug, display_name, profile_image, region, price_from)",
+      )
       .eq("student_user_id", profile.id),
   ]);
 
   const bookingList = bookings ?? [];
   const favList = favorites ?? [];
-  const lessonCount = bookingList.filter((b: any) => b.status === "completed").length;
+  const lessonCount = bookingList.filter(
+    (b: any) => b.status === "completed",
+  ).length;
 
   return (
     <div className="container-page max-w-3xl py-8">
@@ -46,7 +57,13 @@ export default async function MyPage() {
       <div className="flex items-center gap-4">
         <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full bg-fairway-100">
           {profile.avatar_url ? (
-            <Image src={profile.avatar_url} alt="" fill sizes="56px" className="object-cover" />
+            <Image
+              src={profile.avatar_url}
+              alt=""
+              fill
+              sizes="56px"
+              className="object-cover"
+            />
           ) : (
             <span className="flex h-full w-full items-center justify-center text-lg font-black text-fairway-400">
               {(profile.nickname || profile.name || "회").slice(0, 1)}
@@ -57,7 +74,12 @@ export default async function MyPage() {
           <h1 className="text-lg font-black text-fairway-900">
             {profile.nickname || profile.name || "회원"}님
           </h1>
-          <p className="text-[13px] text-fairway-500">{profile.phone || "연락처 미등록"}</p>
+          <p className="text-[13px] text-fairway-500">
+            {profile.phone || "연락처 미등록"}
+          </p>
+          <p className="mt-0.5 text-[11px] font-bold text-gold-700">
+            {profile.role === "instructor" ? "프로 회원" : "일반 회원"}
+          </p>
         </div>
         <LogoutButton />
       </div>
@@ -69,31 +91,93 @@ export default async function MyPage() {
         <Metric label="찜한 프로" value={`${favList.length}명`} />
       </div>
 
-      <div className="mt-5 flex gap-2">
-        <Link href="/mypage/edit" className="btn-outline flex-1">정보 수정</Link>
-        <Link href="/pros" className="btn-primary flex-1">프로 찾기</Link>
+      <div className="mt-5 grid gap-2 sm:grid-cols-2">
+        <Link href="/mypage/edit" className="btn-outline flex-1">
+          정보 수정
+        </Link>
+        <Link href="/pros" className="btn-primary flex-1">
+          프로 찾기
+        </Link>
+        {profile.role === "instructor" && (
+          <Link
+            href="/pro/dashboard"
+            className="btn-outline flex-1 sm:col-span-2"
+          >
+            프로 대시보드
+          </Link>
+        )}
       </div>
+      {profile.phone && (
+        <div className="mt-3">
+          <ClaimBookingsButton />
+        </div>
+      )}
+
+      <section className="mt-5 rounded-lg border border-gold-200 bg-gold-50 p-4">
+        <p className="text-sm font-black text-fairway-900">
+          카카오톡 채널 알림
+        </p>
+        <p className="mt-1 text-[13px] leading-5 text-fairway-600">
+          {profile.kakao_channel_agreed
+            ? "카카오톡 알림 수신에 동의되어 있어요."
+            : "정보 수정에서 카카오톡 알림 수신에 동의할 수 있어요."}
+        </p>
+        {KAKAO_CHANNEL_URL ? (
+          <a
+            href={KAKAO_CHANNEL_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="btn-gold mt-3 inline-flex !min-h-9"
+          >
+            채널 추가
+          </a>
+        ) : (
+          <Link
+            href="/mypage/edit"
+            className="btn-outline mt-3 inline-flex !min-h-9"
+          >
+            알림 설정
+          </Link>
+        )}
+      </section>
 
       {/* 예약 내역 */}
       <section className="mt-8">
-        <h2 className="mb-3 text-base font-extrabold text-fairway-900">내 예약</h2>
+        <h2 className="mb-3 text-base font-extrabold text-fairway-900">
+          내 예약
+        </h2>
         {bookingList.length === 0 ? (
           <EmptyBox text="아직 예약 내역이 없어요." />
         ) : (
           <div className="space-y-2">
             {bookingList.map((b: any) => (
-              <div key={b.id} className="card flex items-center justify-between p-3">
+              <div
+                key={b.id}
+                className="card flex items-center justify-between gap-3 p-3"
+              >
                 <div>
                   <div className="text-sm font-bold text-fairway-900">
                     {b.instructors?.display_name ?? "프로"}
                   </div>
                   <div className="text-[13px] text-fairway-500">
-                    {b.preferred_date ? `${b.preferred_date} ${b.preferred_time ?? ""}` : "일정 협의"}
+                    {b.preferred_date
+                      ? `${b.preferred_date} ${b.preferred_time ?? ""}`
+                      : "일정 협의"}
                   </div>
                 </div>
-                <span className="rounded-full bg-fairway-50 px-2.5 py-1 text-[11px] font-bold text-fairway-700">
-                  {STATUS_LABEL[b.status] ?? b.status}
-                </span>
+                <div className="flex shrink-0 flex-col items-end gap-1.5">
+                  <span className="rounded-full bg-fairway-50 px-2.5 py-1 text-[11px] font-bold text-fairway-700">
+                    {STATUS_LABEL[b.status] ?? b.status}
+                  </span>
+                  {b.status === "completed" && b.instructors?.slug && (
+                    <Link
+                      href={`/pros/${b.instructors.slug}#reviews`}
+                      className="text-[12px] font-bold text-gold-700 hover:underline"
+                    >
+                      후기 작성
+                    </Link>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -102,21 +186,37 @@ export default async function MyPage() {
 
       {/* 찜한 프로 */}
       <section className="mt-8">
-        <h2 className="mb-3 text-base font-extrabold text-fairway-900">찜한 프로</h2>
+        <h2 className="mb-3 text-base font-extrabold text-fairway-900">
+          찜한 프로
+        </h2>
         {favList.length === 0 ? (
           <EmptyBox text="찜한 프로가 없어요. 마음에 드는 프로를 ♥ 해보세요." />
         ) : (
           <div className="grid gap-2 sm:grid-cols-2">
             {favList.map((f: any) => (
-              <Link key={f.instructor_id} href={`/pros/${f.instructors?.slug}`} className="card flex items-center gap-3 p-3 hover:border-fairway-200">
+              <Link
+                key={f.instructor_id}
+                href={`/pros/${f.instructors?.slug}`}
+                className="card flex items-center gap-3 p-3 hover:border-fairway-200"
+              >
                 <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-fairway-100">
                   {f.instructors?.profile_image && (
-                    <Image src={f.instructors.profile_image} alt="" fill sizes="48px" className="object-cover" />
+                    <Image
+                      src={f.instructors.profile_image}
+                      alt=""
+                      fill
+                      sizes="48px"
+                      className="object-cover"
+                    />
                   )}
                 </div>
                 <div className="min-w-0">
-                  <div className="truncate text-sm font-bold text-fairway-900">{f.instructors?.display_name}</div>
-                  <div className="text-[11px] text-fairway-500">{f.instructors?.region}</div>
+                  <div className="truncate text-sm font-bold text-fairway-900">
+                    {f.instructors?.display_name}
+                  </div>
+                  <div className="text-[11px] text-fairway-500">
+                    {f.instructors?.region}
+                  </div>
                 </div>
               </Link>
             ))}
@@ -137,5 +237,9 @@ function Metric({ label, value }: { label: string; value: string }) {
 }
 
 function EmptyBox({ text }: { text: string }) {
-  return <div className="card p-8 text-center text-[13px] text-fairway-500">{text}</div>;
+  return (
+    <div className="card p-8 text-center text-[13px] text-fairway-500">
+      {text}
+    </div>
+  );
 }

@@ -2,12 +2,20 @@
 
 import { useState } from "react";
 
-export function ReviewForm({ instructorId }: { instructorId: string }) {
+export function ReviewForm({
+  instructorId,
+  defaultName = "",
+  defaultPhone = "",
+}: {
+  instructorId: string;
+  defaultName?: string | null;
+  defaultPhone?: string | null;
+}) {
   const [open, setOpen] = useState(false);
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [name, setName] = useState(defaultName ?? "");
+  const [phone, setPhone] = useState(defaultPhone ?? "");
   const [recommendFor, setRecommendFor] = useState("");
   const [content, setContent] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">(
@@ -81,8 +89,8 @@ export function ReviewForm({ instructorId }: { instructorId: string }) {
       className="rounded-lg border border-fairway-200 bg-white p-5"
     >
       <div className="mb-4 rounded-lg bg-fairway-50 px-3 py-2 text-sm text-fairway-600">
-        완료된 예약 연락처가 확인된 후기만 접수됩니다. 운영자 확인 후 노출되며,
-        이름은 자동으로 마스킹됩니다.
+        완료된 예약이 확인된 후기만 접수됩니다. 로그인 회원은 내 예약과 먼저
+        연결되고, 운영자 확인 후 노출됩니다.
       </div>
 
       <div className="mb-4">

@@ -1,6 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getFeaturedInstructors, getReviews } from "@/lib/data";
+import {
+  getFeaturedInstructors,
+  getRecommendedInstructorsForMember,
+  getReviews,
+} from "@/lib/data";
+import { getCurrentProfile } from "@/lib/auth";
 import { GOLF_INFO_CATEGORIES, getSponsorBanners } from "@/lib/golf-info";
 import { getPortfolioForSlug } from "@/lib/portfolio";
 import { SEED_INSTRUCTORS, seedReviewsFor } from "@/lib/seed-data";
@@ -79,7 +84,10 @@ type HomeReview = ReviewSummary & {
 };
 
 export default async function HomePage() {
-  const fetchedFeatured = await getFeaturedInstructors(3);
+  const currentProfile = await getCurrentProfile().catch(() => null);
+  const fetchedFeatured = currentProfile
+    ? await getRecommendedInstructorsForMember(currentProfile.id, 3)
+    : await getFeaturedInstructors(3);
   const usingSeedFeatured = fetchedFeatured.length === 0;
   const featured = usingSeedFeatured
     ? SEED_INSTRUCTORS.filter((pro) => pro.is_featured && pro.is_active).slice(
@@ -202,7 +210,7 @@ export default async function HomePage() {
           <div>
             <p className="text-[12px] font-bold text-gold-700">추천 프로</p>
             <h2 className="mt-0.5 text-lg font-extrabold text-fairway-900 sm:text-xl">
-              바로 상담 가능
+              {currentProfile ? "회원님 맞춤 추천" : "바로 상담 가능"}
             </h2>
             <p className="mt-1 text-[13px] text-fairway-600 sm:text-sm">
               후기·가격·일정을 확인하세요.

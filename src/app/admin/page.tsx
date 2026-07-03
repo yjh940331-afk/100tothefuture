@@ -5,6 +5,7 @@ import {
   adminListBookings,
   adminListReviews,
   adminListInstructors,
+  adminListInstructorApplications,
   isDbConfigured,
 } from "@/lib/data";
 import { AdminLogin } from "@/components/admin/AdminLogin";
@@ -24,18 +25,21 @@ export default async function AdminPage() {
     return <AdminLogin configured={Boolean(adminPassword())} />;
   }
 
-  const [lessonRequests, bookings, reviews, instructors] = await Promise.all([
-    adminListLessonRequests(),
-    adminListBookings(),
-    adminListReviews(),
-    adminListInstructors(),
-  ]);
+  const [lessonRequests, bookings, reviews, applications, instructors] =
+    await Promise.all([
+      adminListLessonRequests(),
+      adminListBookings(),
+      adminListReviews(),
+      adminListInstructorApplications(),
+      adminListInstructors(),
+    ]);
 
   return (
     <AdminDashboard
       lessonRequests={lessonRequests}
       bookings={bookings}
       reviews={reviews as any}
+      applications={applications}
       instructors={instructors}
       demo={!isDbConfigured()}
     />
