@@ -16,6 +16,8 @@ export function LoginPanel() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "kakao",
       options: {
+        // 카카오 이메일은 비즈앱 전환 전이라 미사용 → 닉네임·프로필사진만 요청 (KOE205 방지)
+        scopes: "profile_nickname profile_image",
         redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
       },
     });
