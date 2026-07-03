@@ -4,14 +4,15 @@ import { getFeaturedInstructors, getReviews } from "@/lib/data";
 import { GOLF_INFO_CATEGORIES, getSponsorBanners } from "@/lib/golf-info";
 import { getPortfolioForSlug } from "@/lib/portfolio";
 import { SEED_INSTRUCTORS, seedReviewsFor } from "@/lib/seed-data";
+import { GOLF_IMAGES } from "@/lib/golf-images";
 import type { Instructor, ReviewSummary } from "@/lib/types";
 import { DemoBanner } from "@/components/DemoBanner";
 import { Break100Carousel } from "@/components/Break100Carousel";
 import { CompactAdSlider } from "@/components/CompactAdSlider";
 import { InstructorCard } from "@/components/InstructorCard";
 
-const HERO_IMAGE =
-  "https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&w=2200&q=75";
+const HERO_IMAGE = GOLF_IMAGES.hero.home;
+const CTA_IMAGE = GOLF_IMAGES.hero.cta;
 const SHORTCUTS = [
   {
     label: "견적요청",
@@ -104,6 +105,12 @@ export default async function HomePage() {
     .sort(
       (a, b) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    )
+    .filter(
+      (review, index, reviews) =>
+        reviews.findIndex(
+          (item) => item.instructor.id === review.instructor.id,
+        ) === index,
     )
     .slice(0, 3);
 
@@ -339,7 +346,7 @@ export default async function HomePage() {
         <div className="motion-fade-up relative overflow-hidden rounded-lg bg-fairway-900 p-8 text-center text-white sm:p-10">
           <div
             className="motion-hero-drift absolute inset-0 bg-cover bg-center opacity-20"
-            style={{ backgroundImage: `url(${HERO_IMAGE})` }}
+            style={{ backgroundImage: `url(${CTA_IMAGE})` }}
             aria-hidden
           />
           <div className="relative">
@@ -402,8 +409,8 @@ function profileImageFor(pro: Instructor) {
   return pro.profile_image || pro.gallery[0] || HERO_IMAGE;
 }
 
-function coverImageFor(pro: Instructor) {
-  return pro.gallery[0] || pro.profile_image || HERO_IMAGE;
+function reviewImageFor(pro: Instructor) {
+  return pro.gallery[1] || pro.gallery[0] || pro.profile_image || HERO_IMAGE;
 }
 
 function PortfolioPreviewSection({
@@ -563,7 +570,7 @@ function ReviewPreviewSection({ reviews }: { reviews: HomeReview[] }) {
                   </div>
                   <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md bg-fairway-100">
                     <Image
-                      src={coverImageFor(review.instructor)}
+                      src={reviewImageFor(review.instructor)}
                       alt={review.instructor.display_name}
                       fill
                       sizes="56px"

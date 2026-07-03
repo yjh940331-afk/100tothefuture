@@ -42,7 +42,7 @@ export const PORTFOLIO_BY_SLUG: Record<string, PortfolioItem[]> = {
       eyebrow: "프로골퍼 이현",
       description:
         "필드 스윙, 레슨 현장, 골프 라이프를 확인할 수 있는 공식 인스타그램.",
-      image: "/pros/lee-hyun-hero.jpg",
+      image: "/pros/lee-hyun-profile.jpg",
       imageMode: "thumbnail",
       href: "https://www.instagram.com/leehyun_golf/",
       platform: "Instagram",
@@ -53,7 +53,7 @@ export const PORTFOLIO_BY_SLUG: Record<string, PortfolioItem[]> = {
       eyebrow: "Golf Wear · Brand Portfolio",
       description:
         "이현 프로님의 필드 스타일과 브랜드 협업 활동을 함께 보여주는 골프웨어 포트폴리오.",
-      image: "/pros/lee-hyun-hero.jpg",
+      image: "/pros/lee-hyun-swing.jpg",
       href: "https://www.instagram.com/leehyun_golf/",
       platform: "Brand",
       type: "브랜드 협업",

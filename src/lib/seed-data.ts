@@ -1,11 +1,9 @@
 import type { Instructor, ReviewSummary } from "./types";
+import { GOLF_IMAGES } from "./golf-images";
 
 // Supabase 환경변수가 없을 때 사용하는 시드(예시) 데이터.
 // DB 연결 전에도 사이트가 꽉 차 보이도록 하는 용도이며,
 // supabase/seed.sql 과 내용이 대응됩니다. (실서비스 전 실제 데이터로 교체)
-
-const img = (id: string) =>
-  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=1200&q=70`;
 
 export const SEED_REVIEWS: ReviewSummary[] = [
   {
@@ -176,12 +174,8 @@ export const SEED_INSTRUCTORS: Instructor[] = [
     id: "kim-pro",
     slug: "kim-pro",
     display_name: "김도현 프로",
-    profile_image: img("photo-1535131749006-b7f58c99034b"),
-    gallery: [
-      img("photo-1587174486073-ae5e5cff23aa"),
-      img("photo-1592919505780-303950717480"),
-      img("photo-1500932334442-8761ee4810a7"),
-    ],
+    profile_image: GOLF_IMAGES.pros.kim.profile,
+    gallery: [...GOLF_IMAGES.pros.kim.gallery],
     intro_video_url: null,
     bio: "100타 탈출 전문 · 영상분석 기반 교정",
     about:
@@ -264,11 +258,8 @@ export const SEED_INSTRUCTORS: Instructor[] = [
     id: "park-pro",
     slug: "park-pro",
     display_name: "박서연 프로",
-    profile_image: img("photo-1611374243147-44a702c2d44c"),
-    gallery: [
-      img("photo-1535131749006-b7f58c99034b"),
-      img("photo-1500932334442-8761ee4810a7"),
-    ],
+    profile_image: GOLF_IMAGES.pros.park.profile,
+    gallery: [...GOLF_IMAGES.pros.park.gallery],
     intro_video_url: null,
     bio: "여성·입문자 전문 · 친절 설명형",
     about:
@@ -342,11 +333,8 @@ export const SEED_INSTRUCTORS: Instructor[] = [
     id: "lee-pro",
     slug: "lee-pro",
     display_name: "이준혁 프로",
-    profile_image: img("photo-1592919505780-303950717480"),
-    gallery: [
-      img("photo-1587174486073-ae5e5cff23aa"),
-      img("photo-1500932334442-8761ee4810a7"),
-    ],
+    profile_image: GOLF_IMAGES.pros.leeJoon.profile,
+    gallery: [...GOLF_IMAGES.pros.leeJoon.gallery],
     intro_video_url: null,
     bio: "필드레슨 · 라운드 운영 전문",
     about:
@@ -411,11 +399,8 @@ export const SEED_INSTRUCTORS: Instructor[] = [
     id: "jung-pro",
     slug: "jung-pro",
     display_name: "정민아 프로",
-    profile_image: img("photo-1500932334442-8761ee4810a7"),
-    gallery: [
-      img("photo-1587174486073-ae5e5cff23aa"),
-      img("photo-1592919505780-303950717480"),
-    ],
+    profile_image: GOLF_IMAGES.pros.jung.profile,
+    gallery: [...GOLF_IMAGES.pros.jung.gallery],
     intro_video_url: null,
     bio: "숏게임·퍼팅 스페셜리스트",
     about:

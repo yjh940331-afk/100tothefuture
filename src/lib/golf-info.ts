@@ -1,3 +1,5 @@
+import { GOLF_IMAGES } from "./golf-images";
+
 export type GolfInfoCategory = {
   slug: string;
   title: string;
@@ -24,9 +26,6 @@ export type SponsorBanner = {
   placements: string[];
 };
 
-const unsplash = (id: string) =>
-  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=1400&q=75`;
-
 export const GOLF_INFO_CATEGORIES: GolfInfoCategory[] = [
   {
     slug: "wear",
@@ -34,7 +33,7 @@ export const GOLF_INFO_CATEGORIES: GolfInfoCategory[] = [
     eyebrow: "Style",
     description:
       "필드와 연습장에서 바로 참고할 수 있는 골프웨어, 브랜드 협업, 계절별 스타일 가이드.",
-    image: "/pros/lee-hyun-hero.jpg",
+    image: GOLF_IMAGES.info.wear,
     highlights: ["프로 착장", "브랜드 협업", "계절별 레이어링"],
     articles: [
       {
@@ -63,7 +62,7 @@ export const GOLF_INFO_CATEGORIES: GolfInfoCategory[] = [
     eyebrow: "Gear",
     description:
       "클럽, 볼, 장갑, 거리측정기처럼 실력과 예산에 맞춰 고르면 좋은 장비 정보.",
-    image: unsplash("photo-1592919505780-303950717480"),
+    image: GOLF_IMAGES.info.equipment,
     highlights: ["클럽 선택", "입문 장비", "피팅 기준"],
     articles: [
       {
@@ -91,7 +90,7 @@ export const GOLF_INFO_CATEGORIES: GolfInfoCategory[] = [
     eyebrow: "Story",
     description:
       "프로 인터뷰, 레슨 현장, 브랜드 캠페인, 골프 라이프스타일을 담는 콘텐츠.",
-    image: unsplash("photo-1535131749006-b7f58c99034b"),
+    image: GOLF_IMAGES.info.story,
     highlights: ["프로 인터뷰", "레슨 현장", "브랜드 콘텐츠"],
     articles: [
       {
@@ -120,7 +119,7 @@ export const GOLF_INFO_CATEGORIES: GolfInfoCategory[] = [
     eyebrow: "Wiki",
     description:
       "처음 골프를 시작하는 사람이 헷갈리는 용어, 매너, 룰을 짧게 정리한 지식 카드.",
-    image: unsplash("photo-1587174486073-ae5e5cff23aa"),
+    image: GOLF_IMAGES.info.wiki,
     highlights: ["골프 용어", "필드 매너", "기본 룰"],
     articles: [
       {
@@ -158,7 +157,7 @@ export const SPONSOR_BANNERS: SponsorBanner[] = [
     eyebrow: "Equipment Ad",
     description:
       "드라이버, 아이언, 웨지 피팅 업체를 위한 골프장비 콘텐츠 배너 슬롯.",
-    image: unsplash("photo-1592919505780-303950717480"),
+    image: GOLF_IMAGES.sponsor.gearFitting,
     href: "mailto:contact@100tothefuture.com?subject=골프장비 광고 문의",
     cta: "광고 문의",
     tags: ["클럽", "피팅", "장비"],
@@ -170,7 +169,7 @@ export const SPONSOR_BANNERS: SponsorBanner[] = [
     eyebrow: "Sponsor Slot",
     description:
       "볼, 장갑, 거리측정기처럼 라운드 전 구매가 많은 상품을 자연스럽게 노출합니다.",
-    image: unsplash("photo-1587174486073-ae5e5cff23aa"),
+    image: GOLF_IMAGES.sponsor.fieldPackage,
     href: "mailto:contact@100tothefuture.com?subject=골프용품 스폰서 문의",
     cta: "스폰서 문의",
     tags: ["볼", "장갑", "거리측정기"],
@@ -182,7 +181,7 @@ export const SPONSOR_BANNERS: SponsorBanner[] = [
     eyebrow: "Brand Ad",
     description:
       "프로 착장, 시즌 룩북, 레슨 현장 콘텐츠와 연결되는 웨어 브랜드 배너.",
-    image: "/pros/lee-hyun-hero.jpg",
+    image: GOLF_IMAGES.sponsor.wearCampaign,
     href: "mailto:contact@100tothefuture.com?subject=골프웨어 광고 문의",
     cta: "캠페인 문의",
     tags: ["웨어", "착장", "브랜드"],

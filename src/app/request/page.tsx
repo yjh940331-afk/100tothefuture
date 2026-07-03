@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { pageSeo } from "@/lib/seo";
+import { GOLF_IMAGES } from "@/lib/golf-images";
 import { Break100Carousel } from "@/components/Break100Carousel";
 import { QuoteRequestForm } from "@/components/QuoteRequestForm";
 
@@ -17,8 +18,7 @@ export const metadata: Metadata = pageSeo({
   ],
 });
 
-const HERO_IMAGE =
-  "https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&w=1800&q=75";
+const HERO_IMAGE = GOLF_IMAGES.hero.request;
 
 type SP = Record<string, string | string[] | undefined>;
 
