@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { Instructor } from "@/lib/types";
 import { REGIONS } from "@/lib/constants";
+import { CONTACT_METHODS, contactMemo } from "@/lib/contact";
 
 const priceLabel = (price: number) =>
   price > 0 ? `${price.toLocaleString("ko-KR")}원` : "상담 후 안내";
@@ -12,6 +13,8 @@ export function BookingForm({ pro }: { pro: Instructor }) {
   const [form, setForm] = useState({
     student_name: "",
     student_phone: "",
+    contact_method: "sms",
+    contact_detail: "",
     preferred_date: "",
     preferred_time: "",
     region: pro.region,
@@ -48,12 +51,21 @@ export function BookingForm({ pro }: { pro: Instructor }) {
     setStatus("loading");
     setError("");
     try {
+      const { contact_method, contact_detail, ...payload } = form;
+      const contactGoal = [
+        contactMemo(contact_method, contact_detail),
+        form.goal.trim(),
+      ]
+        .filter(Boolean)
+        .join("\n");
+
       const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           instructor_id: pro.id,
-          ...form,
+          ...payload,
+          goal: contactGoal,
           privacy_agreed: privacy,
           third_party_agreed: thirdParty,
         }),
@@ -161,6 +173,30 @@ export function BookingForm({ pro }: { pro: Instructor }) {
             required
           />
         </div>
+        <div>
+          <label className="label">연락 희망 방식</label>
+          <select
+            className="input"
+            value={form.contact_method}
+            onChange={(event) => set("contact_method", event.target.value)}
+          >
+            {CONTACT_METHODS.map((method) => (
+              <option key={method.value} value={method.value}>
+                {method.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="label">카카오/오픈채팅</label>
+          <input
+            className="input"
+            value={form.contact_detail}
+            onChange={(event) => set("contact_detail", event.target.value)}
+            placeholder="선택 입력"
+            maxLength={120}
+          />
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -232,11 +268,11 @@ export function BookingForm({ pro }: { pro: Instructor }) {
           className="input min-h-28"
           value={form.goal}
           onChange={(event) => set("goal", event.target.value)}
-          maxLength={500}
+          maxLength={360}
           placeholder="예: 평균 108타, 드라이버 OB가 많아서 3개월 안에 100타를 깨고 싶습니다."
         />
         <div className="mt-1 text-right text-xs text-fairway-400">
-          {form.goal.length}/500
+          {form.goal.length}/360
         </div>
       </div>
 

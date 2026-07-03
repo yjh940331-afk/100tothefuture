@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { LESSON_PLACES, REGIONS, SPECIALTIES } from "@/lib/constants";
+import { CONTACT_METHODS, contactMemo } from "@/lib/contact";
 
 const SKILL_LEVELS = [
   "처음 시작",
@@ -65,6 +66,8 @@ const DIAGNOSIS_OPTIONS = [
 type FormState = {
   customer_name: string;
   customer_phone: string;
+  contact_method: string;
+  contact_detail: string;
   diagnoses: string[];
   region: string;
   lesson_places: string[];
@@ -83,6 +86,8 @@ type FormState = {
 const initialForm: FormState = {
   customer_name: "",
   customer_phone: "",
+  contact_method: "sms",
+  contact_detail: "",
   diagnoses: [],
   region: REGIONS[0],
   lesson_places: [],
@@ -188,7 +193,7 @@ export function QuoteRequestForm({
 
     setStatus("loading");
     try {
-      const { diagnoses, ...payload } = form;
+      const { diagnoses, contact_method, contact_detail, ...payload } = form;
       const diagnosisLabels = diagnoses
         .map((key) => DIAGNOSIS_OPTIONS.find((item) => item.key === key)?.title)
         .filter(Boolean);
@@ -196,6 +201,7 @@ export function QuoteRequestForm({
         diagnosisLabels.length
           ? `진단 유형: ${diagnosisLabels.join(", ")}`
           : "",
+        contactMemo(contact_method, contact_detail),
         form.memo.trim(),
       ]
         .filter(Boolean)
@@ -354,6 +360,28 @@ export function QuoteRequestForm({
             autoComplete="tel"
             inputMode="tel"
             required
+          />
+        </Field>
+        <Field label="연락 희망 방식">
+          <select
+            className="input"
+            value={form.contact_method}
+            onChange={(event) => set("contact_method", event.target.value)}
+          >
+            {CONTACT_METHODS.map((method) => (
+              <option key={method.value} value={method.value}>
+                {method.label}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="카카오/오픈채팅">
+          <input
+            className="input"
+            value={form.contact_detail}
+            onChange={(event) => set("contact_detail", event.target.value)}
+            placeholder="선택 입력"
+            maxLength={120}
           />
         </Field>
         <Field label="레슨 희망 지역 *">

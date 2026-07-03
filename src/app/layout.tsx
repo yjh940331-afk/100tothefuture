@@ -41,6 +41,7 @@ export const metadata: Metadata = {
     images: [
       {
         url: absoluteUrl(DEFAULT_OG_IMAGE),
+        type: "image/jpeg",
         width: 1200,
         height: 630,
         alt: "100 to the Future 골프 레슨 매칭",

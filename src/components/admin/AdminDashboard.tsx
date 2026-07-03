@@ -641,7 +641,7 @@ export function AdminDashboard({
 
                   {booking.goal && (
                     <div className="mt-4 rounded-lg bg-fairway-50 p-3 text-sm text-fairway-700">
-                      <b>고민/목표</b>
+                      <b>고민/목표/연락</b>
                       <p className="mt-1 leading-6">{booking.goal}</p>
                     </div>
                   )}
