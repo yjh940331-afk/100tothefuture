@@ -1,29 +1,118 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { PointerEvent } from "react";
 import type { SponsorBanner } from "@/lib/golf-info";
+
+const AUTO_DELAY_MS = 4200;
+const SWIPE_THRESHOLD = 38;
 
 export function CompactAdSlider({ banners }: { banners: SponsorBanner[] }) {
   const [active, setActive] = useState(0);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const dragRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    moved: boolean;
+  } | null>(null);
+  const suppressClickRef = useRef(false);
+
+  const goTo = (index: number) => {
+    setActive((index + banners.length) % banners.length);
+    setDragOffset(0);
+  };
+
+  const next = () => goTo(active + 1);
+  const prev = () => goTo(active - 1);
 
   useEffect(() => {
-    if (banners.length <= 1) return;
+    if (banners.length <= 1 || paused) return;
 
     const timer = window.setInterval(() => {
       setActive((index) => (index + 1) % banners.length);
-    }, 4200);
+    }, AUTO_DELAY_MS);
 
     return () => window.clearInterval(timer);
-  }, [banners.length]);
+  }, [active, banners.length, paused]);
+
+  function onPointerDown(event: PointerEvent<HTMLDivElement>) {
+    if (banners.length <= 1) return;
+    dragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      moved: false,
+    };
+    setPaused(true);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function onPointerMove(event: PointerEvent<HTMLDivElement>) {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+
+    const deltaX = event.clientX - drag.startX;
+    const deltaY = event.clientY - drag.startY;
+    if (Math.abs(deltaX) > 6 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      drag.moved = true;
+      suppressClickRef.current = true;
+      setDragOffset(deltaX);
+    }
+  }
+
+  function finishDrag(event: PointerEvent<HTMLDivElement>) {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+
+    const deltaX = event.clientX - drag.startX;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    dragRef.current = null;
+    setPaused(false);
+    setDragOffset(0);
+
+    window.setTimeout(() => {
+      suppressClickRef.current = false;
+    }, 250);
+    if (!drag.moved || Math.abs(deltaX) < SWIPE_THRESHOLD) return;
+    if (deltaX < 0) next();
+    else prev();
+  }
 
   if (banners.length === 0) return null;
 
   return (
-    <div className="relative overflow-hidden rounded-lg shadow-card">
+    <div
+      className="relative overflow-hidden rounded-lg shadow-card"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
+      onClickCapture={(event) => {
+        if (!suppressClickRef.current) return;
+        event.preventDefault();
+        event.stopPropagation();
+        suppressClickRef.current = false;
+      }}
+    >
       <div
-        className="flex transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)]"
-        style={{ transform: `translateX(-${active * 100}%)` }}
+        className={`flex ${
+          dragRef.current
+            ? "transition-none"
+            : "transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)]"
+        } cursor-grab active:cursor-grabbing`}
+        style={{
+          transform: `translateX(calc(-${active * 100}% + ${dragOffset}px))`,
+          touchAction: "pan-y",
+        }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={finishDrag}
+        onPointerCancel={finishDrag}
       >
         {banners.map((banner, index) => (
           <a
@@ -70,21 +159,73 @@ export function CompactAdSlider({ banners }: { banners: SponsorBanner[] }) {
       </div>
 
       {banners.length > 1 && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-2 flex justify-center gap-1.5">
-          {banners.map((banner, index) => (
-            <button
-              key={banner.id}
-              type="button"
-              aria-label={`${banner.title} 보기`}
-              aria-current={active === index}
-              onClick={() => setActive(index)}
-              className={`pointer-events-auto h-1.5 rounded-full transition-all ${
-                active === index ? "w-5 bg-gold-300" : "w-1.5 bg-white/60"
-              }`}
-            />
-          ))}
-        </div>
+        <>
+          <button
+            type="button"
+            aria-label="이전 광고 보기"
+            onClick={prev}
+            className="absolute left-1.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-fairway-950/45 text-white backdrop-blur transition hover:bg-fairway-950/70 sm:left-2 sm:h-8 sm:w-8"
+          >
+            <ChevronLeft />
+          </button>
+          <button
+            type="button"
+            aria-label="다음 광고 보기"
+            onClick={next}
+            className="absolute right-1.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-fairway-950/45 text-white backdrop-blur transition hover:bg-fairway-950/70 sm:right-2 sm:h-8 sm:w-8"
+          >
+            <ChevronRight />
+          </button>
+          <div className="pointer-events-none absolute inset-x-0 bottom-2 flex justify-center gap-1.5">
+            {banners.map((banner, index) => (
+              <button
+                key={banner.id}
+                type="button"
+                aria-label={`${banner.title} 보기`}
+                aria-current={active === index}
+                onClick={() => goTo(index)}
+                className={`pointer-events-auto h-1.5 rounded-full transition-all ${
+                  active === index ? "w-5 bg-gold-300" : "w-1.5 bg-white/60"
+                }`}
+              />
+            ))}
+          </div>
+        </>
       )}
     </div>
+  );
+}
+
+function ChevronLeft() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M15 6l-6 6 6 6" />
+    </svg>
+  );
+}
+
+function ChevronRight() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M9 6l6 6-6 6" />
+    </svg>
   );
 }
