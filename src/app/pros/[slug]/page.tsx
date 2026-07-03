@@ -18,6 +18,7 @@ import { getCurrentProfile } from "@/lib/auth";
 import { getSupabaseServer } from "@/lib/supabase-server";
 import {
   DEFAULT_OG_IMAGE,
+  LEE_HYUN_OG_IMAGE,
   SITE_NAME,
   absoluteUrl,
   pageSeo,
@@ -28,6 +29,14 @@ const won = (n: number) =>
   n > 0 ? `${n.toLocaleString("ko-KR")}원` : "상담 후 안내";
 const wonFrom = (n: number) =>
   n > 0 ? `${n.toLocaleString("ko-KR")}원~` : "상담 후 안내";
+const ogImageForPro = (pro: {
+  slug: string;
+  gallery: string[];
+  profile_image: string;
+}) =>
+  pro.slug === "lee-hyun"
+    ? LEE_HYUN_OG_IMAGE
+    : pro.gallery[0] || pro.profile_image;
 
 export async function generateMetadata({
   params,
@@ -51,7 +60,7 @@ export async function generateMetadata({
     title,
     description: `${pro.bio}.${price}${rating} ${pro.specialties.join(", ")} 전문. 약력, 자격, 후기와 가능 시간을 확인하고 상담·예약하세요.`,
     path: `/pros/${pro.slug}`,
-    image: pro.profile_image || pro.gallery[0],
+    image: ogImageForPro(pro),
     imageAlt: `${pro.display_name} 골프 레슨 프로필`,
     keywords: [
       `${pro.region} 골프레슨`,
@@ -134,7 +143,7 @@ export default async function ProDetailPage({
     "@context": "https://schema.org",
     "@type": "Person",
     name: pro.display_name,
-    image: absoluteUrl(pro.profile_image || pro.gallery[0] || DEFAULT_OG_IMAGE),
+    image: absoluteUrl(ogImageForPro(pro) || DEFAULT_OG_IMAGE),
     description: truncateMeta(pro.bio, 180),
     jobTitle: "골프 레슨 프로",
     url: absoluteUrl(`/pros/${pro.slug}`),
@@ -155,7 +164,7 @@ export default async function ProDetailPage({
     serviceType: "Golf lesson",
     description: truncateMeta(pro.about || pro.bio, 220),
     url: absoluteUrl(`/pros/${pro.slug}`),
-    image: absoluteUrl(pro.profile_image || pro.gallery[0] || DEFAULT_OG_IMAGE),
+    image: absoluteUrl(ogImageForPro(pro) || DEFAULT_OG_IMAGE),
     provider: {
       "@type": "Person",
       name: pro.display_name,

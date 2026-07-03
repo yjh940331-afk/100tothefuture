@@ -5,7 +5,8 @@ export const SITE_NAME = "100 to the Future";
 export const DEFAULT_TITLE = "100 to the Future | 골프 레슨 매칭 플랫폼";
 export const DEFAULT_DESCRIPTION =
   "지역, 목표, 시간, 예산에 맞는 검증 골프 레슨 프로를 비교하고 상담·예약할 수 있는 골프 레슨 매칭 플랫폼.";
-export const DEFAULT_OG_IMAGE = "/og-image-v2.jpg";
+export const LEE_HYUN_OG_IMAGE = "/pros/lee-hyun-og.jpg";
+export const DEFAULT_OG_IMAGE = LEE_HYUN_OG_IMAGE;
 
 export const SEO_KEYWORDS = [
   "골프레슨",

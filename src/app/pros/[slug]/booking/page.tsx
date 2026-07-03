@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getInstructorBySlug } from "@/lib/data";
 import { getCurrentProfile } from "@/lib/auth";
-import { pageSeo } from "@/lib/seo";
+import { LEE_HYUN_OG_IMAGE, pageSeo } from "@/lib/seo";
 import { BookingForm } from "@/components/BookingForm";
 import { LoginPrompt } from "@/components/LoginPrompt";
 import { DemoBanner } from "@/components/DemoBanner";
@@ -21,7 +21,10 @@ export async function generateMetadata({
     title: `${pro.display_name} 상담·예약 요청`,
     description: `${pro.display_name} 프로에게 원하는 일정과 골프 고민을 남기고 상담·예약을 요청하세요.`,
     path: `/pros/${pro.slug}/booking`,
-    image: pro.profile_image || pro.gallery[0],
+    image:
+      pro.slug === "lee-hyun"
+        ? LEE_HYUN_OG_IMAGE
+        : pro.gallery[0] || pro.profile_image,
     imageAlt: `${pro.display_name} 상담·예약`,
     keywords: [
       `${pro.display_name} 예약`,
