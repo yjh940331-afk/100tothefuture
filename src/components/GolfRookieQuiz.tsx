@@ -24,6 +24,11 @@ type ResultTier = {
   tone: string;
 };
 
+type GolfRookieQuizProps = {
+  sharePath?: string;
+  showStandaloneLink?: boolean;
+};
+
 const QUESTIONS: QuizQuestion[] = [
   {
     prompt: "티샷이 숲으로 갔고 공이 안 보입니다. 첫 반응은?",
@@ -231,7 +236,10 @@ const RESULT_TIERS: ResultTier[] = [
   },
 ];
 
-export function GolfRookieQuiz() {
+export function GolfRookieQuiz({
+  sharePath = "/quiz",
+  showStandaloneLink = true,
+}: GolfRookieQuizProps) {
   const [selected, setSelected] = useState<(number | null)[]>(() =>
     emptyAnswers(),
   );
@@ -279,7 +287,7 @@ export function GolfRookieQuiz() {
   }
 
   async function shareText() {
-    const payload = buildSharePayload(score, tier);
+    const payload = buildSharePayload(score, tier, sharePath);
 
     if (navigator.share) {
       try {
@@ -298,7 +306,7 @@ export function GolfRookieQuiz() {
   }
 
   async function copyResult() {
-    const payload = buildSharePayload(score, tier);
+    const payload = buildSharePayload(score, tier, sharePath);
     await copyToClipboard(`${payload.text}\n${payload.url}`);
   }
 
@@ -367,6 +375,15 @@ export function GolfRookieQuiz() {
             <p className="mt-1 max-w-xl text-[12px] leading-5 text-fairway-100">
               친구 점수 내고 바로 공유하기.
             </p>
+            {showStandaloneLink && (
+              <a
+                href="/quiz"
+                className="mt-2 inline-flex items-center gap-1 text-[11px] font-black text-gold-200 hover:underline"
+              >
+                퀴즈 페이지만 보기
+                <ArrowRightIcon />
+              </a>
+            )}
             <div className="mt-2 grid grid-cols-3 gap-1.5 lg:grid-cols-1">
               <QuizStat label="90+" value="고수" />
               <QuizStat label="80+" value="자랑" />
@@ -452,11 +469,14 @@ export function GolfRookieQuiz() {
                 <p className="text-[12px] font-black opacity-80">
                   골린이 판독 결과
                 </p>
-                <div className="mt-2 flex items-end gap-2">
-                  <span className="text-5xl font-black leading-none sm:text-6xl">
-                    {score}
-                  </span>
-                  <span className="pb-1 text-lg font-black">점</span>
+                <div className="mt-2 flex items-end justify-between gap-3">
+                  <div className="flex items-end gap-2">
+                    <span className="text-5xl font-black leading-none sm:text-6xl">
+                      {score}
+                    </span>
+                    <span className="pb-1 text-lg font-black">점</span>
+                  </div>
+                  <ResultMascot score={score} />
                 </div>
                 <p className="mt-2 inline-flex rounded-full bg-white/18 px-2.5 py-1 text-[11px] font-black ring-1 ring-current/10">
                   {tier.badge}
@@ -556,11 +576,11 @@ function resultTierFor(score: number) {
   return RESULT_TIERS.find((tier) => score >= tier.min) ?? RESULT_TIERS.at(-1)!;
 }
 
-function buildSharePayload(score: number, tier: ResultTier) {
+function buildSharePayload(score: number, tier: ResultTier, sharePath: string) {
   const url =
     typeof window === "undefined"
-      ? "https://100tothefuture.com"
-      : window.location.href;
+      ? "https://100tothefuture.com/quiz"
+      : new URL(sharePath, window.location.origin).toString();
 
   return {
     title: "골린이 판독기 결과",
@@ -623,6 +643,7 @@ async function createResultImage(score: number, tier: ResultTier) {
   ctx.fillText(String(score), 96, 518);
   ctx.font = "900 52px Pretendard, sans-serif";
   ctx.fillText("점", 322, 512);
+  drawCanvasMascot(ctx, 725, 416, 1.15, mascotLabelFor(score));
 
   ctx.fillStyle = "#d4a94e";
   roundRect(ctx, 96, 568, 330, 58, 29);
@@ -718,6 +739,147 @@ function QuizStat({ label, value }: { label: string; value: string }) {
       </p>
     </div>
   );
+}
+
+function ResultMascot({ score }: { score: number }) {
+  const label = mascotLabelFor(score);
+
+  return (
+    <svg
+      viewBox="0 0 128 118"
+      className="h-20 w-24 shrink-0 drop-shadow-[0_8px_16px_rgba(12,30,21,0.18)] sm:h-24 sm:w-28"
+      aria-hidden
+    >
+      <path
+        d="M68 14h41c8 0 14 6 14 14v20c0 8-6 14-14 14H88l-13 13v-13h-7c-8 0-14-6-14-14V28c0-8 6-14 14-14z"
+        fill="#fff8e8"
+        stroke="#d4a94e"
+        strokeWidth="3"
+      />
+      <text
+        x="89"
+        y="43"
+        textAnchor="middle"
+        fontSize="14"
+        fontWeight="900"
+        fill="#183526"
+      >
+        {label}
+      </text>
+      <path
+        d="M33 24c-8 8-11 19-9 32 3 19 19 34 39 34s36-15 39-34c2-13-1-24-9-32-11 6-21 9-30 9s-19-3-30-9z"
+        fill="#fffaf0"
+        stroke="#183526"
+        strokeWidth="3"
+      />
+      <path
+        d="M34 23c9-11 47-11 58 0-10 7-20 11-29 11s-19-4-29-11z"
+        fill="#d4a94e"
+        stroke="#183526"
+        strokeWidth="3"
+      />
+      <path
+        d="M45 54c2 2 5 2 7 0M74 54c2 2 5 2 7 0"
+        stroke="#183526"
+        strokeWidth="4"
+        strokeLinecap="round"
+      />
+      <path
+        d="M56 68c4 4 12 4 16 0"
+        stroke="#183526"
+        strokeWidth="4"
+        strokeLinecap="round"
+      />
+      <circle cx="43" cy="64" r="5" fill="#f1a9a0" opacity="0.85" />
+      <circle cx="85" cy="64" r="5" fill="#f1a9a0" opacity="0.85" />
+      <path
+        d="M21 82l-8 24M15 104h26"
+        stroke="#183526"
+        strokeWidth="4"
+        strokeLinecap="round"
+      />
+      <circle
+        cx="44"
+        cy="105"
+        r="4"
+        fill="#fffaf0"
+        stroke="#183526"
+        strokeWidth="3"
+      />
+    </svg>
+  );
+}
+
+function mascotLabelFor(score: number) {
+  if (score >= 92) return "인정";
+  if (score >= 80) return "오?";
+  if (score >= 60) return "졸업?";
+  if (score >= 40) return "연습!";
+  return "골린!";
+}
+
+function drawCanvasMascot(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  scale: number,
+  label: string,
+) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(scale, scale);
+
+  ctx.fillStyle = "#fff8e8";
+  roundRect(ctx, 2, 0, 132, 62, 18);
+  ctx.fill();
+  ctx.strokeStyle = "#d4a94e";
+  ctx.lineWidth = 4;
+  ctx.stroke();
+  ctx.fillStyle = "#183526";
+  ctx.font = "900 30px Pretendard, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText(label, 68, 41);
+
+  ctx.beginPath();
+  ctx.arc(58, 132, 54, 0, Math.PI * 2);
+  ctx.fillStyle = "#fffaf0";
+  ctx.fill();
+  ctx.strokeStyle = "#183526";
+  ctx.lineWidth = 5;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(14, 92);
+  ctx.quadraticCurveTo(58, 55, 102, 92);
+  ctx.quadraticCurveTo(58, 113, 14, 92);
+  ctx.fillStyle = "#d4a94e";
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.strokeStyle = "#183526";
+  ctx.lineWidth = 6;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(34, 130);
+  ctx.lineTo(43, 130);
+  ctx.moveTo(76, 130);
+  ctx.lineTo(85, 130);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(48, 150);
+  ctx.quadraticCurveTo(58, 160, 70, 150);
+  ctx.stroke();
+
+  ctx.fillStyle = "#f1a9a0";
+  ctx.globalAlpha = 0.85;
+  ctx.beginPath();
+  ctx.arc(30, 146, 9, 0, Math.PI * 2);
+  ctx.arc(88, 146, 9, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  ctx.restore();
 }
 
 function ArrowLeftIcon() {
