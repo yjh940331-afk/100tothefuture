@@ -16,6 +16,7 @@ import { LoginPopup } from "@/components/LoginPopup";
 import { Break100Carousel } from "@/components/Break100Carousel";
 import { CompactAdSlider } from "@/components/CompactAdSlider";
 import { InstructorCard } from "@/components/InstructorCard";
+import { GolfRookieQuiz } from "@/components/GolfRookieQuiz";
 
 const HERO_IMAGE = GOLF_IMAGES.hero.home;
 const CTA_IMAGE = GOLF_IMAGES.hero.cta;
@@ -207,32 +208,40 @@ export default async function HomePage() {
         <CompactAdSlider banners={sponsorBanners} />
       </section>
 
-      <section className="container-page py-8 sm:py-10">
-        <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-[12px] font-bold text-gold-700">추천 프로</p>
-            <h2 className="mt-0.5 text-lg font-extrabold text-fairway-900 sm:text-xl">
-              {currentProfile ? "회원님 맞춤 추천" : "바로 상담 가능"}
-            </h2>
-            <p className="mt-1 text-[13px] text-fairway-600 sm:text-sm">
-              후기·가격·일정을 확인하세요.
-            </p>
+      <section className="border-y border-fairway-100 bg-white">
+        <div className="container-page py-7 sm:py-10">
+          <div className="mb-4 flex items-center justify-between gap-3 border-b border-fairway-100 pb-3 sm:mb-5 sm:items-end sm:pb-4">
+            <div className="min-w-0">
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="shrink-0 rounded-full bg-gold-100 px-2 py-0.5 text-[11px] font-black text-gold-800">
+                  추천 프로
+                </span>
+                <h2 className="truncate text-base font-black text-fairway-950 sm:text-xl">
+                  {currentProfile ? "회원님 맞춤 추천" : "바로 상담 가능"}
+                </h2>
+              </div>
+              <p className="mt-1 truncate text-[12px] font-medium text-fairway-500 sm:text-sm">
+                후기·가격·일정 확인
+              </p>
+            </div>
+            <Link
+              href="/pros"
+              className="shrink-0 rounded-full border border-fairway-200 px-3 py-1.5 text-[12px] font-black text-fairway-800 transition hover:border-fairway-300 hover:bg-fairway-50 sm:text-sm"
+            >
+              전체 보기
+            </Link>
           </div>
-          <Link
-            href="/pros"
-            className="text-sm font-bold text-fairway-700 hover:underline"
-          >
-            전체 보기
-          </Link>
-        </div>
-        <div className="motion-fade-up grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {featured.map((pro) => (
-            <InstructorCard key={pro.id} pro={pro} />
-          ))}
+          <div className="motion-fade-up grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {featured.map((pro) => (
+              <InstructorCard key={pro.id} pro={pro} />
+            ))}
+          </div>
         </div>
       </section>
 
       <PortfolioPreviewSection items={portfolioItems} pros={featured} />
+
+      <GolfRookieQuiz />
 
       <ReviewPreviewSection reviews={reviewItems} />
 

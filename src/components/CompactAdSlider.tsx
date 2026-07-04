@@ -159,73 +159,21 @@ export function CompactAdSlider({ banners }: { banners: SponsorBanner[] }) {
       </div>
 
       {banners.length > 1 && (
-        <>
-          <button
-            type="button"
-            aria-label="이전 광고 보기"
-            onClick={prev}
-            className="absolute left-1.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-fairway-950/45 text-white backdrop-blur transition hover:bg-fairway-950/70 sm:left-2 sm:h-8 sm:w-8"
-          >
-            <ChevronLeft />
-          </button>
-          <button
-            type="button"
-            aria-label="다음 광고 보기"
-            onClick={next}
-            className="absolute right-1.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-fairway-950/45 text-white backdrop-blur transition hover:bg-fairway-950/70 sm:right-2 sm:h-8 sm:w-8"
-          >
-            <ChevronRight />
-          </button>
-          <div className="pointer-events-none absolute inset-x-0 bottom-2 flex justify-center gap-1.5">
-            {banners.map((banner, index) => (
-              <button
-                key={banner.id}
-                type="button"
-                aria-label={`${banner.title} 보기`}
-                aria-current={active === index}
-                onClick={() => goTo(index)}
-                className={`pointer-events-auto h-1.5 rounded-full transition-all ${
-                  active === index ? "w-5 bg-gold-300" : "w-1.5 bg-white/60"
-                }`}
-              />
-            ))}
-          </div>
-        </>
+        <div className="pointer-events-none absolute inset-x-0 bottom-2 flex justify-center gap-1.5">
+          {banners.map((banner, index) => (
+            <button
+              key={banner.id}
+              type="button"
+              aria-label={`${banner.title} 보기`}
+              aria-current={active === index}
+              onClick={() => goTo(index)}
+              className={`pointer-events-auto h-1.5 rounded-full transition-all ${
+                active === index ? "w-5 bg-gold-300" : "w-1.5 bg-white/60"
+              }`}
+            />
+          ))}
+        </div>
       )}
     </div>
-  );
-}
-
-function ChevronLeft() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-4 w-4"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M15 6l-6 6 6 6" />
-    </svg>
-  );
-}
-
-function ChevronRight() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-4 w-4"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M9 6l6 6-6 6" />
-    </svg>
   );
 }
